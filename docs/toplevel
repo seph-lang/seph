@@ -1,0 +1,38 @@
+
+foo: 42,
+bar: 56 
+
+x = 42
+y = 42+55,
+z: y
+
+
+
+There is one toplevel lexical scope (where variables can be mutated) for each file. If a keyword argument is used, those things will be exporteda as a module. Things in the non-keyword arguments will be evualated and those
+values will be available. A file containing this:
+
+  foo: 42,
+  10 * 5,
+  4 * 3,
+  12 * 3,
+  bar: 55
+  
+is the same as:
+
+  value1 = 10 * 5
+  value2 = 4 * 3
+  value 3= 12 * 3
+
+  Module with(
+    foo: 42,
+    bar: 55,
+    values: [value1, value2, value3]
+  )
+
+The positional arguments will be evaluated before the module creation, and then added to the module.
+
+There is no global scope. You can get access to another file in one way (inspired by Newspeak):
+
+  fastercsv: from("lib/seph/faster_csv"),
+
+the fastercsv cell will contain a Module instance with the values specified. 

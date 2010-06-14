@@ -1,0 +1,12 @@
+
+class seph.lang.Runtime
+iface seph.lang.ast.Message
+class seph.lang.ast.NamedMessage
+class seph.lang.ast.LiteralMessage
+
+iface seph.lang.SephObject
+class seph.lang.Symbol
+class seph.lang.Module
+
+class seph.lang.parser.Parser
+class seph.lang.parser.MessageShuffler

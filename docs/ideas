@@ -1,0 +1,65 @@
+Thoughts
+--------
+
+Seph is a mostly functional version of Ioke. This means:
+- No assignment
+  - Only assignment as local variables
+- Lexical scopes
+  - That includes the local variables and can modify them
+  - This means you can always control the scope of mutability
+  - Figure out real light weight way of working with these
+- Kilim for light weight threads
+- Tail recursion, the same as Erjang implementation
+- The general way of creating new objects is to use the with() operator
+- No global functions, everything is based on polymorphic calls
+- Stuff to figure out:
+  - How to handle more than one parent - or zero parents
+  - How to handle operator shuffling
+  - Decide how to dynamic to be. Eval, creating message chains from scratch and applying them?
+  - Decide where the hard limits in the language should be
+    - Overriding assignment?
+    - Assigning places?
+    - Overriding literal creation?
+- Syntax macros at parse time - looked up monomorphically (figure out namespacing of these)
+- Enumerable implementations that take code chains, for example
+  These should be polymorphic regular macros
+- Probably compile everything from start - need to compile and retain AST though, so that anything can take a code chain, transform and execute that
+
+- Add Clojure style metadata
+- Add all Clojure's concurrency primitives, probably.
+
+
+-- Unify fns and methods?
+
+
+
+Another description:
+ Object-functional hybrid - prototype-oriented
+ Immutable objects. Only polymorphic message sends for lookup.
+ Local variables mutable, and lexically closable inside methods
+ Erlang-style lightweight threads
+ Tail recursion
+ Parse time syntax macros - Common Lisp style
+ Polymorphic macros that take code chains at run time.
+
+Name:
+-------
+Seph (as in Sephiroth, Sephora)   short: .sp, .se
+
+
+Use Kilim from KrestenKrab for light weight processes
+Tail recursion: use Krestens Erjang approach for this
+
+
+Sort out design on how to run a new process
+
+
+
+
+Probably start out very simple, quite static, none of the really crazy stuff from Ioke.
+
+
+----
+
+See whether it's possible to create a bytecode format immediately. See if it's possible to reduce the native functionality to a minimum. Try to create a general interface for BIF's. Take inspiration from
+Smalltalk on this.
