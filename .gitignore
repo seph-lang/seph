@@ -1,2 +1,6 @@
 .DS_Store
+/build
+lib/seph.jar
 prj.el
+build.properties
+version_data.properties
