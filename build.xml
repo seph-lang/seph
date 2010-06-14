@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project basedir="." default="jar" name="seph">
+  <description>
+    seph is a past generation language, based on Ioke, Clojure and Erjanh
+  </description>
+
+  <property file="build.properties"/>
+  <property file="default.build.properties"/>
+
+  <path id="build.classpath">
+    <fileset dir="${lib.build.dir}" includes="*.jar"/>
+    <fileset dir="${lib.release.dir}" includes="*.jar"/>
+  </path>
+
+  <path id="test.classpath">
+    <fileset dir="${lib.build.dir}" includes="*.jar"/>
+    <fileset dir="${lib.release.dir}" includes="*.jar"/>
+    <pathelement path="${main.classes.dir}"/>
+    <pathelement path="${test.classes.dir}"/>
+  </path>
+
+  <target name="prepare" description="Creates the directories needed for building">
+    <mkdir dir="${build.dir}"/>
+    <mkdir dir="${main.classes.dir}"/>
+    <mkdir dir="${test.classes.dir}"/>
+  </target>
+
+  <target name="generate_filters" depends="prepare" description="Generates source files">
+    <exec executable="ruby" input="generate_filter_data.rb" failonerror="false" failifexecutionfails="false"/>
+  </target>
+
+  <target name="compile" depends="generate_filters" description="Compile the source files for the project.">
+    <filter filtersfile="version_data.properties"/>
+    <filter token="VERSION" value="0"/>
+    <filter token="VERSION_RUNTIME" value="0.0.1"/>
+    <filter token="VERSION_STRING" value="Seph 0 sephj 0.0.1"/>
+
+    <javac destdir="${main.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" encoding="UTF-8">
+      <classpath refid="build.classpath"/>
+      <src path="${src.dir}"/>
+      <include name="**/*.java"/>
+    </javac>
+
+    <copy todir="${main.classes.dir}" filtering="true" overwrite="true">
+      <fileset dir="${src.dir}" includes="**/*.properties"/>
+    </copy>
+
+    <copy todir="${main.classes.dir}">
+      <fileset dir="${src.raw.dir}" includes="builtin/**/*.sp"/>
+    </copy>
+  </target>
+
+  <target name="compile-tests" depends="compile" description="Compile the test source files for the project.">
+    <javac destdir="${test.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" encoding="UTF-8">
+      <classpath refid="test.classpath"/>
+      <src path="${src.test.dir}"/>
+      <include name="**/*.java"/>
+    </javac>
+  </target>
+
+  <target name="test" depends="compile-tests" description="Runs all Seph tests">
+    <junit fork="yes" forkMode="once" haltonfailure="true" showoutput="true" timeout="1800000">
+      <classpath refid="test.classpath"/>
+      <sysproperty key="file.encoding" value="UTF-8"/>
+      <formatter type="brief" usefile="false" />
+
+      <batchtest fork="yes">
+        <fileset dir="${src.test.dir}">
+          <include name="**/*Test*.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+  <target name="jar" depends="test" description="Create the seph.jar file">
+    <jar destfile="${lib.dir}/seph.jar">
+      <fileset dir="${classes.dir}">
+        <include name="**/*.class"/>
+        <include name="**/*.sp"/>
+        <include name="**/*.properties"/>
+      </fileset>
+      <zipfileset src="${lib.release.dir}/jline-0.9.93.jar" includes="**/*"/>
+      <manifest>
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Main-Class" value="seph.lang.Main"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="dist-bin" depends="jar">
+    <tar destfile="${release.dir}/seph-0-sepj-0.0.1.tar.gz" compression="gzip">
+      <tarfileset mode="755" dir="." prefix="ioke">
+        <include name="bin/*.bat"/>
+        <include name="bin/seph"/>
+      </tarfileset>
+
+      <tarfileset dir="." prefix="seph">
+        <include name="lib/seph*.jar"/>
+        <include name="lib/seph/**"/>
+        <include name="share/**"/>
+        <include name="COPYING"/>
+        <include name="LICENSE"/>
+        <include name="LICENSE.kawa"/>
+        <include name="README"/>
+      </tarfileset>
+    </tar>
+
+    <zip destfile="${release.dir}/seph-0-sepj-0.0.1.zip">
+      <zipfileset filemode="755" dir="." prefix="seph">
+        <include name="bin/*.bat"/>
+        <include name="bin/seph"/>
+      </zipfileset>
+
+      <zipfileset dir="." prefix="seph">
+        <include name="lib/seph*.jar"/>
+        <include name="lib/seph/**"/>
+        <include name="share/**"/>
+        <include name="COPYING"/>
+        <include name="LICENSE"/>
+        <include name="LICENSE.kawa"/>
+        <include name="README"/>
+      </zipfileset>
+    </zip>
+  </target>
+
+  <target name="dist" depends="dist-bin"/>
+
+  <target name="clean" description="clean almost everything">
+    <delete dir="${build.dir}"/>
+    <delete file="${lib.dir}/seph.jar" quiet="true"/>
+  </target>
+</project>
