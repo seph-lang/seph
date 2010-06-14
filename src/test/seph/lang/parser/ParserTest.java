@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
  */
 public class ParserTest {
     @Test
-    public void ensure_a_parser_class_exists() {
+    public void ensure_class_exists() {
         assertEquals("seph.lang.parser.Parser", Parser.class.getName());
     }
 }// ParserTest

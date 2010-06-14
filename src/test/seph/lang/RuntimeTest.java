@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
  */
 public class RuntimeTest {
     @Test
-    public void ensure_a_runtime_class_exists() {
+    public void ensure_class_exists() {
         assertEquals("seph.lang.Runtime", seph.lang.Runtime.class.getName());
     }
 }// RuntimeTest

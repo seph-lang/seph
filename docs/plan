@@ -1,15 +1,16 @@
 Plan to get somewhere working:
 ------------------------------
 
-- Set up a test harness
 - Implement a simple parser
 - Implement a basic object model
-- Implement a simplistic interpreter for simple mimicking
+- Implement a simplistic interpreter for simple mimicking (or possibly a bytecode engine)
 - Implement a simple, functional operator shuffling
 - Implement a simplistic interpreter for defining and running methods.
 - Generate simple bytecode for the above
 - Integrate KILIM into simple bytecode
 - Integrate tail recursion into the above
+
+
 
 What to ignore for now:
  - Syntactic macros and regular macros

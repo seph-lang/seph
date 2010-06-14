@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
  */
 public class SymbolTest {
     @Test
-    public void symbol_class_should_be_a_seph_object() {
+    public void is_a_seph_object() {
         assertTrue("A Symbol should be a SephObject", new Symbol() instanceof SephObject);
     }
 }// SymbolTest
