@@ -13,7 +13,6 @@ Seph is a mostly functional version of Ioke. This means:
 - The general way of creating new objects is to use the with() operator
 - No global functions, everything is based on polymorphic calls
 - Stuff to figure out:
-  - How to handle more than one parent - or zero parents
   - How to handle operator shuffling
   - Decide how to dynamic to be. Eval, creating message chains from scratch and applying them?
   - Decide where the hard limits in the language should be
@@ -63,3 +62,13 @@ Probably start out very simple, quite static, none of the really crazy stuff fro
 
 See whether it's possible to create a bytecode format immediately. See if it's possible to reduce the native functionality to a minimum. Try to create a general interface for BIF's. Take inspiration from
 Smalltalk on this.
+
+
+----
+
+More than one parent or no parents:
+
+Foo with(abc: 42) withParent(Bar)
+Foo with(abc: 42) withoutParent(Foo)
+Foo with(abc: 42) withoutParents
+

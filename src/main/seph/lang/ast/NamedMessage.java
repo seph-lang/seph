@@ -8,7 +8,7 @@ import seph.lang.SephObject;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public class NamedMessage implements Message, SephObject {
+public final class NamedMessage implements Message, SephObject {
     private final String name;
     private final Message[] arguments;
     private final Message next;
