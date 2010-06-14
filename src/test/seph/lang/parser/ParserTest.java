@@ -16,7 +16,11 @@ import seph.lang.ast.Message;
  */
 public class ParserTest {
     private static Message parse(String input) {
-        return new Parser(new Runtime(), new StringReader(input)).parseFully();
+        try {
+            return new Parser(new Runtime(), new StringReader(input)).parseFully();
+        } catch(java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -32,20 +36,36 @@ public class ParserTest {
         assertNull(result.next());
     }
 
+    @Test
+    public void a_string_with_only_spaces_should_become_a_terminator_message() {
+        Message result = parse("  ");
+        assertEquals(".", result.name());
+        assertArrayEquals(new Message[0], result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void a_string_with_a_message_should_become_that_message() {
+        Message result = parse("foo");
+        assertEquals("foo", result.name());
+        assertArrayEquals(new Message[0], result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void a_string_with_two_messages_should_become_a_message_chain() {
+        Message result = parse("foo bar");
+        assertEquals("foo", result.name());
+        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals("bar", result.next().name());
+        assertArrayEquals(new Message[0], result.next().arguments());
+        assertNull(result.next().next());
+    }
+
     /*
   it("should ignore a first line that starts with #!",
     m = parse("#!/foo/bar 123\nfoo")
     m should == "foo"
-  )
-
-  it("should parse an empty string into a terminator message",
-    m = parse("")
-    m should == ".\n"
-  )
-
-  it("should parse a string with only spaces into a terminator message",
-    m = parse("  ")
-    m should == ".\n"
   )
 
   describe("terminators",

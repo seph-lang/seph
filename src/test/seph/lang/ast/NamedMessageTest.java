@@ -52,4 +52,24 @@ public class NamedMessageTest {
         NamedMessage msg = new NamedMessage(null, null, null);
         assertArrayEquals(new Message[0], msg.arguments());
     }
+
+    @Test
+    public void with_next_returns_a_new_object_with_the_same_name() {
+        NamedMessage msg = new NamedMessage("fox", null, null);
+        assertEquals("fox", msg.withNext(null).name());
+    }
+
+    @Test
+    public void with_next_returns_a_new_object_with_the_same_arguments() {
+        Message[] expected = new Message[0];
+        NamedMessage msg = new NamedMessage(null, expected, null);
+        assertSame(expected, msg.withNext(null).arguments());
+    }
+
+    @Test
+    public void with_next_returns_a_new_object_with_a_new_next() {
+        Message expected = new NamedMessage(null, null, null);
+        NamedMessage msg = new NamedMessage(null, null, null);
+        assertSame(expected, msg.withNext(expected).next());
+    }
 }// NamedMessageTest

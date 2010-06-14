@@ -10,5 +10,6 @@ public interface Message {
     String name();
     Message[] arguments();
     Message next();
+    Message withNext(Message newNext);
 }// Message
 

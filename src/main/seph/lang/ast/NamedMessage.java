@@ -32,4 +32,8 @@ public final class NamedMessage implements Message, SephObject {
     public Message next() {
         return this.next;
     }
+
+    public Message withNext(Message newNext) {
+        return new NamedMessage(this.name, this.arguments, newNext);
+    }
 }// NamedMessage
