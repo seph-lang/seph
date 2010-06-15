@@ -3,6 +3,10 @@
  */
 package seph.lang.ast;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -42,7 +46,7 @@ public class NamedMessageTest {
 
     @Test
     public void has_a_list_of_arguments() {
-        Message[] args = new Message[]{new NamedMessage(null, null, null), new NamedMessage(null, null, null)};
+        List<Message> args = Arrays.<Message>asList(new NamedMessage(null, null, null), new NamedMessage(null, null, null));
         NamedMessage msg = new NamedMessage(null, args, null);
         assertSame(args, msg.arguments());
     }
@@ -50,7 +54,7 @@ public class NamedMessageTest {
     @Test
     public void arguments_return_an_empty_array_if_given_null() {
         NamedMessage msg = new NamedMessage(null, null, null);
-        assertArrayEquals(new Message[0], msg.arguments());
+        assertEquals(Arrays.<Message>asList(), msg.arguments());
     }
 
     @Test
@@ -61,7 +65,7 @@ public class NamedMessageTest {
 
     @Test
     public void with_next_returns_a_new_object_with_the_same_arguments() {
-        Message[] expected = new Message[0];
+        List<Message> expected = new ArrayList<Message>();
         NamedMessage msg = new NamedMessage(null, expected, null);
         assertSame(expected, msg.withNext(null).arguments());
     }

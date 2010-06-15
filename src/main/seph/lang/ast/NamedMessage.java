@@ -3,6 +3,8 @@
  */
 package seph.lang.ast;
 
+import java.util.List;
+
 import seph.lang.SephObject;
 
 /**
@@ -10,12 +12,12 @@ import seph.lang.SephObject;
  */
 public final class NamedMessage implements Message, SephObject {
     private final String name;
-    private final Message[] arguments;
+    private final List<Message> arguments;
     private final Message next;
 
-    final static Message[] NO_ARGUMENTS = new Message[0];
+    final static List<Message> NO_ARGUMENTS = java.util.Arrays.<Message>asList();
     
-    public NamedMessage(String name, Message[] arguments, Message next) {
+    public NamedMessage(String name, List<Message> arguments, Message next) {
         this.name = name;
         this.arguments = arguments == null ? NO_ARGUMENTS : arguments;
         this.next = next;
@@ -25,7 +27,7 @@ public final class NamedMessage implements Message, SephObject {
         return this.name;
     }
 
-    public Message[] arguments() {
+    public List<Message> arguments() {
         return this.arguments;
     }
 

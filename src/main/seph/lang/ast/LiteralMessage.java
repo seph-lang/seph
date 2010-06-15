@@ -3,6 +3,8 @@
  */
 package seph.lang.ast;
 
+import java.util.List;
+
 import seph.lang.SephObject;
 
 /**
@@ -21,7 +23,7 @@ public final class LiteralMessage implements Message, SephObject {
         return "<literal:" + literal.getClass().getName() + ">";
     }
 
-    public Message[] arguments() {
+    public List<Message> arguments() {
         return NamedMessage.NO_ARGUMENTS;
     }
 

@@ -3,6 +3,8 @@
  */
 package seph.lang.ast;
 
+import java.util.List;
+
 import seph.lang.SephObject;
 
 /**
@@ -10,7 +12,7 @@ import seph.lang.SephObject;
  */
 public interface Message {
     String name();
-    Message[] arguments();
+    List<Message> arguments();
     Message next();
     Message withNext(Message newNext);
     boolean isLiteral();

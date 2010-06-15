@@ -59,6 +59,28 @@ public class Parser {
         return ret;
     }
 
+    private List<Message> parseExpressionChain() throws IOException {
+        ArrayList<Message> chain = new ArrayList<Message>();
+
+        Message curr = parseExpressions();
+        while(curr != null) {
+            chain.add(curr);
+            readWhiteSpace();
+            int rr = peek();
+            if(rr == ',') {
+                read();
+                curr = parseExpressions();
+            } else {
+                if(curr != null && curr.name().equals(".") && curr.next() == null) {
+                    chain.remove(chain.size()-1);
+                }
+                curr = null;
+            }
+        }
+
+        return chain;
+    }
+
     private int lineNumber = 1;
     private int currentCharacter = -1;
     private boolean skipLF = false;
@@ -144,6 +166,9 @@ public class Parser {
             case -1:
                 read();
                 return null;
+            case '(':
+                read();
+                return parseEmptyMessageSend();
             case '#':
                 read();
                 switch(peek()) {
@@ -172,6 +197,13 @@ public class Parser {
                     read();
                     break;
                 }
+            case ':':
+                read();
+                if(isLetter(rr = peek())) {
+                    return parseRegularMessageSend(':');
+                } else {
+                    return parseOperatorChars(':');
+                }
             default:
                 read();
                 return parseRegularMessageSend(rr);
@@ -198,7 +230,13 @@ public class Parser {
             sb.append((char)rr);
         }
 
-        return new NamedMessage(sb.toString(), null, null);
+        List<Message> args = null;
+        if(rr == '(') {
+            read();
+            args = parseExpressionChain();
+            parseCharacter(')');
+        }
+        return new NamedMessage(sb.toString(), args, null);
     }
 
     private void parseComment() throws IOException {
@@ -266,6 +304,42 @@ public class Parser {
             sb.append((char)rr);
             break;
         }
+    }
+
+    private Message parseOperatorChars(int indicator) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append((char)indicator);
+        int rr;
+        while(true) {
+            rr = peek();
+            switch(rr) {
+            case ':':
+                read();
+                sb.append((char)rr);
+                break;
+            default:
+                if(rr == '(') {
+                    read();
+                    List<Message> args = parseExpressionChain();
+                    parseCharacter(')');
+                    return new NamedMessage(sb.toString(), args, null);
+                } else {
+                    return new NamedMessage(sb.toString(), null, null);
+                }
+            }
+        }
+    }
+
+    private void parseCharacter(int c) throws IOException {
+        readWhiteSpace();
+        int rr = read();
+    }
+
+    private Message parseEmptyMessageSend() throws IOException {
+        List<Message> args = parseExpressionChain();
+        parseCharacter(')');
+
+        return new NamedMessage("", args, null);
     }
 
     private boolean isLetter(int c) {

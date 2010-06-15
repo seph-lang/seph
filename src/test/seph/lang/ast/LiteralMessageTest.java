@@ -3,6 +3,8 @@
  */
 package seph.lang.ast;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -44,7 +46,7 @@ public class LiteralMessageTest {
     @Test
     public void has_an_empty_list_of_arguments() {
         LiteralMessage msg = new LiteralMessage(null, null);
-        assertArrayEquals(new Message[0], msg.arguments());
+        assertEquals(Arrays.<Message>asList(), msg.arguments());
     }
 
     @Test

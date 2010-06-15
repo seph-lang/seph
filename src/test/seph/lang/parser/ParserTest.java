@@ -5,7 +5,10 @@ package seph.lang.parser;
 
 import java.io.StringReader;
 
+import java.util.Arrays;
+
 import org.junit.Test;
+import org.junit.Ignore;
 import static org.junit.Assert.*;
 
 import seph.lang.Runtime;
@@ -34,7 +37,7 @@ public class ParserTest {
     public void an_empty_string_should_become_a_terminator_message() {
         Message result = parse("");
         assertEquals(".", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
 
@@ -42,7 +45,7 @@ public class ParserTest {
     public void a_string_with_only_spaces_should_become_a_terminator_message() {
         Message result = parse("  ");
         assertEquals(".", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
 
@@ -50,7 +53,7 @@ public class ParserTest {
     public void a_string_with_only_unicode_spaces_should_become_a_terminator_message() {
         Message result = parse("\u0009\u0009\u000b\u000c");
         assertEquals(".", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
 
@@ -58,7 +61,7 @@ public class ParserTest {
     public void a_string_with_a_message_should_become_that_message() {
         Message result = parse("foo");
         assertEquals("foo", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
 
@@ -66,9 +69,9 @@ public class ParserTest {
     public void a_string_with_two_messages_should_become_a_message_chain() {
         Message result = parse("foo bar");
         assertEquals("foo", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertEquals("bar", result.next().name());
-        assertArrayEquals(new Message[0], result.next().arguments());
+        assertEquals(Arrays.<Message>asList(), result.next().arguments());
         assertNull(result.next().next());
     }
 
@@ -76,7 +79,7 @@ public class ParserTest {
     public void octothorp_followed_by_bang_will_be_interpreted_as_a_comment() {
         Message result = parse("#!/foo/bar 123\nfoo");
         assertEquals("foo", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
 
@@ -84,7 +87,7 @@ public class ParserTest {
     public void parses_a_newline_as_a_terminator() {
         Message result = parse("\n");
         assertEquals(".", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
 
@@ -92,7 +95,7 @@ public class ParserTest {
     public void parses_two_newlines_as_one_terminator() {
         Message result = parse("\n\n");
         assertEquals(".", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
 
@@ -100,7 +103,7 @@ public class ParserTest {
     public void parses_a_period_as_one_terminator() {
         Message result = parse(".");
         assertEquals(".", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
 
@@ -108,7 +111,7 @@ public class ParserTest {
     public void parses_a_period_and_a_newline_as_one_terminator() {
         Message result = parse(".\n");
         assertEquals(".", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
 
@@ -116,7 +119,7 @@ public class ParserTest {
     public void parses_a_newline_and_a_period_as_one_terminator() {
         Message result = parse("\n.");
         assertEquals(".", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
 
@@ -124,7 +127,7 @@ public class ParserTest {
     public void parses_period_between_newlines_as_one_terminator() {
         Message result = parse("\n.\n");
         assertEquals(".", result.name());
-        assertArrayEquals(new Message[0], result.arguments());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
 
@@ -161,24 +164,95 @@ public class ParserTest {
         assertEquals("foobar", ((Text)literal).text());
     }
 
+    @Test
+    public void should_allow_identifier_starting_with_colon() {
+        Message result = parse(":foo");
+        assertEquals(":foo", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void uses_two_semi_colons() {
+        Message result = parse("::");
+        assertEquals("::", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test @Ignore("This test should really be in tests for operator shuffling, not in the parser test")
+    public void separates_two_colons_into_a_message_send() {
+        Message result = parse("::foo");
+        assertEquals("::", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+        assertNull(result.next());
+    }
+
+    @Test @Ignore("This test should really be in tests for operator shuffling, not in the parser test")
+    public void separates_three_colons_into_a_message_send() {
+        Message result = parse(":::foo");
+        assertEquals(":::", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void allows_a_single_colon_as_identifier() {
+        Message result = parse(":");
+        assertEquals(":", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void allows_an_identifier_to_be_ended_with_a_colon() {
+        Message result = parse("foo:");
+        assertEquals("foo:", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void allows_an_identifier_to_be_split_with_a_colon() {
+        Message result = parse("foo:bar");
+        assertEquals("foo:bar", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void allows_an_identifier_to_be_split_with_more_than_one_colon() {
+        Message result = parse("foo::bar");
+        assertEquals("foo::bar", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void allows_an_identifier_interspersed_with_colons() {
+        Message result = parse("f:o:o:b:a:r");
+        assertEquals("f:o:o:b:a:r", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void allows_a_question_mark_followed_by_a_colon() {
+        Message result = parse("foo?:");
+        assertEquals("foo?:", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parens_without_preceeding_message_becomes_the_identity_message() {
+        Message result = parse("(foo)");
+        assertEquals("", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+        assertNull(result.next());
+    }
 
     /*
-  describe("strings",
-    describe("escapes",
-      it("should parse a newline as nothing if preceeded with a slash",
-        "foo\
-bar" should == "foobar"
-      )
-    )
-  )
-
-  describe("parens without preceeding message",
-    it("should be translated into identity message",
-      m = parse("(1)")
-      m should == "(1)"
-    )
-  )
-
   describe("square brackets",
     it("should be parsed correctly in regular message passing syntax",
       m = parse("[]()")
@@ -332,56 +406,6 @@ bar" should == "foobar"
       fn(parse("{1, 2")) should signalArgument(character: 5)
       fn(parse("{1, 2")) should signalArgument(expected: "}")
       fn(parse("{1, 2")) should signalArgument(got: "EOF")
-    )
-  )
-
-  describe("identifiers",
-    it("should be allowed to begin with colon",
-      m = parse(":foo")
-      m should == ":foo"
-    )
-
-    it("should use two colons",
-      m = parse("::")
-      m should == "::"
-    )
-
-    it("should separate two colons",
-      m = parse("::foo")
-      m should == "::(foo)"
-    )
-
-    it("should separate three colons",
-      m = parse(":::foo")
-      m should == ":::(foo)"
-    )
-
-    it("should be allowed to only be a colon",
-      m = parse(":")
-      m should == ":"
-    )
-
-    it("should be allowed to end with colon",
-      m = parse("foo:")
-      m should == "foo:"
-    )
-
-    it("should be allowed to have a colon in the middle",
-      m = parse("foo:bar")
-      m should == "foo:bar"
-    )
-
-    it("should be allowed to have more than one colon in the middle",
-      m = parse("foo::bar")
-      m should == "foo::bar"
-
-      m = parse("f:o:o:b:a:r")
-      m should == "f:o:o:b:a:r"
-    )
-
-    it("should be possible to follow a question mark with a colon",
-      m = parse("foo?:")
-      m should == "foo?:"
     )
   )
     */    

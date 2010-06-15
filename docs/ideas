@@ -72,3 +72,7 @@ Foo with(abc: 42) withParent(Bar)
 Foo with(abc: 42) withoutParent(Foo)
 Foo with(abc: 42) withoutParents
 
+----
+
+Use regular Floats instead of BigDecimal always.
+Use gnu.math directly
