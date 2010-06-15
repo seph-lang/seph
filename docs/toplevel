@@ -36,3 +36,8 @@ There is no global scope. You can get access to another file in one way (inspire
   fastercsv: from("lib/seph/faster_csv"),
 
 the fastercsv cell will contain a Module instance with the values specified. 
+
+
+
+
+ensure recursive dependencies can be specified

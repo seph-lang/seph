@@ -45,6 +45,14 @@ public class ParserTest {
     }
 
     @Test
+    public void a_string_with_only_unicode_spaces_should_become_a_terminator_message() {
+        Message result = parse("\u0009\u0009\u000b\u000c");
+        assertEquals(".", result.name());
+        assertArrayEquals(new Message[0], result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
     public void a_string_with_a_message_should_become_that_message() {
         Message result = parse("foo");
         assertEquals("foo", result.name());
@@ -62,12 +70,15 @@ public class ParserTest {
         assertNull(result.next().next());
     }
 
-    /*
-  it("should ignore a first line that starts with #!",
-    m = parse("#!/foo/bar 123\nfoo")
-    m should == "foo"
-  )
+    @Test
+    public void octothorp_followed_by_bang_will_be_interpreted_as_a_comment() {
+        Message result = parse("#!/foo/bar 123\nfoo");
+        assertEquals("foo", result.name());
+        assertArrayEquals(new Message[0], result.arguments());
+        assertNull(result.next());
+    }
 
+    /*
   describe("terminators",
     it("should parse a newline as a terminator",
       m = parse("\n")

@@ -48,6 +48,12 @@ public class Parser {
             ret = i.previous().withNext(ret);
 		}
 
+        if(ret != null) {
+            while(ret.name().equals(".") && ret.next() != null) {
+                ret = ret.next();
+            }
+        }
+
         return ret;
     }
 
@@ -136,6 +142,14 @@ public class Parser {
             case -1:
                 read();
                 return null;
+            case '#':
+                read();
+                switch(peek()) {
+                case '!':
+                    parseComment();
+                    break;
+                }
+                break;
             case ' ':
             case '\u0009':
             case '\u000b':
@@ -143,6 +157,10 @@ public class Parser {
                 read();
                 readWhiteSpace();
                 break;
+            case '\r':
+            case '\n':
+                read();
+                return parseTerminator(rr);
             default:
                 read();
                 return parseRegularMessageSend(rr);
@@ -170,6 +188,39 @@ public class Parser {
         }
 
         return new NamedMessage(sb.toString(), null, null);
+    }
+
+    private void parseComment() throws IOException {
+        int rr;
+        while((rr = peek()) != '\n' && rr != '\r' && rr != -1) {
+            read();
+        }
+    }
+
+    private Message parseTerminator(int indicator) throws IOException {
+        int rr;
+        int rr2;
+        if(indicator == '\r') {
+            rr = peek();
+            if(rr == '\n') {
+                read();
+            }
+        }
+
+        while(true) {
+            rr = peek();
+            rr2 = peek2();
+            if((rr == '.' && rr2 != '.') ||
+               (rr == '\n')) {
+                read();
+            } else if(rr == '\r' && rr2 == '\n') {
+                read(); read();
+            } else {
+                break;
+            }
+        }
+
+        return new NamedMessage(".", null, null);
     }
 
     private boolean isLetter(int c) {
