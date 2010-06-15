@@ -78,49 +78,73 @@ public class ParserTest {
         assertNull(result.next());
     }
 
+    @Test
+    public void parses_a_newline_as_a_terminator() {
+        Message result = parse("\n");
+        assertEquals(".", result.name());
+        assertArrayEquals(new Message[0], result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_two_newlines_as_one_terminator() {
+        Message result = parse("\n\n");
+        assertEquals(".", result.name());
+        assertArrayEquals(new Message[0], result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_a_period_as_one_terminator() {
+        Message result = parse(".");
+        assertEquals(".", result.name());
+        assertArrayEquals(new Message[0], result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_a_period_and_a_newline_as_one_terminator() {
+        Message result = parse(".\n");
+        assertEquals(".", result.name());
+        assertArrayEquals(new Message[0], result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_a_newline_and_a_period_as_one_terminator() {
+        Message result = parse("\n.");
+        assertEquals(".", result.name());
+        assertArrayEquals(new Message[0], result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_period_between_newlines_as_one_terminator() {
+        Message result = parse("\n.\n");
+        assertEquals(".", result.name());
+        assertArrayEquals(new Message[0], result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void doesnt_parse_a_line_ending_with_a_preceding_slash_as_a_terminator() {
+        Message result = parse("foo\\\nbar");
+        assertEquals("foo", result.name());
+        assertEquals("bar", result.next().name());
+        assertNull(result.next().next());
+    }
+
+
+    @Test
+    public void doesnt_parse_a_line_ending_with_a_preceding_slash_surrounded_by_spaces_as_a_terminator() {
+        Message result = parse("foo    \\\n    bar");
+        assertEquals("foo", result.name());
+        assertEquals("bar", result.next().name());
+        assertNull(result.next().next());
+    }
+
+
     /*
-  describe("terminators",
-    it("should parse a newline as a terminator",
-      m = parse("\n")
-      m should == ".\n"
-    )
-
-    it("should parse two newlines as one terminator",
-      m = parse("\n\n")
-      m should == ".\n"
-    )
-
-    it("should parse a period as a terminator",
-      m = parse(".")
-      m should == ".\n"
-    )
-
-    it("should parse one period and one newline as one terminator",
-      m = parse(".\n")
-      m should == ".\n"
-    )
-
-    it("should parse one newline and one period as one terminator",
-      m = parse("\n.")
-      m should == ".\n"
-    )
-
-    it("should parse one newline and one period and one newline as one terminator",
-      m = parse("\n.\n")
-      m should == ".\n"
-    )
-
-    it("should not parse a line ending with a slash as a terminator",
-      m = parse("foo\\\nbar")
-      m should == "foo bar"
-    )
-
-    it("should not parse a line ending with a slash and spaces around it as a terminator",
-      m = parse("foo    \\\n    bar")
-      m should == "foo bar"
-    )
-  )
-
   describe("strings",
     it("should parse a string containing newlines",
       m = parse("\"foo\nbar\"")

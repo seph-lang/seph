@@ -161,6 +161,12 @@ public class Parser {
             case '\n':
                 read();
                 return parseTerminator(rr);
+            case '\\':
+                read();
+                if((rr = peek()) == '\n') {
+                    read();
+                    break;
+                }
             default:
                 read();
                 return parseRegularMessageSend(rr);
