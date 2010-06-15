@@ -9,6 +9,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import seph.lang.Runtime;
+import seph.lang.SephObject;
+import seph.lang.Text;
 import seph.lang.ast.Message;
 
 /**
@@ -134,13 +136,22 @@ public class ParserTest {
         assertNull(result.next().next());
     }
 
-
     @Test
     public void doesnt_parse_a_line_ending_with_a_preceding_slash_surrounded_by_spaces_as_a_terminator() {
         Message result = parse("foo    \\\n    bar");
         assertEquals("foo", result.name());
         assertEquals("bar", result.next().name());
         assertNull(result.next().next());
+    }
+
+    @Test
+    public void parses_a_string_with_a_newline_in_it_correctly() {
+        Message result = parse("\"foo\nbar\"");
+        assertTrue("Result should be a literal message", result.isLiteral());
+        SephObject literal = result.literal();
+        assertEquals(Text.class, literal.getClass());
+        assertEquals("foo\nbar", ((Text)literal).text());
+        assertNull(result.next());
     }
 
 

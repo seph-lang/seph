@@ -13,7 +13,7 @@ public final class NamedMessage implements Message, SephObject {
     private final Message[] arguments;
     private final Message next;
 
-    private final static Message[] NO_ARGUMENTS = new Message[0];
+    final static Message[] NO_ARGUMENTS = new Message[0];
     
     public NamedMessage(String name, Message[] arguments, Message next) {
         this.name = name;
@@ -35,5 +35,13 @@ public final class NamedMessage implements Message, SephObject {
 
     public Message withNext(Message newNext) {
         return new NamedMessage(this.name, this.arguments, newNext);
+    }
+
+    public boolean isLiteral() {
+        return false;
+    }
+
+    public SephObject literal() {
+        return null;
     }
 }// NamedMessage

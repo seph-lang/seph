@@ -11,8 +11,10 @@ import java.util.ListIterator;
 import java.util.ArrayList;
 
 import seph.lang.Runtime;
+import seph.lang.Text;
 import seph.lang.ast.Message;
 import seph.lang.ast.NamedMessage;
+import seph.lang.ast.LiteralMessage;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -150,6 +152,9 @@ public class Parser {
                     break;
                 }
                 break;
+            case '"':
+                read();
+                return parseText('"');
             case ' ':
             case '\u0009':
             case '\u000b':
@@ -227,6 +232,39 @@ public class Parser {
         }
 
         return new NamedMessage(".", null, null);
+    }
+
+    private Message parseText(int indicator) throws IOException {
+        StringBuilder sb = new StringBuilder();
+
+        int rr;
+
+        while(true) {
+            switch(rr = peek()) {
+            case '"':
+                read();
+                return new LiteralMessage(new Text(sb.toString()), null);
+            case '\\':
+                read();
+                parseDoubleQuoteEscape(sb);
+                break;
+            default:
+                read();
+                sb.append((char)rr);
+                break;
+            }
+        }
+    }
+
+    private void parseDoubleQuoteEscape(StringBuilder sb) throws IOException {
+        sb.append('\\');
+        int rr = peek();
+        switch(rr) {
+        case '\n':
+            read();
+            sb.append((char)rr);
+            break;
+        }
     }
 
     private boolean isLetter(int c) {

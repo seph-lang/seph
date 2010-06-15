@@ -3,6 +3,8 @@
  */
 package seph.lang.ast;
 
+import seph.lang.SephObject;
+
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
@@ -11,5 +13,7 @@ public interface Message {
     Message[] arguments();
     Message next();
     Message withNext(Message newNext);
+    boolean isLiteral();
+    SephObject literal();
 }// Message
 

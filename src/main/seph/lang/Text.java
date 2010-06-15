@@ -12,4 +12,8 @@ public class Text implements SephObject {
     public Text(String text) {
         this.text = text;
     }
+
+    public String text() {
+        return this.text;
+    }
 }// Text
