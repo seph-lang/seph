@@ -243,7 +243,7 @@ public class Parser {
             switch(rr = peek()) {
             case '"':
                 read();
-                return new LiteralMessage(new Text(sb.toString()), null);
+                return new LiteralMessage(new Text(new StringUtils().replaceEscapes(sb.toString())), null);
             case '\\':
                 read();
                 parseDoubleQuoteEscape(sb);
@@ -261,6 +261,7 @@ public class Parser {
         int rr = peek();
         switch(rr) {
         case '\n':
+        case '\\':
             read();
             sb.append((char)rr);
             break;

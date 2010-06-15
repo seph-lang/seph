@@ -154,14 +154,16 @@ public class ParserTest {
         assertNull(result.next());
     }
 
+    @Test
+    public void parses_a_string_with_an_escaped_newline_correctly() {
+        Message result = parse("\"foo\\\nbar\"");
+        SephObject literal = result.literal();
+        assertEquals("foobar", ((Text)literal).text());
+    }
+
 
     /*
   describe("strings",
-    it("should parse a string containing newlines",
-      m = parse("\"foo\nbar\"")
-      m should == "\"foo\nbar\""
-    )
-
     describe("escapes",
       it("should parse a newline as nothing if preceeded with a slash",
         "foo\
