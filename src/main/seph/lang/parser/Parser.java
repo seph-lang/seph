@@ -166,9 +166,14 @@ public class Parser {
             case -1:
                 read();
                 return null;
+            case ')':
+                return null;
             case '(':
                 read();
                 return parseEmptyMessageSend();
+            case '[':
+                read();
+                return parseSquareMessageSend();
             case '#':
                 read();
                 switch(peek()) {
@@ -340,6 +345,25 @@ public class Parser {
         parseCharacter(')');
 
         return new NamedMessage("", args, null);
+    }
+
+    private Message parseSquareMessageSend() throws IOException {
+        int rr = peek();
+        int r2 = peek2();
+
+
+        List<Message> args = null;
+        if(rr == ']' && r2 == '(') {
+            read();
+            read();
+            args = parseExpressionChain();
+            parseCharacter(')');
+        } else {
+            args = parseExpressionChain();
+            parseCharacter(']');
+        }
+
+        return new NamedMessage("[]", args, null);
     }
 
     private boolean isLetter(int c) {

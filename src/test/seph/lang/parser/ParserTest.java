@@ -252,6 +252,16 @@ public class ParserTest {
         assertNull(result.next());
     }
 
+    @Test
+    public void simple_square_bracket_application_should_be_parsed_correctly() {
+        Message result = parse("[]()");
+        assertEquals("[]", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+    
+
+
     /*
   describe("square brackets",
     it("should be parsed correctly in regular message passing syntax",
