@@ -259,51 +259,68 @@ public class ParserTest {
         assertEquals(Arrays.<Message>asList(), result.arguments());
         assertNull(result.next());
     }
-    
+
+    @Test
+    public void simple_square_bracket_application_with_arguments_should_work() {
+        Message result = parse("[](foo)");
+        assertEquals("[]", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parse_square_brackets_correctly_as_part_of_longer_message_chain() {
+        Message result = parse("foo bar(q) [](r)");
+        assertEquals("[]", result.next().next().name());
+        assertEquals("r", result.next().next().arguments().get(0).name());
+        assertNull(result.next().next().next());
+    }
+
+    @Test
+    public void simple_square_bracket_without_parenthesis_should_be_parsed_correctly() {
+        Message result = parse("[]");
+        assertEquals("[]", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void simple_square_bracket_without_parenthesis_with_spaces_inbetween_should_be_parsed_correctly() {
+        Message result = parse("[   ]");
+        assertEquals("[]", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void simple_square_bracket_without_parenthesis_with_argument_should_be_parsed_correctly() {
+        Message result = parse("[foo]");
+        assertEquals("[]", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void simple_square_bracket_without_parenthesis_with_argument_and_spaces_should_be_parsed_correctly() {
+        Message result = parse("[   foo   ]");
+        assertEquals("[]", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+        assertNull(result.next());
+    }
+
+
+    @Test
+    public void simple_square_bracket_without_parenthesis_with_arguments_should_be_parsed_correctly() {
+        Message result = parse("[foo, bar]");
+        assertEquals("[]", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("bar", result.arguments().get(1).name());
+        assertNull(result.next());
+    }
 
 
     /*
   describe("square brackets",
-    it("should be parsed correctly in regular message passing syntax",
-      m = parse("[]()")
-      m should == "[]"
-    )
-
-    it("should be parsed correctly in regular message passing syntax with arguments",
-      m = parse("[](123)")
-      m should == "[](123)"
-    )
-
-    it("should be parsed correctly in regular message passing syntax with arguments and receiver",
-      m = parse("foo bar(1) [](123)")
-      m should == "foo bar(1) [](123)"
-    )
-
-    it("should be parsed correctly when empty",
-      m = parse("[]")
-      m should == "[]"
-    )
-
-    it("should be parsed correctly when empty with spaces",
-      m = parse("[   ]")
-      m should == "[]"
-    )
-
-    it("should be parsed correctly with argument",
-      m = parse("[1]")
-      m should == "[](1)"
-    )
-
-    it("should be parsed correctly with argument and spaces",
-      m = parse("[   1   ]")
-      m should == "[](1)"
-    )
-
-    it("should be parsed correctly with arguments",
-      m = parse("[1, 2]")
-      m should == "[](1, 2)"
-    )
-
     it("should be parsed correctly with terminators inside",
       m = parse("[1, \nfoo(24)]")
       m should == "[](1, foo(24))"

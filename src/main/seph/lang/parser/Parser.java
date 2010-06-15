@@ -166,7 +166,9 @@ public class Parser {
             case -1:
                 read();
                 return null;
+            case ',':
             case ')':
+            case ']':
                 return null;
             case '(':
                 read();
