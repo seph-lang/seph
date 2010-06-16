@@ -318,107 +318,154 @@ public class ParserTest {
         assertNull(result.next());
     }
 
+    @Test
+    public void simple_square_bracket_can_be_parsed_with_terminators_inside() {
+        Message result = parse("[bar, \nfoo(quux)]");
+        assertEquals("[]", result.name());
+        assertEquals("bar", result.arguments().get(0).name());
+        assertEquals("foo", result.arguments().get(1).name());
+        assertEquals("quux", result.arguments().get(1).arguments().get(0).name());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_square_brackets_correctly_after_an_identifier() {
+        Message result = parse("foo[bar, quux]");
+        assertEquals("foo", result.name());
+        assertEquals("[]", result.next().name());
+        assertEquals("bar", result.next().arguments().get(0).name());
+        assertEquals("quux", result.next().arguments().get(1).name());
+        assertNull(result.next().next());
+    }
+
+    @Test
+    public void parses_square_brackets_correctly_after_an_identifier_and_a_space() {
+        Message result = parse("foo [bar, quux]");
+        assertEquals("foo", result.name());
+        assertEquals("[]", result.next().name());
+        assertEquals("bar", result.next().arguments().get(0).name());
+        assertEquals("quux", result.next().arguments().get(1).name());
+        assertNull(result.next().next());
+    }
+
+    @Test
+    public void parses_square_brackets_correctly_inside_a_function_application() {
+        Message result = parse("foo([bar, quux])");
+        assertEquals("foo", result.name());
+        assertEquals("[]", result.arguments().get(0).name());
+        assertEquals("bar", result.arguments().get(0).arguments().get(0).name());
+        assertEquals("quux", result.arguments().get(0).arguments().get(1).name());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void simple_curly_bracket_application_should_be_parsed_correctly() {
+        Message result = parse("{}()");
+        assertEquals("{}", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void simple_curly_bracket_application_with_arguments_should_work() {
+        Message result = parse("{}(foo)");
+        assertEquals("{}", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parse_curly_brackets_correctly_as_part_of_longer_message_chain() {
+        Message result = parse("foo bar(q) {}(r)");
+        assertEquals("{}", result.next().next().name());
+        assertEquals("r", result.next().next().arguments().get(0).name());
+        assertNull(result.next().next().next());
+    }
+
+    @Test
+    public void simple_curly_bracket_without_parenthesis_should_be_parsed_correctly() {
+        Message result = parse("{}");
+        assertEquals("{}", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void simple_curly_bracket_without_parenthesis_with_spaces_inbetween_should_be_parsed_correctly() {
+        Message result = parse("{   }");
+        assertEquals("{}", result.name());
+        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void simple_curly_bracket_without_parenthesis_with_argument_should_be_parsed_correctly() {
+        Message result = parse("{foo}");
+        assertEquals("{}", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void simple_curly_bracket_without_parenthesis_with_argument_and_spaces_should_be_parsed_correctly() {
+        Message result = parse("{   foo   }");
+        assertEquals("{}", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+        assertNull(result.next());
+    }
+
+
+    @Test
+    public void simple_curly_bracket_without_parenthesis_with_arguments_should_be_parsed_correctly() {
+        Message result = parse("{foo, bar}");
+        assertEquals("{}", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("bar", result.arguments().get(1).name());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void simple_curly_bracket_can_be_parsed_with_terminators_inside() {
+        Message result = parse("{bar, \nfoo(quux)}");
+        assertEquals("{}", result.name());
+        assertEquals("bar", result.arguments().get(0).name());
+        assertEquals("foo", result.arguments().get(1).name());
+        assertEquals("quux", result.arguments().get(1).arguments().get(0).name());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_curly_brackets_correctly_after_an_identifier() {
+        Message result = parse("foo{bar, quux}");
+        assertEquals("foo", result.name());
+        assertEquals("{}", result.next().name());
+        assertEquals("bar", result.next().arguments().get(0).name());
+        assertEquals("quux", result.next().arguments().get(1).name());
+        assertNull(result.next().next());
+    }
+
+    @Test
+    public void parses_curly_brackets_correctly_after_an_identifier_and_a_space() {
+        Message result = parse("foo {bar, quux}");
+        assertEquals("foo", result.name());
+        assertEquals("{}", result.next().name());
+        assertEquals("bar", result.next().arguments().get(0).name());
+        assertEquals("quux", result.next().arguments().get(1).name());
+        assertNull(result.next().next());
+    }
+
+    @Test
+    public void parses_curly_brackets_correctly_inside_a_function_application() {
+        Message result = parse("foo({bar, quux})");
+        assertEquals("foo", result.name());
+        assertEquals("{}", result.arguments().get(0).name());
+        assertEquals("bar", result.arguments().get(0).arguments().get(0).name());
+        assertEquals("quux", result.arguments().get(0).arguments().get(1).name());
+        assertNull(result.next());
+    }
 
     /*
-  describe("square brackets",
-    it("should be parsed correctly with terminators inside",
-      m = parse("[1, \nfoo(24)]")
-      m should == "[](1, foo(24))"
-    )
-
-    it("should be parsed correctly directly after an identifier",
-      m = parse("foo[1, 2]")
-      m should == "foo [](1, 2)"
-    )
-
-    it("should be parsed correctly with a space directly after an identifier",
-      m = parse("foo [1, 2]")
-      m should == "foo [](1, 2)"
-    )
-
-    it("should be parsed correctly inside a function application",
-      m = parse("foo([1, 2])")
-      m should == "foo([](1, 2))"
-    )
-
-    it("should not parse correctly when mismatched",
-      fn(parse("foo([1, 2)]")) should signal(Condition Error Parser Syntax)
-      fn(parse("foo([1, 2)]")) should signalArgument(line: 1)
-      fn(parse("foo([1, 2)]")) should signalArgument(character: 8)
-      fn(parse("foo([1, 2)]")) should signalArgument(expected: "]")
-      fn(parse("foo([1, 2)]")) should signalArgument(got: "')'")
-    )
-
-    it("should not parse correctly when missing end",
-      fn(parse("[1, 2")) should signal(Condition Error Parser Syntax)
-      fn(parse("[1, 2")) should signalArgument(line: 1)
-      fn(parse("[1, 2")) should signalArgument(character: 5)
-      fn(parse("[1, 2")) should signalArgument(expected: "]")
-      fn(parse("[1, 2")) should signalArgument(got: "EOF")
-    )
-  )
-
   describe("curly brackets",
-    it("should be parsed correctly in regular message passing syntax",
-      m = parse("{}()")
-      m should == "{}"
-    )
-
-    it("should be parsed correctly in regular message passing syntax with arguments",
-      m = parse("{}(123)")
-      m should == "{}(123)"
-    )
-
-    it("should be parsed correctly in regular message passing syntax with arguments and receiver",
-      m = parse("foo bar(1) {}(123)")
-      m should == "foo bar(1) {}(123)"
-    )
-
-    it("should be parsed correctly when empty",
-      m = parse("{}")
-      m should == "{}"
-    )
-
-    it("should be parsed correctly when empty with spaces",
-      m = parse("{     }")
-      m should == "{}"
-    )
-
-    it("should be parsed correctly with argument",
-      m = parse("{1}")
-      m should == "{}(1)"
-    )
-
-    it("should be parsed correctly with argument and spaces",
-      m = parse("{ 1     }")
-      m should == "{}(1)"
-    )
-
-    it("should be parsed correctly with arguments",
-      m = parse("{1, 2}")
-      m should == "{}(1, 2)"
-    )
-
-    it("should be parsed correctly with terminators inside",
-      m = parse("{1, \nfoo(24)}")
-      m should == "{}(1, foo(24))"
-    )
-
-    it("should be parsed correctly directly after an identifier",
-      m = parse("foo{1, 2}")
-      m should == "foo {}(1, 2)"
-    )
-
-    it("should be parsed correctly with a space directly after an identifier",
-      m = parse("foo {1, 2}")
-      m should == "foo {}(1, 2)"
-    )
-
-    it("should be parsed correctly inside a function application",
-      m = parse("foo({1, 2})")
-      m should == "foo({}(1, 2))"
-    )
-
     it("should not parse correctly when mismatched",
       fn(parse("foo({1, 2)}")) should signal(Condition Error Parser Syntax)
       fn(parse("foo({1, 2)}")) should signalArgument(line: 1)
@@ -433,6 +480,23 @@ public class ParserTest {
       fn(parse("{1, 2")) should signalArgument(character: 5)
       fn(parse("{1, 2")) should signalArgument(expected: "}")
       fn(parse("{1, 2")) should signalArgument(got: "EOF")
+    )
+  )
+  describe("square brackets",
+    it("should not parse correctly when mismatched",
+      fn(parse("foo([1, 2)]")) should signal(Condition Error Parser Syntax)
+      fn(parse("foo([1, 2)]")) should signalArgument(line: 1)
+      fn(parse("foo([1, 2)]")) should signalArgument(character: 8)
+      fn(parse("foo([1, 2)]")) should signalArgument(expected: "]")
+      fn(parse("foo([1, 2)]")) should signalArgument(got: "')'")
+    )
+
+    it("should not parse correctly when missing end",
+      fn(parse("[1, 2")) should signal(Condition Error Parser Syntax)
+      fn(parse("[1, 2")) should signalArgument(line: 1)
+      fn(parse("[1, 2")) should signalArgument(character: 5)
+      fn(parse("[1, 2")) should signalArgument(expected: "]")
+      fn(parse("[1, 2")) should signalArgument(got: "EOF")
     )
   )
     */    
