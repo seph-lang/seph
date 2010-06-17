@@ -15,29 +15,38 @@ import static org.junit.Assert.*;
 import seph.lang.Runtime;
 import seph.lang.SephObject;
 import seph.lang.Text;
+import seph.lang.ControlFlow;
 import seph.lang.ast.Message;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class ParserTest {
-    private static Message parse(String input) {
+    private ControlFlow error;
+
+    private Message parse(String input) {
         return parse(input, "<eval>");
     }
 
-    private static Message parse(String input, String sourcename) {
+    private Message parse(String input, String sourcename) {
         try {
             return new Parser(new Runtime(), new StringReader(input), sourcename).parseFully().get(0);
         } catch(java.io.IOException e) {
             throw new RuntimeException(e);
+        } catch(ControlFlow cf) {
+            this.error = cf;
+            return null;
         }
     }
 
-    private static List<Message> parseAll(String input) {
+    private List<Message> parseAll(String input) {
         try {
             return new Parser(new Runtime(), new StringReader(input), "<eval>").parseFully();
         } catch(java.io.IOException e) {
             throw new RuntimeException(e);
+        } catch(ControlFlow cf) {
+            this.error = cf;
+            return null;
         }
     }
 
@@ -1006,48 +1015,256 @@ public class ParserTest {
         assertEquals(" bar", ((Text)result.arguments().get(2).literal()).text());
     }
 
+    @Test
+    public void handles_unicode_escape_in_text() {
+        Message result = parse("\"foo \\uABCD\"");
+        assertEquals("foo \uABCD", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_unicode_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\uABCD]");
+        assertEquals("foo \uABCD", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_octal_escape_in_text() {
+        Message result = parse("\"foo \\037\"");
+        assertEquals("foo \037", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_octal_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\037]");
+        assertEquals("foo \037", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_tab_escape_in_text() {
+        Message result = parse("\"foo \\t\"");
+        assertEquals("foo \t", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_tab_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\t]");
+        assertEquals("foo \t", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_newline_escape_in_text() {
+        Message result = parse("\"foo \\t\"");
+        assertEquals("foo \t", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_newline_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\n]");
+        assertEquals("foo \n", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_form_escape_in_text() {
+        Message result = parse("\"foo \\f\"");
+        assertEquals("foo \f", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_form_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\f]");
+        assertEquals("foo \f", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_carriage_return_escape_in_text() {
+        Message result = parse("\"foo \\r\"");
+        assertEquals("foo \r", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_carriage_return_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\r]");
+        assertEquals("foo \r", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_quote_escape_in_text() {
+        Message result = parse("\"foo \\\"\"");
+        assertEquals("foo \"", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_quote_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\\"]");
+        assertEquals("foo \"", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_square_bracket_escape_in_text() {
+        Message result = parse("\"foo \\]\"");
+        assertEquals("foo ]", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_square_bracket_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\]]");
+        assertEquals("foo ]", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_octothorpe_escape_in_text() {
+        Message result = parse("\"foo \\#\"");
+        assertEquals("foo #", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_octothorpe_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\#]");
+        assertEquals("foo #", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_e_escape_in_text() {
+        Message result = parse("\"foo \\e\"");
+        assertEquals("foo " + (char)27, ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_e_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\e]");
+        assertEquals("foo " + (char)27, ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_cr_escape_in_text() {
+        Message result = parse("\"foo \\\r\"");
+        assertEquals("foo ", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_cr_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\\r]");
+        assertEquals("foo ", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_cr_lf_escape_in_text() {
+        Message result = parse("\"foo \\\r\n\"");
+        assertEquals("foo ", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void handles_cr_lf_escape_in_text_with_alt_syntax() {
+        Message result = parse("#[foo \\\r\n]");
+        assertEquals("foo ", ((Text)result.literal()).text());
+    }
+
+    @Test
+    public void generates_an_error_when_mismatched_curly_brackets() {
+        parse("foo({1, 2)}", "blargus.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(1, f.line);
+        assertEquals(8, f.character);
+        assertEquals("}", f.expected);
+        assertEquals("')'", f.got);
+        assertEquals("blargus.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_error_when_finding_end_in_curly_brackets() {
+        parse("{1, 2", "blargus2.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(1, f.line);
+        assertEquals(5, f.character);
+        assertEquals("}", f.expected);
+        assertEquals("EOF", f.got);
+        assertEquals("blargus2.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_error_when_mismatched_square_brackets() {
+        parse("foo([1, 2)]", "blargus.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(1, f.line);
+        assertEquals(8, f.character);
+        assertEquals("]", f.expected);
+        assertEquals("')'", f.got);
+        assertEquals("blargus.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_error_when_finding_end_in_square_brackets() {
+        parse("[1, 2", "blargus2.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(1, f.line);
+        assertEquals(5, f.character);
+        assertEquals("]", f.expected);
+        assertEquals("EOF", f.got);
+        assertEquals("blargus2.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_error_when_a_comma_isnt_followed_by_anything() {
+        parse("\nfoo(abc,)", "blargus3.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(2, f.line);
+        assertEquals(8, f.character);
+        assertEquals("Expected expression following comma", f.message);
+        assertEquals("blargus3.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_error_when_a_freefloating_escape_is_found() {
+        parse("\n foo \\ blarg", "blargus4.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(2, f.line);
+        assertEquals(6, f.character);
+        assertEquals("Expected newline after free-floating escape character", f.message);
+        assertEquals("blargus4.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_error_when_a_text_isnt_closed() {
+        parse("bla \"foo", "blargus5.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(1, f.line);
+        assertEquals(7, f.character);
+        assertEquals("Expected end of text, found EOF", f.message);
+        assertEquals("blargus5.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_error_when_an_alt_text_isnt_closed() {
+        parse("bla #[foo", "blargus5.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(1, f.line);
+        assertEquals(8, f.character);
+        assertEquals("Expected end of text, found EOF", f.message);
+        assertEquals("blargus5.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_error_when_a_hexadecimal_text_escape_isnt_done() {
+        parse("\n\n\"foo\\uABC\t\"", "blargus6.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(3, f.line);
+        assertEquals(9, f.character);
+        assertEquals("Expected four hexadecimal characters in unicode escape - got: TAB", f.message);
+        assertEquals("blargus6.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_error_when_an_unknown_escape_is_used() {
+        parse("\n\n\"foo\\y\"", "blargus7.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(3, f.line);
+        assertEquals(5, f.character);
+        assertEquals("Undefined text escape character: 'y'", f.message);
+        assertEquals("blargus7.sp", f.source);
+    }
+
+
     // TODO:
-    // - parse: 
-    //   #/
-    //   #r
+    // - regular expressions (#/, #r)
     // - numbers
-    // - handle all string escapes
-    // - errors
-
-    /*
-  describe("curly brackets",
-    it("should not parse correctly when mismatched",
-      fn(parse("foo({1, 2)}")) should signal(Condition Error Parser Syntax)
-      fn(parse("foo({1, 2)}")) should signalArgument(line: 1)
-      fn(parse("foo({1, 2)}")) should signalArgument(character: 8)
-      fn(parse("foo({1, 2)}")) should signalArgument(expected: "}")
-      fn(parse("foo({1, 2)}")) should signalArgument(got: "')'")
-    )
-
-    it("should not parse correctly when missing end",
-      fn(parse("{1, 2")) should signal(Condition Error Parser Syntax)
-      fn(parse("{1, 2")) should signalArgument(line: 1)
-      fn(parse("{1, 2")) should signalArgument(character: 5)
-      fn(parse("{1, 2")) should signalArgument(expected: "}")
-      fn(parse("{1, 2")) should signalArgument(got: "EOF")
-    )
-  )
-  describe("square brackets",
-    it("should not parse correctly when mismatched",
-      fn(parse("foo([1, 2)]")) should signal(Condition Error Parser Syntax)
-      fn(parse("foo([1, 2)]")) should signalArgument(line: 1)
-      fn(parse("foo([1, 2)]")) should signalArgument(character: 8)
-      fn(parse("foo([1, 2)]")) should signalArgument(expected: "]")
-      fn(parse("foo([1, 2)]")) should signalArgument(got: "')'")
-    )
-
-    it("should not parse correctly when missing end",
-      fn(parse("[1, 2")) should signal(Condition Error Parser Syntax)
-      fn(parse("[1, 2")) should signalArgument(line: 1)
-      fn(parse("[1, 2")) should signalArgument(character: 5)
-      fn(parse("[1, 2")) should signalArgument(expected: "]")
-      fn(parse("[1, 2")) should signalArgument(got: "EOF")
-    )
-  )
-    */    
 }// ParserTest

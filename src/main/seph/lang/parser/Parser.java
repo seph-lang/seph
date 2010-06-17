@@ -11,6 +11,7 @@ import java.util.ListIterator;
 import java.util.ArrayList;
 
 import seph.lang.Runtime;
+import seph.lang.ControlFlow;
 import seph.lang.ast.Message;
 import seph.lang.ast.NamedMessage;
 import seph.lang.ast.LiteralMessage;
@@ -29,7 +30,7 @@ public class Parser {
         this.sourcename = sourcename;
     }
 
-    public List<Message> parseFully() throws IOException {
+    public List<Message> parseFully() throws IOException, ControlFlow {
         List<Message> all = parseExpressionChain();
 
         if(all.isEmpty()) {
@@ -39,7 +40,7 @@ public class Parser {
         return all;
     }
 
-    private Message parseExpressions() throws IOException {
+    private Message parseExpressions() throws IOException, ControlFlow {
         List<Message> result = new ArrayList<Message>();
         Message c;
         while((c = parseExpression()) != null) {
@@ -60,7 +61,7 @@ public class Parser {
         return ret;
     }
 
-    private List<Message> parseExpressionChain() throws IOException {
+    private List<Message> parseExpressionChain() throws IOException, ControlFlow {
         ArrayList<Message> chain = new ArrayList<Message>();
 
         Message curr = parseExpressions();
@@ -71,6 +72,9 @@ public class Parser {
             if(rr == ',') {
                 read();
                 curr = parseExpressions();
+                if(curr == null) {
+                    fail("Expected expression following comma");
+                }
             } else {
                 if(curr != null && curr.name().equals(".") && curr.next() == null) {
                     chain.remove(chain.size()-1);
@@ -159,7 +163,7 @@ public class Parser {
         return saved2;
     }
 
-    private Message parseExpression() throws IOException {
+    private Message parseExpression() throws IOException, ControlFlow {
         int rr;
         while(true) {
             rr = peek();
@@ -225,6 +229,8 @@ public class Parser {
                 if((rr = peek()) == '\n') {
                     read();
                     break;
+                } else {
+                    fail("Expected newline after free-floating escape character");
                 }
             case '+':
             case '-':
@@ -270,7 +276,7 @@ public class Parser {
         }
     }
 
-    private Message parseRegularMessageSend(int indicator) throws IOException {
+    private Message parseRegularMessageSend(int indicator) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         StringBuilder sb = new StringBuilder();
@@ -366,7 +372,7 @@ public class Parser {
         return new NamedMessage(".", null, null, sourcename, l, cc);
     }
 
-    private Message parseText(int indicator) throws IOException {
+    private Message parseText(int indicator) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         StringBuilder sb = new StringBuilder();
@@ -383,6 +389,9 @@ public class Parser {
 
         while(true) {
             switch(rr = peek()) {
+            case -1:
+                fail("Expected end of text, found EOF");
+                break;
             case '"':
                 read();
                 if(dquote) {
@@ -437,19 +446,83 @@ public class Parser {
         }
     }
 
-    private void parseDoubleQuoteEscape(StringBuilder sb) throws IOException {
+    private void parseDoubleQuoteEscape(StringBuilder sb) throws IOException, ControlFlow {
         sb.append('\\');
         int rr = peek();
         switch(rr) {
-        case '\n':
-        case '\\':
+        case 'u':
             read();
             sb.append((char)rr);
+            for(int i = 0; i < 4; i++) {
+                rr = peek();
+                if((rr >= '0' && rr <= '9') ||
+                   (rr >= 'a' && rr <= 'f') ||
+                   (rr >= 'A' && rr <= 'F')) {
+                    read();
+                    sb.append((char)rr);
+                } else {
+                    fail("Expected four hexadecimal characters in unicode escape - got: " + charDesc(rr));
+                }
+            }
+            break;
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+            read();
+            sb.append((char)rr);
+            if(rr <= '3') {
+                rr = peek();
+                if(rr >= '0' && rr <= '7') {
+                    read();
+                    sb.append((char)rr);
+                    rr = peek();
+                    if(rr >= '0' && rr <= '7') {
+                        read();
+                        sb.append((char)rr);
+                    }
+                }
+            } else {
+                rr = peek();
+                if(rr >= '0' && rr <= '7') {
+                    read();
+                    sb.append((char)rr);
+                }
+            }
+            break;
+        case 'b':
+        case 't':
+        case 'n':
+        case 'f':
+        case 'r':
+        case '"':
+        case ']':
+        case '\\':
+        case '\n':
+        case '#':
+        case 'e':
+            read();
+            sb.append((char)rr);
+            break;
+        case '\r':
+            read();
+            sb.append((char)rr);
+            if((rr = peek()) == '\n') {
+                read();
+                sb.append((char)rr);
+            }
+            break;
+        default:
+            fail("Undefined text escape character: " + charDesc(rr));
             break;
         }
     }
 
-    private Message parseOperatorChars(int indicator) throws IOException {
+    private Message parseOperatorChars(int indicator) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         StringBuilder sb = new StringBuilder();
@@ -500,12 +573,17 @@ public class Parser {
         }
     }
 
-    private void parseCharacter(int c) throws IOException {
+    private void parseCharacter(int c) throws IOException, ControlFlow {
         readWhiteSpace();
+        int l = lineNumber;
+        int cc = currentCharacter;
         int rr = read();
+        if(rr != c) {
+            fail(l, cc, "Expected: '" + (char)c + "' got: " + charDesc(rr), "" + (char)c, charDesc(rr));
+        }
     }
 
-    private Message parseEmptyMessageSend() throws IOException {
+    private Message parseEmptyMessageSend() throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         List<Message> args = parseExpressionChain();
@@ -514,7 +592,7 @@ public class Parser {
         return new NamedMessage("", args, null, sourcename,  l, cc);
     }
 
-    private Message parseSquareMessageSend() throws IOException {
+    private Message parseSquareMessageSend() throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         int rr = peek();
@@ -535,7 +613,7 @@ public class Parser {
         return new NamedMessage("[]", args, null, sourcename,  l, cc);
     }
 
-    private Message parseCurlyMessageSend() throws IOException {
+    private Message parseCurlyMessageSend() throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         int rr = peek();
@@ -555,7 +633,7 @@ public class Parser {
         return new NamedMessage("{}", args, null, sourcename,  l, cc);
     }
 
-    private Message parseSetMessageSend() throws IOException {
+    private Message parseSetMessageSend() throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         parseCharacter('{');
@@ -598,5 +676,42 @@ public class Parser {
                 (c>='\u0E50' && c<='\u0E59') ||
                 (c>='\u0ED0' && c<='\u0ED9') ||
                 (c>='\u1040' && c<='\u1049'));
+    }
+
+    public static class Failure {
+        public final int line;
+        public final int character;
+        public final String expected;
+        public final String got;
+        public final String source;
+        public final String message;
+        public Failure(int l, int c, String e, String g, String s, String m) {
+            this.line = l;
+            this.character = c;
+            this.expected = e;
+            this.got = g;
+            this.source = s;
+            this.message = m;
+        }
+    }
+
+    private void fail(int l, int c, String message, String expected, String got) throws ControlFlow {
+        throw new ControlFlow(new Failure(l, c, expected, got, sourcename, message));
+    }
+
+    private void fail(String message) throws ControlFlow {
+        fail(lineNumber, currentCharacter, message, null, null);
+    }
+
+    private static String charDesc(int c) {
+        if(c == -1) {
+            return "EOF";
+        } else if(c == 9) {
+            return "TAB";
+        } else if(c == 10 || c == 13) {
+            return "EOL";
+        } else {
+            return "'" + (char)c + "'";
+        }
     }
 }// Parser
