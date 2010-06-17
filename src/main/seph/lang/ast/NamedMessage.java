@@ -15,12 +15,19 @@ public final class NamedMessage implements Message, SephObject {
     private final List<Message> arguments;
     private final Message next;
 
+    private final String filename;
+    private final int line;
+    private final int position;
+
     final static List<Message> NO_ARGUMENTS = java.util.Arrays.<Message>asList();
     
-    public NamedMessage(String name, List<Message> arguments, Message next) {
+    public NamedMessage(String name, List<Message> arguments, Message next, String filename, int line, int position) {
         this.name = name;
         this.arguments = arguments == null ? NO_ARGUMENTS : arguments;
         this.next = next;
+        this.filename = filename;
+        this.line = line;
+        this.position = position;
     }
 
     public String name() {
@@ -36,7 +43,7 @@ public final class NamedMessage implements Message, SephObject {
     }
 
     public Message withNext(Message newNext) {
-        return new NamedMessage(this.name, this.arguments, newNext);
+        return new NamedMessage(this.name, this.arguments, newNext, filename, line, position);
     }
 
     public boolean isLiteral() {
@@ -45,5 +52,17 @@ public final class NamedMessage implements Message, SephObject {
 
     public SephObject literal() {
         return null;
+    }
+
+    public String filename() {
+        return this.filename;
+    }
+
+    public int line() {
+        return this.line;
+    }
+
+    public int position() {
+        return this.position;
     }
 }// NamedMessage

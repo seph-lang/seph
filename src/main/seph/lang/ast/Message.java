@@ -17,5 +17,8 @@ public interface Message {
     Message withNext(Message newNext);
     boolean isLiteral();
     SephObject literal();
+    String filename();
+    int line();
+    int position();
 }// Message
 

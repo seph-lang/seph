@@ -21,17 +21,19 @@ import seph.lang.ast.LiteralMessage;
 public class Parser {
     private final Runtime runtime;
     private final Reader reader;
+    private final String sourcename;
 
-    public Parser(Runtime runtime, Reader reader) {
+    public Parser(Runtime runtime, Reader reader, String sourcename) {
         this.runtime = runtime;
         this.reader = reader;
+        this.sourcename = sourcename;
     }
 
     public List<Message> parseFully() throws IOException {
         List<Message> all = parseExpressionChain();
 
         if(all.isEmpty()) {
-            all.add(new NamedMessage(".", null, null));
+            all.add(new NamedMessage(".", null, null, sourcename, 0, 0));
         }
 
         return all;
@@ -234,6 +236,8 @@ public class Parser {
     }
 
     private Message parseRegularMessageSend(int indicator) throws IOException {
+        int l = lineNumber; int cc = currentCharacter-1;
+
         StringBuilder sb = new StringBuilder();
         sb.append((char)indicator);
         int rr = -1;
@@ -248,7 +252,7 @@ public class Parser {
             args = parseExpressionChain();
             parseCharacter(')');
         }
-        return new NamedMessage(sb.toString(), args, null);
+        return new NamedMessage(sb.toString(), args, null, sourcename, l, cc);
     }
 
     private void parseComment() throws IOException {
@@ -259,6 +263,8 @@ public class Parser {
     }
 
     private Message parseTerminator(int indicator) throws IOException {
+        int l = lineNumber; int cc = currentCharacter-1;
+
         int rr;
         int rr2;
         if(indicator == '\r') {
@@ -281,10 +287,12 @@ public class Parser {
             }
         }
 
-        return new NamedMessage(".", null, null);
+        return new NamedMessage(".", null, null, sourcename, l, cc);
     }
 
     private Message parseText(int indicator) throws IOException {
+        int l = lineNumber; int cc = currentCharacter-1;
+
         StringBuilder sb = new StringBuilder();
 
         int rr;
@@ -293,7 +301,7 @@ public class Parser {
             switch(rr = peek()) {
             case '"':
                 read();
-                return new LiteralMessage(runtime.newText(sb.toString()), null);
+                return new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc);
             case '\\':
                 read();
                 parseDoubleQuoteEscape(sb);
@@ -319,6 +327,8 @@ public class Parser {
     }
 
     private Message parseOperatorChars(int indicator) throws IOException {
+        int l = lineNumber; int cc = currentCharacter-1;
+
         StringBuilder sb = new StringBuilder();
         sb.append((char)indicator);
         int rr;
@@ -334,9 +344,9 @@ public class Parser {
                     read();
                     List<Message> args = parseExpressionChain();
                     parseCharacter(')');
-                    return new NamedMessage(sb.toString(), args, null);
+                    return new NamedMessage(sb.toString(), args, null, sourcename,  l, cc);
                 } else {
-                    return new NamedMessage(sb.toString(), null, null);
+                    return new NamedMessage(sb.toString(), null, null, sourcename,  l, cc);
                 }
             }
         }
@@ -348,13 +358,17 @@ public class Parser {
     }
 
     private Message parseEmptyMessageSend() throws IOException {
+        int l = lineNumber; int cc = currentCharacter-1;
+
         List<Message> args = parseExpressionChain();
         parseCharacter(')');
 
-        return new NamedMessage("", args, null);
+        return new NamedMessage("", args, null, sourcename,  l, cc);
     }
 
     private Message parseSquareMessageSend() throws IOException {
+        int l = lineNumber; int cc = currentCharacter-1;
+
         int rr = peek();
         int r2 = peek2();
 
@@ -370,10 +384,12 @@ public class Parser {
             parseCharacter(']');
         }
 
-        return new NamedMessage("[]", args, null);
+        return new NamedMessage("[]", args, null, sourcename,  l, cc);
     }
 
     private Message parseCurlyMessageSend() throws IOException {
+        int l = lineNumber; int cc = currentCharacter-1;
+
         int rr = peek();
         int r2 = peek2();
 
@@ -388,15 +404,17 @@ public class Parser {
             parseCharacter('}');
         }
 
-        return new NamedMessage("{}", args, null);
+        return new NamedMessage("{}", args, null, sourcename,  l, cc);
     }
 
     private Message parseSetMessageSend() throws IOException {
+        int l = lineNumber; int cc = currentCharacter-1;
+
         parseCharacter('{');
         List<Message> args = parseExpressionChain();
         parseCharacter('}');
 
-        return new NamedMessage("set", args, null);
+        return new NamedMessage("set", args, null, sourcename,  l, cc);
     }
 
     private boolean isLetter(int c) {

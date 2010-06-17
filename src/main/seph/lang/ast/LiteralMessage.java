@@ -14,9 +14,16 @@ public final class LiteralMessage implements Message, SephObject {
     private final SephObject literal;
     private final Message next;
 
-    public LiteralMessage(SephObject literal, Message next) {
+    private final String filename;
+    private final int line;
+    private final int position;
+
+    public LiteralMessage(SephObject literal, Message next, String filename, int line, int position) {
         this.literal = literal;
         this.next = next;
+        this.filename = filename;
+        this.line = line;
+        this.position = position;
     }
 
     public String name() {
@@ -32,7 +39,7 @@ public final class LiteralMessage implements Message, SephObject {
     }
 
     public Message withNext(Message newNext) {
-        return new LiteralMessage(this.literal, newNext);
+        return new LiteralMessage(this.literal, newNext, filename, line, position);
     }
 
     public boolean isLiteral() {
@@ -41,5 +48,17 @@ public final class LiteralMessage implements Message, SephObject {
 
     public SephObject literal() {
         return this.literal;
+    }
+
+    public String filename() {
+        return this.filename;
+    }
+
+    public int line() {
+        return this.line;
+    }
+
+    public int position() {
+        return this.position;
     }
 }// LiteralMessage

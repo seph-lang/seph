@@ -22,8 +22,12 @@ import seph.lang.ast.Message;
  */
 public class ParserTest {
     private static Message parse(String input) {
+        return parse(input, "<eval>");
+    }
+
+    private static Message parse(String input, String sourcename) {
         try {
-            return new Parser(new Runtime(), new StringReader(input)).parseFully().get(0);
+            return new Parser(new Runtime(), new StringReader(input), sourcename).parseFully().get(0);
         } catch(java.io.IOException e) {
             throw new RuntimeException(e);
         }
@@ -31,7 +35,7 @@ public class ParserTest {
 
     private static List<Message> parseAll(String input) {
         try {
-            return new Parser(new Runtime(), new StringReader(input)).parseFully();
+            return new Parser(new Runtime(), new StringReader(input), "<eval>").parseFully();
         } catch(java.io.IOException e) {
             throw new RuntimeException(e);
         }
@@ -491,6 +495,83 @@ public class ParserTest {
         assertNull(result.next());
     }
 
+    @Test
+    public void parsing_an_empty_thing_generates_a_correct_filename_line_and_position() {
+        Message result = parse("", "foo.sp");
+        assertEquals("foo.sp", result.filename());
+        assertEquals(0, result.line());
+        assertEquals(0, result.position());
+    }
+
+    @Test
+    public void parsing_a_message_generates_a_correct_filename_line_and_position() {
+        Message result = parse("\n\n blarg", "fox.sp");
+        assertEquals("fox.sp", result.filename());
+        assertEquals(3, result.line());
+        assertEquals(1, result.position());
+    }
+
+    @Test
+    public void parsing_a_terminator_generates_a_correct_filename_line_and_position() {
+        Message result = parse("\nblarg\n\nbra", "fox.sp").next();
+        assertEquals("fox.sp", result.filename());
+        assertEquals(3, result.line());
+        assertEquals(-1, result.position());
+    }
+
+    @Test
+    public void parsing_a_text_generates_a_correct_filename_line_and_position() {
+        Message result = parse("\n\n\n   \"blargus\"", "box.sp");
+        assertEquals("box.sp", result.filename());
+        assertEquals(4, result.line());
+        assertEquals(3, result.position());
+    }
+
+    @Test
+    public void parsing_an_operator_generates_a_correct_filename_line_and_position() {
+        Message result = parse("\n\n\n   ::", "bax.sp");
+        assertEquals("bax.sp", result.filename());
+        assertEquals(4, result.line());
+        assertEquals(3, result.position());
+
+        result = parse("\n\n\n ::(bar)", "bax.sp");
+        assertEquals("bax.sp", result.filename());
+        assertEquals(4, result.line());
+        assertEquals(1, result.position());
+    }
+
+    @Test
+    public void parsing_an_empty_message_send_generates_a_correct_filename_line_and_position() {
+        Message result = parse("\n\n\n          (blarg)", "aaa.sp");
+        assertEquals("aaa.sp", result.filename());
+        assertEquals(4, result.line());
+        assertEquals(10, result.position());
+    }
+
+    @Test
+    public void parsing_a_square_message_generates_a_correct_filename_line_and_position() {
+        Message result = parse("\n\n    [foo]", "aab.sp");
+        assertEquals("aab.sp", result.filename());
+        assertEquals(3, result.line());
+        assertEquals(4, result.position());
+    }
+
+    @Test
+    public void parsing_a_curly_message_generates_a_correct_filename_line_and_position() {
+        Message result = parse("\n\n   {foo}", "aac.sp");
+        assertEquals("aac.sp", result.filename());
+        assertEquals(3, result.line());
+        assertEquals(3, result.position());
+    }
+
+    @Test
+    public void parsing_a_set_message_generates_a_correct_filename_line_and_position() {
+        Message result = parse("\n\n  #{foo}", "aad.sp");
+        assertEquals("aad.sp", result.filename());
+        assertEquals(3, result.line());
+        assertEquals(2, result.position());
+    }
+
 
     // TODO:
     // - parse: 
@@ -523,9 +604,7 @@ public class ParserTest {
     // - parse : followed by number
     // - handle string interpolation
     // - handle all string escapes
-    // - filenames and linenumbers
     // - errors
-
 
     /*
   describe("curly brackets",
