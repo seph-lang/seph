@@ -11,7 +11,6 @@ import java.util.ListIterator;
 import java.util.ArrayList;
 
 import seph.lang.Runtime;
-import seph.lang.Text;
 import seph.lang.ast.Message;
 import seph.lang.ast.NamedMessage;
 import seph.lang.ast.LiteralMessage;
@@ -28,14 +27,14 @@ public class Parser {
         this.reader = reader;
     }
 
-    public Message parseFully() throws IOException {
-        Message result = parseExpressions();
+    public List<Message> parseFully() throws IOException {
+        List<Message> all = parseExpressionChain();
 
-        if(result == null) {
-            result = new NamedMessage(".", null, null);
+        if(all.isEmpty()) {
+            all.add(new NamedMessage(".", null, null));
         }
 
-        return result;
+        return all;
     }
 
     private Message parseExpressions() throws IOException {
@@ -183,6 +182,8 @@ public class Parser {
             case '#':
                 read();
                 switch(peek()) {
+                case '{':
+                    return parseSetMessageSend();
                 case '!':
                     parseComment();
                     break;
@@ -292,7 +293,7 @@ public class Parser {
             switch(rr = peek()) {
             case '"':
                 read();
-                return new LiteralMessage(new Text(new StringUtils().replaceEscapes(sb.toString())), null);
+                return new LiteralMessage(runtime.newText(sb.toString()), null);
             case '\\':
                 read();
                 parseDoubleQuoteEscape(sb);
@@ -388,6 +389,14 @@ public class Parser {
         }
 
         return new NamedMessage("{}", args, null);
+    }
+
+    private Message parseSetMessageSend() throws IOException {
+        parseCharacter('{');
+        List<Message> args = parseExpressionChain();
+        parseCharacter('}');
+
+        return new NamedMessage("set", args, null);
     }
 
     private boolean isLetter(int c) {

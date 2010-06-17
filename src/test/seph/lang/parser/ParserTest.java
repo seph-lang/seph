@@ -6,6 +6,7 @@ package seph.lang.parser;
 import java.io.StringReader;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 import org.junit.Ignore;
@@ -21,6 +22,14 @@ import seph.lang.ast.Message;
  */
 public class ParserTest {
     private static Message parse(String input) {
+        try {
+            return new Parser(new Runtime(), new StringReader(input)).parseFully().get(0);
+        } catch(java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static List<Message> parseAll(String input) {
         try {
             return new Parser(new Runtime(), new StringReader(input)).parseFully();
         } catch(java.io.IOException e) {
@@ -463,6 +472,60 @@ public class ParserTest {
         assertEquals("quux", result.arguments().get(0).arguments().get(1).name());
         assertNull(result.next());
     }
+
+    @Test
+    public void parses_the_toplevel_with_commas() {
+        List<Message> result = parseAll("foo,\nbar: method");
+        assertEquals("foo", result.get(0).name());
+        assertNull(result.get(0).next());
+        assertEquals("bar:", result.get(1).name());
+        assertEquals("method", result.get(1).next().name());
+    }
+
+    @Test
+    public void parses_set_literal_as_a_set_literal() {
+        Message result = parse("#{bar, quux}");
+        assertEquals("set", result.name());
+        assertEquals("bar", result.arguments().get(0).name());
+        assertEquals("quux", result.arguments().get(1).name());
+        assertNull(result.next());
+    }
+
+
+    // TODO:
+    // - parse: 
+    //   #/
+    //   #[
+    //   #r
+    //   # operator chars
+    // - numbers
+    // - parse terminator
+    // - parse range
+    // - parse comment
+    // - parse +
+    // - parse -
+    // - parse *
+    // - parse %
+    // - parse <
+    // - parse >
+    // - parse !
+    // - parse ?
+    // - parse ~
+    // - parse &
+    // - parse |
+    // - parse ^
+    // - parse $
+    // - parse =
+    // - parse @
+    // - parse '
+    // - parse `
+    // - parse /
+    // - parse : followed by number
+    // - handle string interpolation
+    // - handle all string escapes
+    // - filenames and linenumbers
+    // - errors
+
 
     /*
   describe("curly brackets",

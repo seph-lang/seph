@@ -1,3 +1,5 @@
+Objects doesn't need access to a Runtime - that will be supplied in the call!
+
 
 class seph.lang.Runtime
 iface seph.lang.ast.Message
@@ -36,8 +38,6 @@ How to handle builtins:
   The name Text will be bound to textBase on the outside
 
 
-
-
 class Selector {
   public final String name;
   public final int id;
@@ -46,3 +46,10 @@ class Selector {
     this.id = id;
   }
 }
+
+
+
+Things to add for initial version:
+ - LinkedList implementation (Cons, Empty)
+ - PersistentMap
+ - Numbers

@@ -2,6 +2,10 @@ Plan to get somewhere working:
 ------------------------------
 
 - Implement a simple parser
+    - add tests and missing pieces compared to IokeParser
+    - add numbers
+    - add lists and maps
+
 - Implement a basic object model
 - Implement a simplistic interpreter for simple mimicking (or possibly a bytecode engine)
 - Implement a simple, functional operator shuffling
