@@ -572,35 +572,327 @@ public class ParserTest {
         assertEquals(2, result.position());
     }
 
+    @Test
+    public void parses_a_string_using_alternative_syntax_correctly() {
+        Message result = parse(" #[blargus hello \"something else\" - he]");
+
+        assertTrue("Result should be a literal message", result.isLiteral());
+        SephObject literal = result.literal();
+        assertEquals(Text.class, literal.getClass());
+        assertEquals("blargus hello \"something else\" - he", ((Text)literal).text());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_plus_operator() {
+        Message result = parse(" +-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("+-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_plus_operator_with_args() {
+        Message result = parse(" +-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("+-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_minus_operator() {
+        Message result = parse(" --+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("--+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_minus_operator_with_args() {
+        Message result = parse(" --+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("--+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_asterisk_operator() {
+        Message result = parse(" *-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("*-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_asterisk_operator_with_args() {
+        Message result = parse(" *-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("*-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_percent_operator() {
+        Message result = parse(" %-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("%-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_percent_operator_with_args() {
+        Message result = parse(" %-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("%-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_lt_operator() {
+        Message result = parse(" <-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("<-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_lt_operator_with_args() {
+        Message result = parse(" <-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("<-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_gt_operator() {
+        Message result = parse(" >-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals(">-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_gt_operator_with_args() {
+        Message result = parse(" >-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals(">-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_bang_operator() {
+        Message result = parse(" !-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("!-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_bang_operator_with_args() {
+        Message result = parse(" !-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("!-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_question_mark_operator() {
+        Message result = parse(" ?-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("?-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_question_mark_operator_with_args() {
+        Message result = parse(" ?-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("?-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_tilde_operator() {
+        Message result = parse(" ~-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("~-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_tilde_operator_with_args() {
+        Message result = parse(" ~-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("~-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_ampersand_operator() {
+        Message result = parse(" &-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("&-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_ampersand_operator_with_args() {
+        Message result = parse(" &-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("&-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_pipe_operator() {
+        Message result = parse(" |-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("|-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_pipe_operator_with_args() {
+        Message result = parse(" |-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("|-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_caret_operator() {
+        Message result = parse(" ^-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("^-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_caret_operator_with_args() {
+        Message result = parse(" ^-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("^-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_dollar_operator() {
+        Message result = parse(" $-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("$-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_dollar_operator_with_args() {
+        Message result = parse(" $-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("$-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_eq_operator() {
+        Message result = parse(" =-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("=-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_eq_operator_with_args() {
+        Message result = parse(" =-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("=-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_at_operator() {
+        Message result = parse(" @-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("@-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_at_operator_with_args() {
+        Message result = parse(" @-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("@-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_tick_operator() {
+        Message result = parse(" '-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("'-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_tick_operator_with_args() {
+        Message result = parse(" '-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("'-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_backtick_operator() {
+        Message result = parse(" `-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("`-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_backtick_operator_with_args() {
+        Message result = parse(" `-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("`-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parses_slash_operator() {
+        Message result = parse(" /-+*%<>!!?~&|^$$=@'`//:# foo");
+
+        assertEquals("/-+*%<>!!?~&|^$$=@'`//:#", result.name());
+    }
+
+    @Test
+    public void parses_slash_operator_with_args() {
+        Message result = parse(" /-+*%<>!!?~&|^$$=@'`//:#(foo)");
+
+        assertEquals("/-+*%<>!!?~&|^$$=@'`//:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void parse_simple_comment() {
+        Message result = parse("foo bar ; blarg foo \nsomething else");
+
+        assertEquals("foo", result.name());
+        assertEquals("bar", result.next().name());
+        assertEquals("something", result.next().next().next().name());
+        assertEquals("else", result.next().next().next().next().name());
+    }
+
+    @Test
+    public void parses_octothorpe_operator() {
+        Message result = parse(" #-+*%<>!!?~&|^$$=@'`:# foo");
+
+        assertEquals("#-+*%<>!!?~&|^$$=@'`:#", result.name());
+    }
+
+    @Test
+    public void parses_octothorpe_operator_with_args() {
+        Message result = parse(" #-+*%<>!!?~&|^$$=@'`:#(foo)");
+
+        assertEquals("#-+*%<>!!?~&|^$$=@'`:#", result.name());
+        assertEquals("foo", result.arguments().get(0).name());
+    }
+
+    @Test
+    public void separates_a_slash_from_octothorpe_operator() {
+        Message result = parse(" #-+*%<>!!?~&|^$$=@'`:#/ foo");
+
+        assertEquals("#-+*%<>!!?~&|^$$=@'`:#", result.name());
+    }
+
 
     // TODO:
     // - parse: 
     //   #/
-    //   #[
     //   #r
-    //   # operator chars
     // - numbers
     // - parse terminator
     // - parse range
-    // - parse comment
-    // - parse +
-    // - parse -
-    // - parse *
-    // - parse %
-    // - parse <
-    // - parse >
-    // - parse !
-    // - parse ?
-    // - parse ~
-    // - parse &
-    // - parse |
-    // - parse ^
-    // - parse $
-    // - parse =
-    // - parse @
-    // - parse '
-    // - parse `
-    // - parse /
     // - parse : followed by number
     // - handle string interpolation
     // - handle all string escapes

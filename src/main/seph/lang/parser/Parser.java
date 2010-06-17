@@ -189,11 +189,19 @@ public class Parser {
                 case '!':
                     parseComment();
                     break;
+                case '[':
+                    return parseText('[');
+                default:
+                    return parseOperatorChars('#');
                 }
                 break;
             case '"':
                 read();
                 return parseText('"');
+            case ';':
+                read();
+                parseComment();
+                break;
             case ' ':
             case '\u0009':
             case '\u000b':
@@ -211,6 +219,26 @@ public class Parser {
                     read();
                     break;
                 }
+            case '+':
+            case '-':
+            case '*':
+            case '%':
+            case '<':
+            case '>':
+            case '!':
+            case '?':
+            case '~':
+            case '&':
+            case '|':
+            case '^':
+            case '$':
+            case '=':
+            case '@':
+            case '\'':
+            case '`':
+            case '/':
+                read();
+                return parseOperatorChars(rr);
             case ':':
                 read();
                 if(isLetter(rr = peek())) {
@@ -294,6 +322,11 @@ public class Parser {
         int l = lineNumber; int cc = currentCharacter-1;
 
         StringBuilder sb = new StringBuilder();
+        boolean dquote = indicator == '"';
+
+        if(!dquote) {
+            read();
+        }
 
         int rr;
 
@@ -301,7 +334,20 @@ public class Parser {
             switch(rr = peek()) {
             case '"':
                 read();
-                return new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc);
+                if(dquote) {
+                    return new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc);
+                } else {
+                    sb.append((char)rr);
+                }
+                break;
+            case ']':
+                read();
+                if(!dquote) {
+                    return new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc);
+                } else {
+                    sb.append((char)rr);
+                }
+                break;
             case '\\':
                 read();
                 parseDoubleQuoteEscape(sb);
@@ -335,10 +381,35 @@ public class Parser {
         while(true) {
             rr = peek();
             switch(rr) {
+            case '+':
+            case '-':
+            case '*':
+            case '%':
+            case '<':
+            case '>':
+            case '!':
+            case '?':
+            case '~':
+            case '&':
+            case '|':
+            case '^':
+            case '$':
+            case '=':
+            case '@':
+            case '\'':
+            case '`':
             case ':':
+            case '#':
                 read();
                 sb.append((char)rr);
                 break;
+            case '/':
+                if(indicator != '#') {
+                    read();
+                    sb.append((char)rr);
+                    break;
+                }
+                // FALL THROUGH
             default:
                 if(rr == '(') {
                     read();
