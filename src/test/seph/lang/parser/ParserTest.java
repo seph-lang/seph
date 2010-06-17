@@ -573,6 +573,14 @@ public class ParserTest {
     }
 
     @Test
+    public void parsing_a_range_generates_a_correct_filename_line_and_position() {
+        Message result = parse("\n\n        ...", "aae.sp");
+        assertEquals("aae.sp", result.filename());
+        assertEquals(3, result.line());
+        assertEquals(8, result.position());
+    }
+
+    @Test
     public void parses_a_string_using_alternative_syntax_correctly() {
         Message result = parse(" #[blargus hello \"something else\" - he]");
 
@@ -885,16 +893,124 @@ public class ParserTest {
         assertEquals("#-+*%<>!!?~&|^$$=@'`:#", result.name());
     }
 
+    @Test
+    public void parses_a_separator() {
+        Message result = parse("foo \n.\n bar");
+
+        assertEquals(".", result.next().name());
+    }
+
+    @Test
+    public void parses_two_dots() {
+        Message result = parse("foo..bar");
+        assertEquals("..", result.next().name());
+    }
+
+    @Test
+    public void parses_three_dots() {
+        Message result = parse("foo...bar");
+        assertEquals("...", result.next().name());
+    }
+
+    @Test
+    public void parses_four_dots() {
+        Message result = parse("foo....bar");
+        assertEquals("....", result.next().name());
+    }
+
+    @Test
+    public void parses_five_dots() {
+        Message result = parse("foo.....bar");
+        assertEquals(".....", result.next().name());
+    }
+
+    @Test
+    public void parses_six_dots() {
+        Message result = parse("foo......bar");
+        assertEquals("......", result.next().name());
+    }
+
+    @Test
+    public void parses_seven_dots() {
+        Message result = parse("foo.......bar");
+        assertEquals(".......", result.next().name());
+    }
+
+    @Test
+    public void parses_eight_dots() {
+        Message result = parse("foo........bar");
+        assertEquals("........", result.next().name());
+    }
+
+    @Test
+    public void parses_nine_dots() {
+        Message result = parse("foo.........bar");
+        assertEquals(".........", result.next().name());
+    }
+
+    @Test
+    public void parses_ten_dots() {
+        Message result = parse("foo..........bar");
+        assertEquals("..........", result.next().name());
+    }
+
+    @Test
+    public void parses_eleven_dots() {
+        Message result = parse("foo...........bar");
+        assertEquals("...........", result.next().name());
+    }
+
+    @Test
+    public void parses_twelve_dots() {
+        Message result = parse("foo............bar");
+        assertEquals("............", result.next().name());
+    }
+
+    @Test
+    public void parses_thirteen_dots() {
+        Message result = parse("foo.............bar");
+        assertEquals(".............", result.next().name());
+    }
+
+    @Test
+    public void parses_a_symbol_with_only_numbers() {
+        Message result = parse(" :123666");
+        assertEquals(":123666", result.name());
+    }
+
+    @Test
+    public void handles_text_interpolation_in_double_quotes() {
+        Message result = parse("\"foo #{foo bar(\"blarg#{bux}\")} bar\"");
+
+        assertEquals("internal:concatenateText", result.name());
+        assertEquals("foo ", ((Text)result.arguments().get(0).literal()).text());
+        assertEquals("foo", result.arguments().get(1).name());
+        assertEquals("bar", result.arguments().get(1).next().name());
+        assertEquals("internal:concatenateText", result.arguments().get(1).next().arguments().get(0).name());
+        assertEquals("blarg", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(0).literal()).text());
+        assertEquals("bux", result.arguments().get(1).next().arguments().get(0).arguments().get(1).name());
+        assertEquals(" bar", ((Text)result.arguments().get(2).literal()).text());
+    }
+
+    @Test
+    public void handles_text_interpolation_in_alt_text_format() {
+        Message result = parse("#[foo #{foo bar(\"blarg#{bux}\")} bar]");
+
+        assertEquals("internal:concatenateText", result.name());
+        assertEquals("foo ", ((Text)result.arguments().get(0).literal()).text());
+        assertEquals("foo", result.arguments().get(1).name());
+        assertEquals("bar", result.arguments().get(1).next().name());
+        assertEquals("internal:concatenateText", result.arguments().get(1).next().arguments().get(0).name());
+        assertEquals("blarg", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(0).literal()).text());
+        assertEquals("bux", result.arguments().get(1).next().arguments().get(0).arguments().get(1).name());
+        assertEquals(" bar", ((Text)result.arguments().get(2).literal()).text());
+    }
 
     // TODO:
     // - parse: 
     //   #/
     //   #r
     // - numbers
-    // - parse terminator
-    // - parse range
-    // - parse : followed by number
-    // - handle string interpolation
     // - handle all string escapes
     // - errors
 

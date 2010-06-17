@@ -198,6 +198,13 @@ public class Parser {
             case '"':
                 read();
                 return parseText('"');
+            case '.':
+                read();
+                if((rr = peek()) == '.') {
+                    return parseRange();
+                } else {
+                    return parseTerminator('.');
+                }
             case ';':
                 read();
                 parseComment();
@@ -241,7 +248,7 @@ public class Parser {
                 return parseOperatorChars(rr);
             case ':':
                 read();
-                if(isLetter(rr = peek())) {
+                if(isLetter(rr = peek()) || isIDDigit(rr)) {
                     return parseRegularMessageSend(':');
                 } else {
                     return parseOperatorChars(':');
@@ -290,6 +297,47 @@ public class Parser {
         }
     }
 
+    private final static String[] RANGES = {
+        "",
+        ".",
+        "..",
+        "...",
+        "....",
+        ".....",
+        "......",
+        ".......",
+        "........",
+        ".........",
+        "..........",
+        "...........",
+        "............"
+    };
+
+
+    private Message parseRange() throws IOException {
+        int l = lineNumber; int cc = currentCharacter-1;
+
+        int count = 2;
+        read();
+        int rr;
+        while((rr = peek()) == '.') {
+            count++;
+            read();
+        }
+        String result = null;
+        if(count < 13) {
+            result = RANGES[count];
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for(int i = 0; i<count; i++) {
+                sb.append('.');
+            }
+            result = sb.toString();
+        }
+
+        return new NamedMessage(result, null, null, sourcename, l, cc);
+    }
+
     private Message parseTerminator(int indicator) throws IOException {
         int l = lineNumber; int cc = currentCharacter-1;
 
@@ -330,12 +378,21 @@ public class Parser {
 
         int rr;
 
+        String name = null;
+        List<Message> args = new ArrayList<Message>();
+
         while(true) {
             switch(rr = peek()) {
             case '"':
                 read();
                 if(dquote) {
-                    return new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc);
+                    if(name == null) {
+                        return new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc);
+                    }
+                    if(sb.length() > 0) {
+                        args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
+                    }
+                    return new NamedMessage(name, args, null, sourcename, l, cc);
                 } else {
                     sb.append((char)rr);
                 }
@@ -343,9 +400,29 @@ public class Parser {
             case ']':
                 read();
                 if(!dquote) {
-                    return new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc);
+                    if(name == null) {
+                        return new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc);
+                    }
+                    if(sb.length() > 0) {
+                        args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
+                    }
+                    return new NamedMessage(name, args, null, sourcename, l, cc);
                 } else {
                     sb.append((char)rr);
+                }
+                break;
+            case '#':
+                read();
+                if((rr = peek()) == '{') {
+                    read();
+                    args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
+                    sb = new StringBuilder();
+                    name = "internal:concatenateText";
+                    args.add(parseExpressions());
+                    readWhiteSpace();
+                    parseCharacter('}');
+                } else {
+                    sb.append((char)'#');
                 }
                 break;
             case '\\':
