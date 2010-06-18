@@ -146,11 +146,7 @@ public class DComplex extends Complex implements Externalizable
 				double y_re, double y_im)
   {
     double h;
-    /* #ifdef JAVA5 */
-    // h = Math.hypot(x_re, x_im);
-    /* #else */
-    h = DComplex.hypot(x_re, x_im);
-    /* #endif */
+    h = Math.hypot(x_re, x_im);
     double logr = Math.log (h);
     double t = Math.atan2 (x_im, x_re);
     double r = Math.exp (logr * y_re - y_im * t);
@@ -161,11 +157,7 @@ public class DComplex extends Complex implements Externalizable
   public static Complex log (double x_re, double x_im)
   {
     double h;
-    /* #ifdef JAVA5 */
-    // h = Math.hypot(x_re, x_im);
-    /* #else */
-    h = DComplex.hypot(x_re, x_im);
-    /* #endif */
+    h = Math.hypot(x_re, x_im);
     return make(Math.log(h), Math.atan2(x_im, x_re));
   }
 
@@ -221,11 +213,7 @@ public class DComplex extends Complex implements Externalizable
 
   public static Complex sqrt (double x_re, double x_im)
   {
-    /* #ifdef JAVA5 */
-    // double r = Math.hypot(x_re, x_im);
-    /* #else */
-    double r = DComplex.hypot(x_re, x_im);
-    /* #endif */
+    double r = Math.hypot(x_re, x_im);
     double nr, ni;
     if (r == 0.0)
       nr = ni = r;

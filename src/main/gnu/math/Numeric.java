@@ -3,7 +3,7 @@
 
 package gnu.math;
 
-public abstract class Numeric extends java.lang.Number
+public abstract class Numeric extends java.lang.Number implements seph.lang.SephObject
 {
   public float floatValue () { return (float) doubleValue(); }
   public int intValue() { return (int) longValue(); }

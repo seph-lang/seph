@@ -16,6 +16,9 @@ import seph.lang.ast.Message;
 import seph.lang.ast.NamedMessage;
 import seph.lang.ast.LiteralMessage;
 
+import gnu.math.IntNum;
+import gnu.math.DFloNum;
+
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
@@ -236,8 +239,24 @@ public class Parser {
                 } else {
                     fail("Expected newline after free-floating escape character");
                 }
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                read();
+                return parseNumber(rr);
             case '+':
             case '-':
+                if(isDigit(peek2())) {
+                    read();
+                    return parseNumber(rr);
+                }
             case '*':
             case '%':
             case '<':
@@ -858,6 +877,213 @@ public class Parser {
         return new NamedMessage("set", args, null, sourcename,  l, cc);
     }
 
+    private int readNumbersInto(StringBuilder sb) throws IOException {
+        int rr;
+        while(((rr = peek()) >= '0' && rr <= '9' ) || rr == '_') {
+            read();
+            if(rr != '_') {
+                sb.append((char)rr);
+            }
+        }
+        return rr;
+    }
+
+    private boolean parseBaseTen(StringBuilder sb, int indicator) throws IOException, ControlFlow {
+        boolean decimal = false;
+        int rr = -1;
+        if(indicator == '0') {
+            rr = peek();
+            int r2 = peek2();
+            if(rr == '.' && (r2 >= '0' && r2 <= '9')) {
+                decimal = true;
+                sb.append((char)rr);
+                sb.append((char)r2);
+                read(); read();
+                rr = readNumbersInto(sb);
+
+                if(rr == 'e' || rr == 'E') {
+                    read();
+                    sb.append((char)rr);
+                    if((rr = peek()) == '-' || rr == '+') {
+                        read();
+                        sb.append((char)rr);
+                        rr = peek();
+                    }
+
+                    if(rr >= '0' && rr <= '9') {
+                        read();
+                        sb.append((char)rr);
+                        rr = readNumbersInto(sb);
+                    } else {
+                        fail("Expected at least one decimal character following exponent specifier in number literal - got: " + charDesc(rr));
+                    }
+                }
+            }
+        } else {
+            rr = readNumbersInto(sb);
+            int r2 = peek2();
+            if(rr == '.' && r2 >= '0' && r2 <= '9') {
+                decimal = true;
+                sb.append((char)rr);
+                sb.append((char)r2);
+                read(); read();
+
+                rr = readNumbersInto(sb);
+
+                if(rr == 'e' || rr == 'E') {
+                    read();
+                    sb.append((char)rr);
+                    if((rr = peek()) == '-' || rr == '+') {
+                        read();
+                        sb.append((char)rr);
+                        rr = peek();
+                    }
+
+                    if(rr >= '0' && rr <= '9') {
+                        read();
+                        sb.append((char)rr);
+                        rr = readNumbersInto(sb);
+                    } else {
+                        fail("Expected at least one decimal character following exponent specifier in number literal - got: " + charDesc(rr));
+                    }
+                }
+            } else if(rr == 'e' || rr == 'E') {
+                decimal = true;
+                read();
+                sb.append((char)rr);
+                if((rr = peek()) == '-' || rr == '+') {
+                    read();
+                    sb.append((char)rr);
+                    rr = peek();
+                }
+
+                if(rr >= '0' && rr <= '9') {
+                    read();
+                    sb.append((char)rr);
+                    rr = readNumbersInto(sb);
+                } else {
+                    fail("Expected at least one decimal character following exponent specifier in number literal - got: " + charDesc(rr));
+                }
+            }
+        }
+
+        return decimal;
+    }
+
+    private final static boolean[][] BASES = new boolean[37][128];
+    static {
+        for(int i=0;i<=10;i++) {
+            for(int j=0;j<i;j++) {
+                BASES[i]['0' + j] = true;
+            }
+            BASES[i]['_'] = true;
+        }
+        for(int i=11;i<=36;i++) {
+            for(int j=0;j<10;j++) {
+                BASES[i]['0' + j] = true;
+            }
+            for(int j=10;j<i;j++) {
+                BASES[i]['a' + (i-(j+1))] = true;
+                BASES[i]['A' + (i-(j+1))] = true;
+            }
+            BASES[i]['_'] = true;
+        }
+    }
+
+    private void parseOtherBase(StringBuilder sb, int radix, String name) throws IOException, ControlFlow {
+        int rr;
+        boolean[] base = BASES[radix];
+        if((rr = peek()) > -1 && rr < 128 && base[rr]) {
+            read();
+            if(rr != '_') {
+                sb.append((char)rr);
+            }
+
+            while((rr = peek()) > -1 && rr < 128 && base[rr]) {
+                read();
+                if(rr != '_') {
+                    sb.append((char)rr);
+                }
+            }
+        } else {
+            fail("Expected at least one " + name + " character in " + name + " number literal - got: " + charDesc(rr));
+        }
+    }
+
+    private Message parseNumber(int indicator) throws IOException, ControlFlow {
+        int l = lineNumber; int cc = currentCharacter-1;
+        boolean decimal = false;
+        StringBuilder sb = new StringBuilder();
+
+        if(indicator == '-') {
+            sb.append((char)indicator);
+            indicator = read();
+        } else if(indicator == '+') {
+            indicator = read();
+        }
+
+        int rr = -1;
+        int radix = 10;
+        String name = "decimal";
+
+        if((rr = peek()) == '#') {
+            radix = ((char)indicator) - '0';
+            read();
+            switch(radix) {
+            case 2:
+                name = "binary";
+                break;
+            case 8:
+                name = "octal";
+                break;
+            default:
+                name = "base " + radix;
+                break;
+            }
+        } else if(isDigit(indicator) && isDigit(rr) && peek2() == '#') {
+            radix = Integer.valueOf(String.valueOf(new char[]{(char)indicator, (char)rr}));
+            read(); read();
+            switch(radix) {
+            case 2:
+                name = "binary";
+                break;
+            case 8:
+                name = "octal";
+                break;
+            case 16:
+                name = "hexadecimal";
+                break;
+            default:
+                name = "base " + radix;
+                break;
+            }
+        } else if(indicator == '0' && (rr == 'x' || rr == 'X')) {
+            radix = 16;
+            read();
+            name = "hexadecimal";
+        } else {
+            sb.append((char)indicator);
+        }
+
+        if(radix > 36) {
+            fail("Expected radix between 0 and 36 - got: " + radix);
+        }
+
+        if(radix == 10) {
+            decimal = parseBaseTen(sb, indicator);
+        } else {
+            decimal = false;
+            parseOtherBase(sb, radix, name);
+        }
+
+        try {
+            return new LiteralMessage(decimal ? new DFloNum(sb.toString()) : IntNum.valueOf(sb.toString(), radix), null, sourcename, l, cc);
+        } catch(NumberFormatException e) {
+            fail(e.getMessage());
+            return null;
+        }
+    }
+
     private boolean isLetter(int c) {
         return ((c>='A' && c<='Z') ||
                 c=='_' ||
@@ -891,6 +1117,10 @@ public class Parser {
                 (c>='\u0E50' && c<='\u0E59') ||
                 (c>='\u0ED0' && c<='\u0ED9') ||
                 (c>='\u1040' && c<='\u1049'));
+    }
+
+    private boolean isDigit(int c) {
+        return c>='0' && c<='9';
     }
 
     public static class Failure {

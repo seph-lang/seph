@@ -19,6 +19,9 @@ import seph.lang.Regexp;
 import seph.lang.ControlFlow;
 import seph.lang.ast.Message;
 
+import gnu.math.IntNum;
+import gnu.math.DFloNum;
+
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
@@ -1881,6 +1884,225 @@ public class ParserTest {
         assertEquals(" bar", ((Text)result.arguments().get(2).literal()).text());
     }
 
-    // TODO:
-    // - numbers
+    @Test
+    public void parses_a_simple_number() {
+        for(int i = 0; i < 21; i++) {
+            assertEquals(IntNum.make(i), parse("" + i).literal());
+        }
+        assertEquals(IntNum.make(12345678901L), parse("12345678901").literal());
+    }
+
+    @Test
+    public void parses_a_simple_number_preceded_by_a_plus() {
+        assertEquals(IntNum.make(42), parse("+42").literal());
+    }
+
+    @Test
+    public void parses_a_simple_number_preceded_by_a_minus() {
+        assertEquals(IntNum.make(-43), parse("-43").literal());
+    }
+
+    @Test
+    public void parses_a_really_big_number() {
+        assertEquals(IntNum.valueOf("13423536513485673467456745687234523787568658476842513423534532452345"), parse("13423536513485673467456745687234523787568658476842513423534532452345").literal());
+    }
+
+    @Test
+    public void parses_a_decimal_number() {
+        assertEquals(DFloNum.make(0.123456789111), parse("0.123456789111").literal());
+        assertEquals(DFloNum.make(42555.123456789111), parse("42555.123456789111").literal());
+    }
+
+    @Test
+    public void parses_a_decimal_number_with_a_plus_in_front_of_it() {
+        assertEquals(DFloNum.make(0.123456789111), parse("+0.123456789111").literal());
+    }
+
+    @Test
+    public void parses_a_decimal_number_with_a_minus_in_front_of_it() {
+        assertEquals(DFloNum.make(-0.123456789111), parse("-0.123456789111").literal());
+    }
+
+    @Test
+    public void parses_a_decimal_number_followed_by_an_exponent() {
+        assertEquals(DFloNum.make(0.123456789111E3), parse("0.123456789111E3").literal());
+        assertEquals(DFloNum.make(42555.123456789111E4), parse("42555.123456789111E4").literal());
+
+        assertEquals(DFloNum.make(0.123456789111E+3), parse("0.123456789111E+3").literal());
+        assertEquals(DFloNum.make(42555.123456789111E+4), parse("42555.123456789111E+4").literal());
+
+        assertEquals(DFloNum.make(0.123456789111E-3), parse("0.123456789111E-3").literal());
+        assertEquals(DFloNum.make(42555.123456789111E-4), parse("42555.123456789111E-4").literal());
+
+        assertEquals(DFloNum.make(0.123456789111e3), parse("0.123456789111e3").literal());
+        assertEquals(DFloNum.make(42555.123456789111e4), parse("42555.123456789111e4").literal());
+
+        assertEquals(DFloNum.make(0.123456789111e+3), parse("0.123456789111e+3").literal());
+        assertEquals(DFloNum.make(42555.123456789111e+4), parse("42555.123456789111e+4").literal());
+
+        assertEquals(DFloNum.make(0.123456789111e-3), parse("0.123456789111e-3").literal());
+        assertEquals(DFloNum.make(42555.123456789111e-4), parse("42555.123456789111e-4").literal());
+
+        assertEquals(DFloNum.make(42e4), parse("42e4").literal());
+        assertEquals(DFloNum.make(42E4), parse("42E4").literal());
+        assertEquals(DFloNum.make(42e-4), parse("42e-4").literal());
+        assertEquals(DFloNum.make(42E-4), parse("42E-4").literal());
+        assertEquals(DFloNum.make(42e+4), parse("42e+4").literal());
+        assertEquals(DFloNum.make(42E+4), parse("42E+4").literal());
+    }
+
+    @Test
+    public void parses_a_number_with_underscores_in_it() {
+        assertEquals(IntNum.make(14400044), parse("1_44___00_0_44").literal());
+
+        assertEquals("_1_44___00_0_44", parse("_1_44___00_0_44").name());
+    }
+
+    @Test
+    public void parses_a_decimal_number_with_underscores_in_it() {
+        assertEquals(DFloNum.make(42555.123456789111e-12), parse("4_25_5_5.1_2_3456789_111e-1_2").literal());
+
+        assertEquals("_4_25_5_5", parse("_4_25_5_5.1_2_3456789_111e-1_2").name());
+    }
+
+    @Test
+    public void parses_a_hexadecimal_number_correctly() {
+        assertEquals(IntNum.valueOf("ABC234234DEFabcdef0314256789", 16), parse("0xABC234234DEFabcdef0314256789").literal());
+        assertEquals(IntNum.valueOf("ABC234234DEFabcdef0314256789", 16), parse("0XABC234234DEFabcdef0314256789").literal());
+        assertEquals(IntNum.valueOf("ABC234234DEFabcdef0314256789", 16), parse("16#ABC234234DEFabcdef0314256789").literal());
+    }
+
+    @Test
+    public void parses_a_hexadecimal_number_correctly_with_underscores_in_it() {
+        assertEquals(IntNum.valueOf("ABC234234DEFabcdef0314256789", 16), parse("0x_A__BC234234DEFabcdef0___3142567______89").literal());
+        assertEquals(IntNum.valueOf("ABC234234DEFabcdef0314256789", 16), parse("0XABC2342_34DEFabcdef03142___56789").literal());
+        assertEquals(IntNum.valueOf("ABC234234DEFabcdef0314256789", 16), parse("16#ABC_234234DEFabcdef031425____6789").literal());
+    }
+
+    @Test
+    public void parses_numbers_in_other_bases_correctly() {
+        assertEquals(IntNum.valueOf("000101001010101010001111", 2), parse("2#000101001010101010001111").literal());
+        assertEquals(IntNum.valueOf("hellomyFRIENDFROMNOwhereThiszzzIsWeird", 36), parse("36#hellomyFRIENDFROMNOwhereThiszzzIsWeird").literal());
+    }
+
+    @Test
+    public void parses_numbers_in_other_bases_correctly_with_underscores_in_it() {
+        assertEquals(IntNum.valueOf("000101001010101010001111", 2), parse("2#00010100___10101010_1000111_1").literal());
+        assertEquals(IntNum.valueOf("hellomyFRIENDFROMNOwhereThiszzzIsWeird", 36), parse("36#h_ellomy_FRIEND_FROMNO_wher____eThiszzzIsWeird").literal());
+    }
+
+    @Test
+    public void generates_a_good_error_when_no_digits_are_found_for_something_with_radix() {
+        parse("3#blarg", "bloho.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals("Expected at least one base 3 character in base 3 number literal - got: 'b'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(1, f.character);
+        assertEquals("bloho.sp", f.source);
+
+        parse("16#ylarg", "bloho2.sp");
+        f = (Parser.Failure)error.getValue();
+        assertEquals("Expected at least one hexadecimal character in hexadecimal number literal - got: 'y'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(2, f.character);
+        assertEquals("bloho2.sp", f.source);
+
+        parse("2#2", "bloho3.sp");
+        f = (Parser.Failure)error.getValue();
+        assertEquals("Expected at least one binary character in binary number literal - got: '2'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(1, f.character);
+        assertEquals("bloho3.sp", f.source);
+
+        parse("8#9", "bloho4.sp");
+        f = (Parser.Failure)error.getValue();
+        assertEquals("Expected at least one octal character in octal number literal - got: '9'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(1, f.character);
+        assertEquals("bloho4.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_appropriate_error_when_no_digits_are_found_after_exponent_specified() {
+        parse("0.15EBlarg", "bloho10.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue(); error = null;
+        assertEquals("Expected at least one decimal character following exponent specifier in number literal - got: 'B'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(4, f.character);
+        assertEquals("bloho10.sp", f.source);
+
+        parse("0.15E+Blarg", "bloho11.sp");
+        f = (Parser.Failure)error.getValue(); error = null;
+        assertEquals("Expected at least one decimal character following exponent specifier in number literal - got: 'B'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(5, f.character);
+        assertEquals("bloho11.sp", f.source);
+
+        parse("0.15E-Blarg", "bloho12.sp");
+        f = (Parser.Failure)error.getValue(); error = null;
+        assertEquals("Expected at least one decimal character following exponent specifier in number literal - got: 'B'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(5, f.character);
+        assertEquals("bloho12.sp", f.source);
+
+        parse("42.15EBlarg", "bloho13.sp");
+        f = (Parser.Failure)error.getValue(); error = null;
+        assertEquals("Expected at least one decimal character following exponent specifier in number literal - got: 'B'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(5, f.character);
+        assertEquals("bloho13.sp", f.source);
+
+        parse("42.15E+Blarg", "bloho14.sp");
+        f = (Parser.Failure)error.getValue(); error = null;
+        assertEquals("Expected at least one decimal character following exponent specifier in number literal - got: 'B'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(6, f.character);
+        assertEquals("bloho14.sp", f.source);
+
+        parse("42.15E-Blarg", "bloho15.sp");
+        f = (Parser.Failure)error.getValue(); error = null;
+        assertEquals("Expected at least one decimal character following exponent specifier in number literal - got: 'B'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(6, f.character);
+        assertEquals("bloho15.sp", f.source);
+
+        parse("42EBlarg", "bloho16.sp");
+        f = (Parser.Failure)error.getValue(); error = null;
+        assertEquals("Expected at least one decimal character following exponent specifier in number literal - got: 'B'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(2, f.character);
+        assertEquals("bloho16.sp", f.source);
+
+        parse("42E+Blarg", "bloho17.sp");
+        f = (Parser.Failure)error.getValue(); error = null;
+        assertEquals("Expected at least one decimal character following exponent specifier in number literal - got: 'B'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(3, f.character);
+        assertEquals("bloho17.sp", f.source);
+
+        parse("42E-Blarg", "bloho18.sp");
+        f = (Parser.Failure)error.getValue(); error = null;
+        assertEquals("Expected at least one decimal character following exponent specifier in number literal - got: 'B'", f.message);
+        assertEquals(1, f.line);
+        assertEquals(3, f.character);
+        assertEquals("bloho18.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_appropriate_error_when_a_too_large_radix_is_specified() {
+        parse("37#15", "bloho42.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals("Expected radix between 0 and 36 - got: 37", f.message);
+        assertEquals(1, f.line);
+        assertEquals(2, f.character);
+        assertEquals("bloho42.sp", f.source);
+    }
+
+    @Test
+    public void parsing_a_number_generates_a_correct_filename_line_and_position() {
+        Message result = parse("\n\n 32", "numx.sp");
+        assertEquals("numx.sp", result.filename());
+        assertEquals(3, result.line());
+        assertEquals(1, result.position());
+    }
 }// ParserTest

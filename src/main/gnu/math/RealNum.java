@@ -5,9 +5,7 @@ package gnu.math;
 import java.math.BigDecimal;
 
 public abstract class RealNum extends Complex
-  /* #ifdef JAVA2 */
   implements Comparable
-  /* #endif */
 {
   public final RealNum re() { return this; }
   public final RealNum im() { return IntNum.zero(); }

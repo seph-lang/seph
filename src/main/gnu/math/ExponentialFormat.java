@@ -122,13 +122,7 @@ public class ExponentialFormat extends java.text.Format
         if (negative)
           digStart++;
         int dot = digStart + 1;
-        /* #ifdef JAVA2 */
         sbuf.deleteCharAt(dot);
-        /* #else */
-        // String afterDot = sbuf.toString().substring(dot+1);
-        // sbuf.setLength(dot);
-        // sbuf.append(afterDot);
-        /* #endif */
         digits = sbuf.length() - digStart;
         // Remove trailing '0' added by RealNum.toStringScientific.
         if (digits > 1 && sbuf.charAt(digStart+digits-1) == '0')
