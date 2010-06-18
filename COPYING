@@ -1,3 +1,6 @@
 Different parts of Seph is covered by different licences and copyrights:
 
 The package seph.lang is covered by the file LICENSE.
+The package gnu.math is covered by the file LICENSE.kawa.
+The package seph.lang.persistent is covered by the file LICENSE.clojure.
+The package org.jregex and subpackages contains their own licensing information in the source files.
