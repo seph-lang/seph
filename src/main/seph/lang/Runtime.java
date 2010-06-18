@@ -12,4 +12,8 @@ public class Runtime {
     public Text newText(String stringBeforeEscapeMangling) {
         return new Text(new StringUtils().replaceEscapes(stringBeforeEscapeMangling.toString()));
     }
+
+    public Regexp newRegexp(String pattern, String flags) {
+        return Regexp.create(new StringUtils().replaceRegexpEscapes(pattern), flags);
+    }
 }// Runtime

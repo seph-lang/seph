@@ -15,6 +15,7 @@ import static org.junit.Assert.*;
 import seph.lang.Runtime;
 import seph.lang.SephObject;
 import seph.lang.Text;
+import seph.lang.Regexp;
 import seph.lang.ControlFlow;
 import seph.lang.ast.Message;
 
@@ -1053,8 +1054,8 @@ public class ParserTest {
 
     @Test
     public void handles_newline_escape_in_text() {
-        Message result = parse("\"foo \\t\"");
-        assertEquals("foo \t", ((Text)result.literal()).text());
+        Message result = parse("\"foo \\n\"");
+        assertEquals("foo \n", ((Text)result.literal()).text());
     }
 
     @Test
@@ -1263,8 +1264,595 @@ public class ParserTest {
         assertEquals("blargus7.sp", f.source);
     }
 
+    @Test
+    public void parses_a_regular_expression() {
+        Message result = parse(" #/foo/");
+        assertTrue("Result should be a literal message", result.isLiteral());
+        SephObject literal = result.literal();
+        assertEquals(Regexp.class, literal.getClass());
+        assertEquals("foo", ((Regexp)literal).pattern());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_a_regular_expression_with_flags() {
+        Message result = parse(" #/bar/ix");
+        SephObject literal = result.literal();
+        assertEquals("bar", ((Regexp)literal).pattern());
+        assertEquals("ix", ((Regexp)literal).flags());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_a_regular_expression_and_adds_correct_positioning_information() {
+        Message result = parse("\n\n\n #/foxy/", "boxy.sp");
+        assertEquals("boxy.sp", result.filename());
+        assertEquals(4, result.line());
+        assertEquals(1, result.position());
+    }
+
+    @Test
+    public void parses_a_regular_expression_with_alternative_syntax() {
+        Message result = parse(" #r[foo]");
+        assertTrue("Result should be a literal message", result.isLiteral());
+        SephObject literal = result.literal();
+        assertEquals(Regexp.class, literal.getClass());
+        assertEquals("foo", ((Regexp)literal).pattern());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_a_regular_expression_with_flags_with_alternative_syntax() {
+        Message result = parse(" #r[bar]mux");
+        SephObject literal = result.literal();
+        assertEquals("bar", ((Regexp)literal).pattern());
+        assertEquals("mux", ((Regexp)literal).flags());
+        assertNull(result.next());
+    }
+
+    @Test
+    public void parses_a_regular_expression_and_adds_correct_positioning_information_with_alternative_syntax() {
+        Message result = parse("\n\n\n #r[foxy]", "boxy2.sp");
+        assertEquals("boxy2.sp", result.filename());
+        assertEquals(4, result.line());
+        assertEquals(1, result.position());
+    }
+
+    @Test
+    public void signals_a_failure_when_eof_is_found_in_the_middle_of_a_regexp() {
+        parse("bla #/foo", "blargus6.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(1, f.line);
+        assertEquals(8, f.character);
+        assertEquals("Expected end of regular expression, found EOF", f.message);
+        assertEquals("blargus6.sp", f.source);
+    }
+
+    @Test
+    public void signals_a_failure_when_eof_is_found_in_the_middle_of_an_alternative_regexp() {
+        parse("bla #r[foo", "blargus7.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(1, f.line);
+        assertEquals(9, f.character);
+        assertEquals("Expected end of regular expression, found EOF", f.message);
+        assertEquals("blargus7.sp", f.source);
+    }
+
+    @Test
+    public void parses_a_unicode_escape_in_a_regexp() {
+        Message result = parse("#/foo\\uABCD/");
+        assertEquals("foo\uABCD", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_unicode_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\uABCD]");
+        assertEquals("foo\uABCD", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_octal_escape_in_a_regexp() {
+        Message result = parse("#/foo\037/");
+        assertEquals("foo\037", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_octal_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\037]");
+        assertEquals("foo\037", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_tab_escape_in_a_regexp() {
+        Message result = parse("#/foo\\t/");
+        assertEquals("foo\t", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_tab_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\t]");
+        assertEquals("foo\t", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_newline_escape_in_a_regexp() {
+        Message result = parse("#/foo\\n/");
+        assertEquals("foo\n", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_newline_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\n]");
+        assertEquals("foo\n", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_form_escape_in_a_regexp() {
+        Message result = parse("#/foo\\f/");
+        assertEquals("foo\f", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_form_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\f]");
+        assertEquals("foo\f", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_carriage_return_escape_in_a_regexp() {
+        Message result = parse("#/foo\\r/");
+        assertEquals("foo\r", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_carriage_return_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\r]");
+        assertEquals("foo\r", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_slash_escape_in_a_regexp() {
+        Message result = parse("#/foo\\//");
+        assertEquals("foo\\/", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_slash_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\/]");
+        assertEquals("foo\\/", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_backslash_escape_in_a_regexp() {
+        Message result = parse("#/foo\\\\/");
+        assertEquals("foo\\\\", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_backslash_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\\\]");
+        assertEquals("foo\\\\", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_real_newline_escape_in_a_regexp() {
+        Message result = parse("#/foo\\\n/");
+        assertEquals("foo", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_real_newline_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\\n]");
+        assertEquals("foo", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_hash_escape_in_a_regexp() {
+        Message result = parse("#/foo\\#/");
+        assertEquals("foo#", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_hash_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\#]");
+        assertEquals("foo#", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_A_escape_in_a_regexp() {
+        Message result = parse("#/foo\\A/");
+        assertEquals("foo\\A", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_A_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\A]");
+        assertEquals("foo\\A", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_d_escape_in_a_regexp() {
+        Message result = parse("#/foo\\d/");
+        assertEquals("foo\\d", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_d_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\d]");
+        assertEquals("foo\\d", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_D_escape_in_a_regexp() {
+        Message result = parse("#/foo\\D/");
+        assertEquals("foo\\D", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_D_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\D]");
+        assertEquals("foo\\D", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_s_escape_in_a_regexp() {
+        Message result = parse("#/foo\\s/");
+        assertEquals("foo\\s", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_s_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\s]");
+        assertEquals("foo\\s", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_S_escape_in_a_regexp() {
+        Message result = parse("#/foo\\S/");
+        assertEquals("foo\\S", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_S_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\S]");
+        assertEquals("foo\\S", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_w_escape_in_a_regexp() {
+        Message result = parse("#/foo\\w/");
+        assertEquals("foo\\w", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_w_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\w]");
+        assertEquals("foo\\w", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_W_escape_in_a_regexp() {
+        Message result = parse("#/foo\\W/");
+        assertEquals("foo\\W", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_W_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\W]");
+        assertEquals("foo\\W", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_b_escape_in_a_regexp() {
+        Message result = parse("#/foo\\b/");
+        assertEquals("foo\\b", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_b_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\b]");
+        assertEquals("foo\\b", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_B_escape_in_a_regexp() {
+        Message result = parse("#/foo\\B/");
+        assertEquals("foo\\B", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_B_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\B]");
+        assertEquals("foo\\B", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_z_escape_in_a_regexp() {
+        Message result = parse("#/foo\\z/");
+        assertEquals("foo\\z", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_z_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\z]");
+        assertEquals("foo\\z", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_Z_escape_in_a_regexp() {
+        Message result = parse("#/foo\\Z/");
+        assertEquals("foo\\Z", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_Z_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\Z]");
+        assertEquals("foo\\Z", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_lt_escape_in_a_regexp() {
+        Message result = parse("#/foo\\</");
+        assertEquals("foo\\<", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_lt_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\<]");
+        assertEquals("foo\\<", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_gt_escape_in_a_regexp() {
+        Message result = parse("#/foo\\>/");
+        assertEquals("foo\\>", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_gt_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\>]");
+        assertEquals("foo\\>", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_G_escape_in_a_regexp() {
+        Message result = parse("#/foo\\G/");
+        assertEquals("foo\\G", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_G_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\G]");
+        assertEquals("foo\\G", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_p_escape_in_a_regexp() {
+        Message result = parse("#/foo\\p{Space}/");
+        assertEquals("foo\\p{Space}", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_p_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\p{Space}]");
+        assertEquals("foo\\p{Space}", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_P_escape_in_a_regexp() {
+        Message result = parse("#/foo\\P{Space}/");
+        assertEquals("foo\\P{Space}", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_P_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\P{Space}]");
+        assertEquals("foo\\P{Space}", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_curly_open_escape_in_a_regexp() {
+        Message result = parse("#/foo\\{/");
+        assertEquals("foo\\{", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_curly_open_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\{]");
+        assertEquals("foo\\{", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_curly_close_escape_in_a_regexp() {
+        Message result = parse("#/foo\\}/");
+        assertEquals("foo\\}", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_curly_close_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\}]");
+        assertEquals("foo\\}", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_square_open_escape_in_a_regexp() {
+        Message result = parse("#/foo\\[/");
+        assertEquals("foo\\[", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_square_open_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\[]");
+        assertEquals("foo\\[", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_square_close_escape_in_a_regexp() {
+        Message result = parse("#/foo\\]/");
+        assertEquals("foo]", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_square_close_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\]]");
+        assertEquals("foo]", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_asterisk_escape_in_a_regexp() {
+        Message result = parse("#/foo\\*/");
+        assertEquals("foo\\*", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_asterisk_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\*]");
+        assertEquals("foo\\*", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_open_paren_escape_in_a_regexp() {
+        Message result = parse("#/foo\\(/");
+        assertEquals("foo\\(", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_open_paren_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\(]");
+        assertEquals("foo\\(", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_close_paren_escape_in_a_regexp() {
+        Message result = parse("#/foo\\)/");
+        assertEquals("foo\\)", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_close_paren_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\)]");
+        assertEquals("foo\\)", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_dollar_escape_in_a_regexp() {
+        Message result = parse("#/foo\\$/");
+        assertEquals("foo\\$", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_dollar_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\$]");
+        assertEquals("foo\\$", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_caret_escape_in_a_regexp() {
+        Message result = parse("#/foo\\^/");
+        assertEquals("foo\\^", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_caret_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\^]");
+        assertEquals("foo\\^", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_plus_escape_in_a_regexp() {
+        Message result = parse("#/foo\\+/");
+        assertEquals("foo\\+", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_plus_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\+]");
+        assertEquals("foo\\+", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_question_mark_escape_in_a_regexp() {
+        Message result = parse("#/foo\\?/");
+        assertEquals("foo\\?", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_question_mark_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\?]");
+        assertEquals("foo\\?", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_period_escape_in_a_regexp() {
+        Message result = parse("#/foo\\./");
+        assertEquals("foo\\.", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_period_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\.]");
+        assertEquals("foo\\.", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_pipe_escape_in_a_regexp() {
+        Message result = parse("#/foo\\|/");
+        assertEquals("foo\\|", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void parses_a_regexp_pipe_escape_in_a_regexp_with_alternative_syntax() {
+        Message result = parse("#r[foo\\|]");
+        assertEquals("foo\\|", ((Regexp)result.literal()).pattern());
+    }
+
+
+    @Test
+    public void handles_cr_escape_in_regexp() {
+        Message result = parse("#/foo \\\r/");
+        assertEquals("foo ", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void handles_cr_escape_in_regexp_with_alt_syntax() {
+        Message result = parse("#r[foo \\\r]");
+        assertEquals("foo ", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void handles_cr_lf_escape_in_regexp() {
+        Message result = parse("#/foo \\\r\n/");
+        assertEquals("foo ", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void handles_cr_lf_escape_in_regexp_with_alt_syntax() {
+        Message result = parse("#r[foo \\\r\n]");
+        assertEquals("foo ", ((Regexp)result.literal()).pattern());
+    }
+
+    @Test
+    public void generates_an_error_when_an_unknown_escape_is_used_in_regexp() {
+        parse("\n\n#/foo\\y/", "blargus8.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(3, f.line);
+        assertEquals(6, f.character);
+        assertEquals("Undefined regular expression escape character: 'y'", f.message);
+        assertEquals("blargus8.sp", f.source);
+    }
+
+    @Test
+    public void generates_an_error_when_a_hexadecimal_regexp_escape_isnt_done() {
+        parse("\n\n#/foo\\uABC\t/", "blargus42.sp");
+        Parser.Failure f = (Parser.Failure)error.getValue();
+        assertEquals(3, f.line);
+        assertEquals(10, f.character);
+        assertEquals("Expected four hexadecimal characters in unicode escape - got: TAB", f.message);
+        assertEquals("blargus42.sp", f.source);
+    }
+
+    // Interpolation
 
     // TODO:
-    // - regular expressions (#/, #r)
     // - numbers
 }// ParserTest

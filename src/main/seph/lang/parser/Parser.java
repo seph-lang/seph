@@ -190,6 +190,10 @@ public class Parser {
                 switch(peek()) {
                 case '{':
                     return parseSetMessageSend();
+                case '/':
+                    return parseRegexpLiteral('/');
+                case 'r':
+                    return parseRegexpLiteral('r');
                 case '!':
                     parseComment();
                     break;
@@ -372,6 +376,84 @@ public class Parser {
         return new NamedMessage(".", null, null, sourcename, l, cc);
     }
 
+    private Message parseRegexpLiteral(int indicator) throws IOException, ControlFlow {
+        int l = lineNumber; int cc = currentCharacter-1;
+
+        StringBuilder sb = new StringBuilder();
+        boolean slash = indicator == '/';
+
+        read();
+
+        if(!slash) {
+            parseCharacter('[');
+        }
+
+        int rr;
+        while(true) {
+            switch(rr = peek()) {
+            case -1:
+                fail("Expected end of regular expression, found EOF");
+                break;
+            case '/':
+                read();
+                if(slash) {
+                    String pattern = sb.toString();
+
+                    sb = new StringBuilder();
+                    while(true) {
+                        switch(rr = peek()) {
+                        case 'x':
+                        case 'i':
+                        case 'u':
+                        case 'm':
+                        case 's':
+                            read();
+                            sb.append((char)rr);
+                            break;
+                        default:
+                            return new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc);
+                        }
+                    }
+                } else {
+                    sb.append((char)rr);
+                }
+                break;
+            case ']':
+                read();
+                if(!slash) {
+                    String pattern = sb.toString();
+
+                    sb = new StringBuilder();
+                    while(true) {
+                        switch(rr = peek()) {
+                        case 'x':
+                        case 'i':
+                        case 'u':
+                        case 'm':
+                        case 's':
+                            read();
+                            sb.append((char)rr);
+                            break;
+                        default:
+                            return new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc);
+                        }
+                    }
+                } else {
+                    sb.append((char)rr);
+                }
+                break;
+            case '\\':
+                read();
+                parseRegexpEscape(sb);
+                break;
+            default:
+                read();
+                sb.append((char)rr);
+                break;
+            }
+        }
+    }
+
     private Message parseText(int indicator) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
@@ -443,6 +525,108 @@ public class Parser {
                 sb.append((char)rr);
                 break;
             }
+        }
+    }
+
+    private void parseRegexpEscape(StringBuilder sb) throws IOException, ControlFlow {
+        sb.append('\\');
+        int rr = peek();
+        switch(rr) {
+        case 'u':
+            read();
+            sb.append((char)rr);
+            for(int i = 0; i < 4; i++) {
+                rr = peek();
+                if((rr >= '0' && rr <= '9') ||
+                   (rr >= 'a' && rr <= 'f') ||
+                   (rr >= 'A' && rr <= 'F')) {
+                    read();
+                    sb.append((char)rr);
+                } else {
+                    fail("Expected four hexadecimal characters in unicode escape - got: " + charDesc(rr));
+                }
+            }
+            break;
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+            read();
+            sb.append((char)rr);
+            if(rr <= '3') {
+                rr = peek();
+                if(rr >= '0' && rr <= '7') {
+                    read();
+                    sb.append((char)rr);
+                    rr = peek();
+                    if(rr >= '0' && rr <= '7') {
+                        read();
+                        sb.append((char)rr);
+                    }
+                }
+            } else {
+                rr = peek();
+                if(rr >= '0' && rr <= '7') {
+                    read();
+                    sb.append((char)rr);
+                }
+            }
+            break;
+        case 't':
+        case 'n':
+        case 'f':
+        case 'r':
+        case '/':
+        case '\\':
+        case '\n':
+        case '#':
+        case 'A':
+        case 'd':
+        case 'D':
+        case 's':
+        case 'S':
+        case 'w':
+        case 'W':
+        case 'b':
+        case 'B':
+        case 'z':
+        case 'Z':
+        case '<':
+        case '>':
+        case 'G':
+        case 'p':
+        case 'P':
+        case '{':
+        case '}':
+        case '[':
+        case ']':
+        case '*':
+        case '(':
+        case ')':
+        case '$':
+        case '^':
+        case '+':
+        case '?':
+        case '.':
+        case '|':
+            read();
+            sb.append((char)rr);
+            break;
+        case '\r':
+            read();
+            sb.append((char)rr);
+            if((rr = peek()) == '\n') {
+                read();
+                sb.append((char)rr);
+            }
+            break;
+        default:
+            fail("Undefined regular expression escape character: " + charDesc(rr));
+            break;
         }
     }
 
