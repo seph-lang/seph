@@ -1851,7 +1851,35 @@ public class ParserTest {
         assertEquals("blargus42.sp", f.source);
     }
 
-    // Interpolation
+    @Test
+    public void handles_regexp_interpolation() {
+        Message result = parse("#/foo #{foo bar(#/blarg#{bux}/xi)} bar/");
+
+        assertEquals("internal:compositeRegexp", result.name());
+        assertEquals("foo ", ((Text)result.arguments().get(0).literal()).text());
+        assertEquals("foo", result.arguments().get(1).name());
+        assertEquals("bar", result.arguments().get(1).next().name());
+        assertEquals("internal:compositeRegexp", result.arguments().get(1).next().arguments().get(0).name());
+        assertEquals("blarg", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(0).literal()).text());
+        assertEquals("bux", result.arguments().get(1).next().arguments().get(0).arguments().get(1).name());
+        assertEquals("xi", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(2).literal()).text());
+        assertEquals(" bar", ((Text)result.arguments().get(2).literal()).text());
+    }
+
+    @Test
+    public void handles_regexp_interpolation_in_alt_syntax() {
+        Message result = parse("#r[foo #{foo bar(#/blarg#{bux}/xi)} bar]");
+
+        assertEquals("internal:compositeRegexp", result.name());
+        assertEquals("foo ", ((Text)result.arguments().get(0).literal()).text());
+        assertEquals("foo", result.arguments().get(1).name());
+        assertEquals("bar", result.arguments().get(1).next().name());
+        assertEquals("internal:compositeRegexp", result.arguments().get(1).next().arguments().get(0).name());
+        assertEquals("blarg", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(0).literal()).text());
+        assertEquals("bux", result.arguments().get(1).next().arguments().get(0).arguments().get(1).name());
+        assertEquals("xi", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(2).literal()).text());
+        assertEquals(" bar", ((Text)result.arguments().get(2).literal()).text());
+    }
 
     // TODO:
     // - numbers

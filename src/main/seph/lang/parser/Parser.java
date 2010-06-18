@@ -388,6 +388,9 @@ public class Parser {
             parseCharacter('[');
         }
 
+        String name = null;
+        List<Message> args = new ArrayList<Message>();
+
         int rr;
         while(true) {
             switch(rr = peek()) {
@@ -411,7 +414,14 @@ public class Parser {
                             sb.append((char)rr);
                             break;
                         default:
-                            return new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc);
+                            if(name == null) {
+                                return new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc);
+                            }
+                            if(pattern.length() > 0) {
+                                args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
+                            }
+                            args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
+                            return new NamedMessage(name, args, null, sourcename, l, cc);
                         }
                     }
                 } else {
@@ -435,11 +445,32 @@ public class Parser {
                             sb.append((char)rr);
                             break;
                         default:
-                            return new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc);
+                            if(name == null) {
+                                return new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc);
+                            }
+                            if(pattern.length() > 0) {
+                                args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
+                            }
+                            args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
+                            return new NamedMessage(name, args, null, sourcename, l, cc);
                         }
                     }
                 } else {
                     sb.append((char)rr);
+                }
+                break;
+            case '#':
+                read();
+                if((rr = peek()) == '{') {
+                    read();
+                    args.add(new LiteralMessage(runtime.newUnescapedText(sb.toString()), null, sourcename, l, cc));
+                    sb = new StringBuilder();
+                    name = "internal:compositeRegexp";
+                    args.add(parseExpressions());
+                    readWhiteSpace();
+                    parseCharacter('}');
+                } else {
+                    sb.append((char)'#');
                 }
                 break;
             case '\\':

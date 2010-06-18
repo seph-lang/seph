@@ -10,7 +10,11 @@ import seph.lang.parser.StringUtils;
  */
 public class Runtime {
     public Text newText(String stringBeforeEscapeMangling) {
-        return new Text(new StringUtils().replaceEscapes(stringBeforeEscapeMangling.toString()));
+        return new Text(new StringUtils().replaceEscapes(stringBeforeEscapeMangling));
+    }
+
+    public Text newUnescapedText(String text) {
+        return new Text(text);
     }
 
     public Regexp newRegexp(String pattern, String flags) {
