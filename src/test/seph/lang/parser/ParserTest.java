@@ -18,6 +18,8 @@ import seph.lang.Text;
 import seph.lang.Regexp;
 import seph.lang.ControlFlow;
 import seph.lang.ast.Message;
+import seph.lang.persistent.PersistentCons;
+import seph.lang.persistent.PersistentList;
 
 import gnu.math.IntNum;
 import gnu.math.DFloNum;
@@ -34,7 +36,7 @@ public class ParserTest {
 
     private Message parse(String input, String sourcename) {
         try {
-            return new Parser(new Runtime(), new StringReader(input), sourcename).parseFully().get(0);
+            return ((Message)new Parser(new Runtime(), new StringReader(input), sourcename).parseFully().seq().first());
         } catch(java.io.IOException e) {
             throw new RuntimeException(e);
         } catch(ControlFlow cf) {
@@ -43,7 +45,7 @@ public class ParserTest {
         }
     }
 
-    private List<Message> parseAll(String input) {
+    private PersistentList parseAll(String input) {
         try {
             return new Parser(new Runtime(), new StringReader(input), "<eval>").parseFully();
         } catch(java.io.IOException e) {
@@ -63,7 +65,7 @@ public class ParserTest {
     public void an_empty_string_should_become_a_terminator_message() {
         Message result = parse("");
         assertEquals(".", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -71,7 +73,7 @@ public class ParserTest {
     public void a_string_with_only_spaces_should_become_a_terminator_message() {
         Message result = parse("  ");
         assertEquals(".", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -79,7 +81,7 @@ public class ParserTest {
     public void a_string_with_only_unicode_spaces_should_become_a_terminator_message() {
         Message result = parse("\u0009\u0009\u000b\u000c");
         assertEquals(".", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -87,7 +89,7 @@ public class ParserTest {
     public void a_string_with_a_message_should_become_that_message() {
         Message result = parse("foo");
         assertEquals("foo", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -95,9 +97,9 @@ public class ParserTest {
     public void a_string_with_two_messages_should_become_a_message_chain() {
         Message result = parse("foo bar");
         assertEquals("foo", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertEquals("bar", result.next().name());
-        assertEquals(Arrays.<Message>asList(), result.next().arguments());
+        assertEquals(PersistentCons.EMPTY, result.next().arguments());
         assertNull(result.next().next());
     }
 
@@ -105,7 +107,7 @@ public class ParserTest {
     public void octothorp_followed_by_bang_will_be_interpreted_as_a_comment() {
         Message result = parse("#!/foo/bar 123\nfoo");
         assertEquals("foo", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -113,7 +115,7 @@ public class ParserTest {
     public void parses_a_newline_as_a_terminator() {
         Message result = parse("\n");
         assertEquals(".", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -121,7 +123,7 @@ public class ParserTest {
     public void parses_two_newlines_as_one_terminator() {
         Message result = parse("\n\n");
         assertEquals(".", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -129,7 +131,7 @@ public class ParserTest {
     public void parses_a_period_as_one_terminator() {
         Message result = parse(".");
         assertEquals(".", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -137,7 +139,7 @@ public class ParserTest {
     public void parses_a_period_and_a_newline_as_one_terminator() {
         Message result = parse(".\n");
         assertEquals(".", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -145,7 +147,7 @@ public class ParserTest {
     public void parses_a_newline_and_a_period_as_one_terminator() {
         Message result = parse("\n.");
         assertEquals(".", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -153,7 +155,7 @@ public class ParserTest {
     public void parses_period_between_newlines_as_one_terminator() {
         Message result = parse("\n.\n");
         assertEquals(".", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -194,7 +196,7 @@ public class ParserTest {
     public void should_allow_identifier_starting_with_colon() {
         Message result = parse(":foo");
         assertEquals(":foo", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -202,7 +204,7 @@ public class ParserTest {
     public void uses_two_semi_colons() {
         Message result = parse("::");
         assertEquals("::", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -210,7 +212,7 @@ public class ParserTest {
     public void separates_two_colons_into_a_message_send() {
         Message result = parse("::foo");
         assertEquals("::", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
         assertNull(result.next());
     }
 
@@ -218,7 +220,7 @@ public class ParserTest {
     public void separates_three_colons_into_a_message_send() {
         Message result = parse(":::foo");
         assertEquals(":::", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
         assertNull(result.next());
     }
 
@@ -226,7 +228,7 @@ public class ParserTest {
     public void allows_a_single_colon_as_identifier() {
         Message result = parse(":");
         assertEquals(":", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -234,7 +236,7 @@ public class ParserTest {
     public void allows_an_identifier_to_be_ended_with_a_colon() {
         Message result = parse("foo:");
         assertEquals("foo:", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -242,7 +244,7 @@ public class ParserTest {
     public void allows_an_identifier_to_be_split_with_a_colon() {
         Message result = parse("foo:bar");
         assertEquals("foo:bar", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -250,7 +252,7 @@ public class ParserTest {
     public void allows_an_identifier_to_be_split_with_more_than_one_colon() {
         Message result = parse("foo::bar");
         assertEquals("foo::bar", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -258,7 +260,7 @@ public class ParserTest {
     public void allows_an_identifier_interspersed_with_colons() {
         Message result = parse("f:o:o:b:a:r");
         assertEquals("f:o:o:b:a:r", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -266,7 +268,7 @@ public class ParserTest {
     public void allows_a_question_mark_followed_by_a_colon() {
         Message result = parse("foo?:");
         assertEquals("foo?:", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -274,7 +276,7 @@ public class ParserTest {
     public void parens_without_preceeding_message_becomes_the_identity_message() {
         Message result = parse("(foo)");
         assertEquals("", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
         assertNull(result.next());
     }
 
@@ -282,7 +284,7 @@ public class ParserTest {
     public void simple_square_bracket_application_should_be_parsed_correctly() {
         Message result = parse("[]()");
         assertEquals("[]", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -290,7 +292,7 @@ public class ParserTest {
     public void simple_square_bracket_application_with_arguments_should_work() {
         Message result = parse("[](foo)");
         assertEquals("[]", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
         assertNull(result.next());
     }
 
@@ -298,7 +300,7 @@ public class ParserTest {
     public void parse_square_brackets_correctly_as_part_of_longer_message_chain() {
         Message result = parse("foo bar(q) [](r)");
         assertEquals("[]", result.next().next().name());
-        assertEquals("r", result.next().next().arguments().get(0).name());
+        assertEquals("r", ((Message)result.next().next().arguments().seq().first()).name());
         assertNull(result.next().next().next());
     }
 
@@ -306,7 +308,7 @@ public class ParserTest {
     public void simple_square_bracket_without_parenthesis_should_be_parsed_correctly() {
         Message result = parse("[]");
         assertEquals("[]", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -314,7 +316,7 @@ public class ParserTest {
     public void simple_square_bracket_without_parenthesis_with_spaces_inbetween_should_be_parsed_correctly() {
         Message result = parse("[   ]");
         assertEquals("[]", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -322,7 +324,7 @@ public class ParserTest {
     public void simple_square_bracket_without_parenthesis_with_argument_should_be_parsed_correctly() {
         Message result = parse("[foo]");
         assertEquals("[]", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
         assertNull(result.next());
     }
 
@@ -330,7 +332,7 @@ public class ParserTest {
     public void simple_square_bracket_without_parenthesis_with_argument_and_spaces_should_be_parsed_correctly() {
         Message result = parse("[   foo   ]");
         assertEquals("[]", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
         assertNull(result.next());
     }
 
@@ -339,8 +341,8 @@ public class ParserTest {
     public void simple_square_bracket_without_parenthesis_with_arguments_should_be_parsed_correctly() {
         Message result = parse("[foo, bar]");
         assertEquals("[]", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
-        assertEquals("bar", result.arguments().get(1).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
+        assertEquals("bar", ((Message)result.arguments().seq().more().first()).name());
         assertNull(result.next());
     }
 
@@ -348,9 +350,9 @@ public class ParserTest {
     public void simple_square_bracket_can_be_parsed_with_terminators_inside() {
         Message result = parse("[bar, \nfoo(quux)]");
         assertEquals("[]", result.name());
-        assertEquals("bar", result.arguments().get(0).name());
-        assertEquals("foo", result.arguments().get(1).name());
-        assertEquals("quux", result.arguments().get(1).arguments().get(0).name());
+        assertEquals("bar", ((Message)result.arguments().seq().first()).name());
+        assertEquals("foo", ((Message)result.arguments().seq().more().first()).name());
+        assertEquals("quux", ((Message)((Message)result.arguments().seq().more().first()).arguments().seq().first()).name());
         assertNull(result.next());
     }
 
@@ -359,8 +361,8 @@ public class ParserTest {
         Message result = parse("foo[bar, quux]");
         assertEquals("foo", result.name());
         assertEquals("[]", result.next().name());
-        assertEquals("bar", result.next().arguments().get(0).name());
-        assertEquals("quux", result.next().arguments().get(1).name());
+        assertEquals("bar", ((Message)result.next().arguments().seq().first()).name());
+        assertEquals("quux", ((Message)result.next().arguments().seq().more().first()).name());
         assertNull(result.next().next());
     }
 
@@ -369,8 +371,8 @@ public class ParserTest {
         Message result = parse("foo [bar, quux]");
         assertEquals("foo", result.name());
         assertEquals("[]", result.next().name());
-        assertEquals("bar", result.next().arguments().get(0).name());
-        assertEquals("quux", result.next().arguments().get(1).name());
+        assertEquals("bar", ((Message)result.next().arguments().seq().first()).name());
+        assertEquals("quux", ((Message)result.next().arguments().seq().more().first()).name());
         assertNull(result.next().next());
     }
 
@@ -378,9 +380,9 @@ public class ParserTest {
     public void parses_square_brackets_correctly_inside_a_function_application() {
         Message result = parse("foo([bar, quux])");
         assertEquals("foo", result.name());
-        assertEquals("[]", result.arguments().get(0).name());
-        assertEquals("bar", result.arguments().get(0).arguments().get(0).name());
-        assertEquals("quux", result.arguments().get(0).arguments().get(1).name());
+        assertEquals("[]", ((Message)result.arguments().seq().first()).name());
+        assertEquals("bar", ((Message)((Message)result.arguments().seq().first()).arguments().seq().first()).name());
+        assertEquals("quux", ((Message)((Message)result.arguments().seq().first()).arguments().seq().more().first()).name());
         assertNull(result.next());
     }
 
@@ -388,7 +390,7 @@ public class ParserTest {
     public void simple_curly_bracket_application_should_be_parsed_correctly() {
         Message result = parse("{}()");
         assertEquals("{}", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -396,7 +398,7 @@ public class ParserTest {
     public void simple_curly_bracket_application_with_arguments_should_work() {
         Message result = parse("{}(foo)");
         assertEquals("{}", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
         assertNull(result.next());
     }
 
@@ -404,7 +406,7 @@ public class ParserTest {
     public void parse_curly_brackets_correctly_as_part_of_longer_message_chain() {
         Message result = parse("foo bar(q) {}(r)");
         assertEquals("{}", result.next().next().name());
-        assertEquals("r", result.next().next().arguments().get(0).name());
+        assertEquals("r", ((Message)result.next().next().arguments().seq().first()).name());
         assertNull(result.next().next().next());
     }
 
@@ -412,7 +414,7 @@ public class ParserTest {
     public void simple_curly_bracket_without_parenthesis_should_be_parsed_correctly() {
         Message result = parse("{}");
         assertEquals("{}", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -420,7 +422,7 @@ public class ParserTest {
     public void simple_curly_bracket_without_parenthesis_with_spaces_inbetween_should_be_parsed_correctly() {
         Message result = parse("{   }");
         assertEquals("{}", result.name());
-        assertEquals(Arrays.<Message>asList(), result.arguments());
+        assertEquals(PersistentCons.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -428,7 +430,7 @@ public class ParserTest {
     public void simple_curly_bracket_without_parenthesis_with_argument_should_be_parsed_correctly() {
         Message result = parse("{foo}");
         assertEquals("{}", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
         assertNull(result.next());
     }
 
@@ -436,7 +438,7 @@ public class ParserTest {
     public void simple_curly_bracket_without_parenthesis_with_argument_and_spaces_should_be_parsed_correctly() {
         Message result = parse("{   foo   }");
         assertEquals("{}", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
         assertNull(result.next());
     }
 
@@ -445,8 +447,8 @@ public class ParserTest {
     public void simple_curly_bracket_without_parenthesis_with_arguments_should_be_parsed_correctly() {
         Message result = parse("{foo, bar}");
         assertEquals("{}", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
-        assertEquals("bar", result.arguments().get(1).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
+        assertEquals("bar", ((Message)result.arguments().seq().more().first()).name());
         assertNull(result.next());
     }
 
@@ -454,9 +456,9 @@ public class ParserTest {
     public void simple_curly_bracket_can_be_parsed_with_terminators_inside() {
         Message result = parse("{bar, \nfoo(quux)}");
         assertEquals("{}", result.name());
-        assertEquals("bar", result.arguments().get(0).name());
-        assertEquals("foo", result.arguments().get(1).name());
-        assertEquals("quux", result.arguments().get(1).arguments().get(0).name());
+        assertEquals("bar", ((Message)result.arguments().seq().first()).name());
+        assertEquals("foo", ((Message)result.arguments().seq().more().first()).name());
+        assertEquals("quux", ((Message)((Message)result.arguments().seq().more().first()).arguments().seq().first()).name());
         assertNull(result.next());
     }
 
@@ -465,8 +467,8 @@ public class ParserTest {
         Message result = parse("foo{bar, quux}");
         assertEquals("foo", result.name());
         assertEquals("{}", result.next().name());
-        assertEquals("bar", result.next().arguments().get(0).name());
-        assertEquals("quux", result.next().arguments().get(1).name());
+        assertEquals("bar", ((Message)result.next().arguments().seq().first()).name());
+        assertEquals("quux", ((Message)result.next().arguments().seq().more().first()).name());
         assertNull(result.next().next());
     }
 
@@ -475,8 +477,8 @@ public class ParserTest {
         Message result = parse("foo {bar, quux}");
         assertEquals("foo", result.name());
         assertEquals("{}", result.next().name());
-        assertEquals("bar", result.next().arguments().get(0).name());
-        assertEquals("quux", result.next().arguments().get(1).name());
+        assertEquals("bar", ((Message)result.next().arguments().seq().first()).name());
+        assertEquals("quux", ((Message)result.next().arguments().seq().more().first()).name());
         assertNull(result.next().next());
     }
 
@@ -484,27 +486,27 @@ public class ParserTest {
     public void parses_curly_brackets_correctly_inside_a_function_application() {
         Message result = parse("foo({bar, quux})");
         assertEquals("foo", result.name());
-        assertEquals("{}", result.arguments().get(0).name());
-        assertEquals("bar", result.arguments().get(0).arguments().get(0).name());
-        assertEquals("quux", result.arguments().get(0).arguments().get(1).name());
+        assertEquals("{}", ((Message)result.arguments().seq().first()).name());
+        assertEquals("bar", ((Message)((Message)result.arguments().seq().first()).arguments().seq().first()).name());
+        assertEquals("quux", ((Message)((Message)result.arguments().seq().first()).arguments().seq().more().first()).name());
         assertNull(result.next());
     }
 
     @Test
     public void parses_the_toplevel_with_commas() {
-        List<Message> result = parseAll("foo,\nbar: method");
-        assertEquals("foo", result.get(0).name());
-        assertNull(result.get(0).next());
-        assertEquals("bar:", result.get(1).name());
-        assertEquals("method", result.get(1).next().name());
+        PersistentList result = parseAll("foo,\nbar: method");
+        assertEquals("foo", ((Message)result.seq().first()).name());
+        assertNull(((Message)result.seq().first()).next());
+        assertEquals("bar:", ((Message)result.seq().more().first()).name());
+        assertEquals("method", ((Message)result.seq().more().first()).next().name());
     }
 
     @Test
     public void parses_set_literal_as_a_set_literal() {
         Message result = parse("#{bar, quux}");
         assertEquals("set", result.name());
-        assertEquals("bar", result.arguments().get(0).name());
-        assertEquals("quux", result.arguments().get(1).name());
+        assertEquals("bar", ((Message)result.arguments().seq().first()).name());
+        assertEquals("quux", ((Message)result.arguments().seq().more().first()).name());
         assertNull(result.next());
     }
 
@@ -616,7 +618,7 @@ public class ParserTest {
         Message result = parse(" +-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("+-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -631,7 +633,7 @@ public class ParserTest {
         Message result = parse(" --+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("--+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -646,7 +648,7 @@ public class ParserTest {
         Message result = parse(" *-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("*-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -661,7 +663,7 @@ public class ParserTest {
         Message result = parse(" %-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("%-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -676,7 +678,7 @@ public class ParserTest {
         Message result = parse(" <-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("<-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -691,7 +693,7 @@ public class ParserTest {
         Message result = parse(" >-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals(">-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -706,7 +708,7 @@ public class ParserTest {
         Message result = parse(" !-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("!-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -721,7 +723,7 @@ public class ParserTest {
         Message result = parse(" ?-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("?-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -736,7 +738,7 @@ public class ParserTest {
         Message result = parse(" ~-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("~-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -751,7 +753,7 @@ public class ParserTest {
         Message result = parse(" &-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("&-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -766,7 +768,7 @@ public class ParserTest {
         Message result = parse(" |-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("|-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -781,7 +783,7 @@ public class ParserTest {
         Message result = parse(" ^-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("^-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -796,7 +798,7 @@ public class ParserTest {
         Message result = parse(" $-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("$-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -811,7 +813,7 @@ public class ParserTest {
         Message result = parse(" =-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("=-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -826,7 +828,7 @@ public class ParserTest {
         Message result = parse(" @-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("@-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -841,7 +843,7 @@ public class ParserTest {
         Message result = parse(" '-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("'-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -856,7 +858,7 @@ public class ParserTest {
         Message result = parse(" `-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("`-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -871,7 +873,7 @@ public class ParserTest {
         Message result = parse(" /-+*%<>!!?~&|^$$=@'`//:#(foo)");
 
         assertEquals("/-+*%<>!!?~&|^$$=@'`//:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -896,7 +898,7 @@ public class ParserTest {
         Message result = parse(" #-+*%<>!!?~&|^$$=@'`:#(foo)");
 
         assertEquals("#-+*%<>!!?~&|^$$=@'`:#", result.name());
-        assertEquals("foo", result.arguments().get(0).name());
+        assertEquals("foo", ((Message)result.arguments().seq().first()).name());
     }
 
     @Test
@@ -996,13 +998,13 @@ public class ParserTest {
         Message result = parse("\"foo #{foo bar(\"blarg#{bux}\")} bar\"");
 
         assertEquals("internal:concatenateText", result.name());
-        assertEquals("foo ", ((Text)result.arguments().get(0).literal()).text());
-        assertEquals("foo", result.arguments().get(1).name());
-        assertEquals("bar", result.arguments().get(1).next().name());
-        assertEquals("internal:concatenateText", result.arguments().get(1).next().arguments().get(0).name());
-        assertEquals("blarg", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(0).literal()).text());
-        assertEquals("bux", result.arguments().get(1).next().arguments().get(0).arguments().get(1).name());
-        assertEquals(" bar", ((Text)result.arguments().get(2).literal()).text());
+        assertEquals("foo ", ((Text)((Message)result.arguments().seq().first()).literal()).text());
+        assertEquals("foo", ((Message)result.arguments().seq().more().first()).name());
+        assertEquals("bar", ((Message)result.arguments().seq().more().first()).next().name());
+        assertEquals("internal:concatenateText", ((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).name());
+        assertEquals("blarg", ((Text)((Message)((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).arguments().seq().first()).literal()).text());
+        assertEquals("bux", ((Message)((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).arguments().seq().more().first()).name());
+        assertEquals(" bar", ((Text)((Message)result.arguments().seq().more().more().first()).literal()).text());
     }
 
     @Test
@@ -1010,13 +1012,13 @@ public class ParserTest {
         Message result = parse("#[foo #{foo bar(\"blarg#{bux}\")} bar]");
 
         assertEquals("internal:concatenateText", result.name());
-        assertEquals("foo ", ((Text)result.arguments().get(0).literal()).text());
-        assertEquals("foo", result.arguments().get(1).name());
-        assertEquals("bar", result.arguments().get(1).next().name());
-        assertEquals("internal:concatenateText", result.arguments().get(1).next().arguments().get(0).name());
-        assertEquals("blarg", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(0).literal()).text());
-        assertEquals("bux", result.arguments().get(1).next().arguments().get(0).arguments().get(1).name());
-        assertEquals(" bar", ((Text)result.arguments().get(2).literal()).text());
+        assertEquals("foo ", ((Text)((Message)result.arguments().seq().first()).literal()).text());
+        assertEquals("foo", ((Message)result.arguments().seq().more().first()).name());
+        assertEquals("bar", ((Message)result.arguments().seq().more().first()).next().name());
+        assertEquals("internal:concatenateText", ((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).name());
+        assertEquals("blarg", ((Text)((Message)((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).arguments().seq().first()).literal()).text());
+        assertEquals("bux", ((Message)((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).arguments().seq().more().first()).name());
+        assertEquals(" bar", ((Text)((Message)result.arguments().seq().more().more().first()).literal()).text());
     }
 
     @Test
@@ -1859,14 +1861,14 @@ public class ParserTest {
         Message result = parse("#/foo #{foo bar(#/blarg#{bux}/xi)} bar/");
 
         assertEquals("internal:compositeRegexp", result.name());
-        assertEquals("foo ", ((Text)result.arguments().get(0).literal()).text());
-        assertEquals("foo", result.arguments().get(1).name());
-        assertEquals("bar", result.arguments().get(1).next().name());
-        assertEquals("internal:compositeRegexp", result.arguments().get(1).next().arguments().get(0).name());
-        assertEquals("blarg", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(0).literal()).text());
-        assertEquals("bux", result.arguments().get(1).next().arguments().get(0).arguments().get(1).name());
-        assertEquals("xi", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(2).literal()).text());
-        assertEquals(" bar", ((Text)result.arguments().get(2).literal()).text());
+        assertEquals("foo ", ((Text)((Message)result.arguments().seq().first()).literal()).text());
+        assertEquals("foo", ((Message)result.arguments().seq().more().first()).name());
+        assertEquals("bar", ((Message)result.arguments().seq().more().first()).next().name());
+        assertEquals("internal:compositeRegexp", ((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).name());
+        assertEquals("blarg", ((Text)((Message)((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).arguments().seq().first()).literal()).text());
+        assertEquals("bux", ((Message)((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).arguments().seq().more().first()).name());
+        assertEquals("xi", ((Text)((Message)((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).arguments().seq().more().more().first()).literal()).text());
+        assertEquals(" bar", ((Text)((Message)result.arguments().seq().more().more().first()).literal()).text());
     }
 
     @Test
@@ -1874,14 +1876,14 @@ public class ParserTest {
         Message result = parse("#r[foo #{foo bar(#/blarg#{bux}/xi)} bar]");
 
         assertEquals("internal:compositeRegexp", result.name());
-        assertEquals("foo ", ((Text)result.arguments().get(0).literal()).text());
-        assertEquals("foo", result.arguments().get(1).name());
-        assertEquals("bar", result.arguments().get(1).next().name());
-        assertEquals("internal:compositeRegexp", result.arguments().get(1).next().arguments().get(0).name());
-        assertEquals("blarg", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(0).literal()).text());
-        assertEquals("bux", result.arguments().get(1).next().arguments().get(0).arguments().get(1).name());
-        assertEquals("xi", ((Text)result.arguments().get(1).next().arguments().get(0).arguments().get(2).literal()).text());
-        assertEquals(" bar", ((Text)result.arguments().get(2).literal()).text());
+        assertEquals("foo ", ((Text)((Message)result.arguments().seq().first()).literal()).text());
+        assertEquals("foo", ((Message)result.arguments().seq().more().first()).name());
+        assertEquals("bar", ((Message)result.arguments().seq().more().first()).next().name());
+        assertEquals("internal:compositeRegexp", ((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).name());
+        assertEquals("blarg", ((Text)((Message)((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).arguments().seq().first()).literal()).text());
+        assertEquals("bux", ((Message)((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).arguments().seq().more().first()).name());
+        assertEquals("xi", ((Text)((Message)((Message)((Message)result.arguments().seq().more().first()).next().arguments().seq().first()).arguments().seq().more().more().first()).literal()).text());
+        assertEquals(" bar", ((Text)((Message)result.arguments().seq().more().more().first()).literal()).text());
     }
 
     @Test

@@ -52,7 +52,9 @@ public class RT {
     }
 
     static ISeq seqFrom(Object coll){
-        if(coll == null) {
+        if(coll instanceof Seqable) {
+            return ((Seqable) coll).seq();
+        } else if(coll == null) {
             return null;
         } else {
             Class c = coll.getClass();

@@ -6,13 +6,14 @@ package seph.lang.ast;
 import java.util.List;
 
 import seph.lang.SephObject;
+import seph.lang.persistent.PersistentList;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public interface Message {
     String name();
-    List<Message> arguments();
+    PersistentList arguments();
     Message next();
     Message withNext(Message newNext);
     boolean isLiteral();
