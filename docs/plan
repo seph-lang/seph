@@ -2,6 +2,7 @@ Plan to get somewhere working:
 ------------------------------
 
 - Add lists, maps and sets.
+- Add tests for them, checking with a coverage tool
 - Implement a simplistic interpreter for simple mimicking (or possibly a bytecode engine)
 - Implement a simple, functional operator shuffling
 - Implement a simplistic interpreter for defining and running methods.
