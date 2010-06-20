@@ -14,51 +14,20 @@ Plan to get somewhere working:
 
 
 
+
+
+
 - Unify methods and fns? Code will have both an object scope and a lexical scope. Lookup will use lexical scope first and only fall back on object after that. Force object by doing @.
-  Change name in that case? At this point it makes sense to have syntax.
-
-    plus: method(x, y, x+y)
-    plus: lambda(x, y, x+y)
-    plus: /_(x, y, x+y)
-    plus: \(x, y, x+y)
-    plus: def(x, y, x+y)
-    plus: defn(x, y, x+y)
-    plus: fn(x, y, x+y)
-    plus: [x, y, x+y]
-    plus: {x, y, x+y}
-    plus: %{x, y, x+y}
-    plus: abstract(x, y, x+y)
-    plus: |(x, y, x+y)
-    plus: value(x, y, x+y)
-    plus: is(x, y, x+y)
-    plus: as(x, y, x+y)
-    plus: for(x, y, x+y)
-    plus: receive(x, y, x+y)
-    plus: block(x, y, x+y)
-
+  Change name in that case At this point it makes sense to have syntax.
 
     plus: #(x, y, x+y)   (returns DefaultMethod)
     
 Make # a keyword - something the compiler recognizes and that will introduce a compilation boundary. Possibly allow a lambda too.
 
-   Existing uses of #:
-     Set literal  #{}
-     Regexp       #//
-     Altreg       #r[]
-     Comment      #!
-     Alttext      #[]
 
-   Needed uses
-     Comment:         #!
 
-     Hash literal:     {}
-     Set literal:     #{}
-     List literal:     []
-     Vector literal:  #[]
 
-     AltText literal: %[]
-     Regexp literal:  %//
-     AltReg literal:  %r[]
+
 
 
 

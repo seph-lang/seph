@@ -186,24 +186,20 @@ public class Parser {
                 return parseEmptyMessageSend();
             case '[':
                 read();
-                return parseSquareMessageSend();
+                return parseOpenCloseMessageSend(']', "[]");
             case '{':
                 read();
-                return parseCurlyMessageSend();
+                return parseOpenCloseMessageSend('}', "{}");
             case '#':
                 read();
                 switch(peek()) {
                 case '{':
-                    return parseSetMessageSend();
-                case '/':
-                    return parseRegexpLiteral('/');
-                case 'r':
-                    return parseRegexpLiteral('r');
+                    return parseSimpleOpenCloseMessageSend('}', "set");
+                case '[':
+                    return parseSimpleOpenCloseMessageSend(']', "vector");
                 case '!':
                     parseComment();
                     break;
-                case '[':
-                    return parseText('[');
                 default:
                     return parseOperatorChars('#');
                 }
@@ -253,6 +249,18 @@ public class Parser {
             case '9':
                 read();
                 return parseNumber(rr);
+            case '%':
+                read();
+                switch(peek()) {
+                case '/':
+                    return parseRegexpLiteral('/');
+                case 'r':
+                    return parseRegexpLiteral('r');
+                case '[':
+                    return parseText('[');
+                default:
+                    return parseOperatorChars('%');
+                }
             case '+':
             case '-':
                 if(isDigit(peek2())) {
@@ -260,7 +268,6 @@ public class Parser {
                     return parseNumber(rr);
                 }
             case '*':
-            case '%':
             case '<':
             case '>':
             case '!':
@@ -480,7 +487,7 @@ public class Parser {
                     sb.append((char)rr);
                 }
                 break;
-            case '#':
+            case '%':
                 read();
                 if((rr = peek()) == '{') {
                     read();
@@ -554,7 +561,7 @@ public class Parser {
                     sb.append((char)rr);
                 }
                 break;
-            case '#':
+            case '%':
                 read();
                 if((rr = peek()) == '{') {
                     read();
@@ -565,7 +572,7 @@ public class Parser {
                     readWhiteSpace();
                     parseCharacter('}');
                 } else {
-                    sb.append((char)'#');
+                    sb.append((char)'%');
                 }
                 break;
             case '\\':
@@ -635,7 +642,7 @@ public class Parser {
         case '/':
         case '\\':
         case '\n':
-        case '#':
+        case '%':
         case 'A':
         case 'd':
         case 'D':
@@ -739,7 +746,7 @@ public class Parser {
         case ']':
         case '\\':
         case '\n':
-        case '#':
+        case '%':
         case 'e':
             read();
             sb.append((char)rr);
@@ -790,7 +797,7 @@ public class Parser {
                 sb.append((char)rr);
                 break;
             case '/':
-                if(indicator != '#') {
+                if(indicator != '%') {
                     read();
                     sb.append((char)rr);
                     break;
@@ -828,7 +835,7 @@ public class Parser {
         return new NamedMessage("", args, null, sourcename,  l, cc);
     }
 
-    private Message parseSquareMessageSend() throws IOException, ControlFlow {
+    private Message parseOpenCloseMessageSend(char end, String name) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         int rr = peek();
@@ -836,47 +843,27 @@ public class Parser {
 
 
         PersistentList args = null;
-        if(rr == ']' && r2 == '(') {
+        if(rr == end && r2 == '(') {
             read();
             read();
             args = parseExpressionChain();
             parseCharacter(')');
         } else {
             args = parseExpressionChain();
-            parseCharacter(']');
+            parseCharacter(end);
         }
 
-        return new NamedMessage("[]", args, null, sourcename,  l, cc);
+        return new NamedMessage(name, args, null, sourcename,  l, cc);
     }
 
-    private Message parseCurlyMessageSend() throws IOException, ControlFlow {
+    private Message parseSimpleOpenCloseMessageSend(char end, String name) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
-        int rr = peek();
-        int r2 = peek2();
-
-        PersistentList args = null;
-        if(rr == '}' && r2 == '(') {
-            read();
-            read();
-            args = parseExpressionChain();
-            parseCharacter(')');
-        } else {
-            args = parseExpressionChain();
-            parseCharacter('}');
-        }
-
-        return new NamedMessage("{}", args, null, sourcename,  l, cc);
-    }
-
-    private Message parseSetMessageSend() throws IOException, ControlFlow {
-        int l = lineNumber; int cc = currentCharacter-1;
-
-        parseCharacter('{');
+        read();
         PersistentList args = parseExpressionChain();
-        parseCharacter('}');
+        parseCharacter(end);
 
-        return new NamedMessage("set", args, null, sourcename,  l, cc);
+        return new NamedMessage(name, args, null, sourcename,  l, cc);
     }
 
     private int readNumbersInto(StringBuilder sb) throws IOException {

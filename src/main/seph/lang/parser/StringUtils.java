@@ -25,7 +25,7 @@ public class StringUtils {
             case '"':
                 result.append('\\').append(c);
                 break;
-            case '#':
+            case '%':
                 if((i+1 < len) && s.charAt(i+1) == '{') {
                     result.append('\\').append(c);
                 } else {
@@ -126,8 +126,8 @@ public class StringUtils {
                     case ']':
                         result.append(']');
                         break;
-                    case '#':
-                        result.append('#');
+                    case '%':
+                        result.append('%');
                         break;
                     case 'u':
                         result.append((char)Integer.valueOf(s.substring(i+1, i+5), 16).intValue());
@@ -204,8 +204,8 @@ public class StringUtils {
                     case ']':
                         result.append(']');
                         break;
-                    case '#':
-                        result.append('#');
+                    case '%':
+                        result.append('%');
                         break;
                     case 'u':
                         result.append((char)Integer.valueOf(s.substring(i+1, i+5), 16).intValue());
@@ -294,8 +294,8 @@ public class StringUtils {
                     case ']':
                         result.append(']');
                         break;
-                    case '#':
-                        result.append('#');
+                    case '%':
+                        result.append('%');
                         break;
                     case 'u':
                         result.append((char)Integer.valueOf(s.substring(i+1, i+5), 16).intValue());
@@ -367,8 +367,8 @@ public class StringUtils {
                     case ']':
                         result.append(']');
                         break;
-                    case '#':
-                        result.append('#');
+                    case '%':
+                        result.append('%');
                         break;
                     case 'u':
                         result.append((char)Integer.valueOf(s.substring(i+1, i+5), 16).intValue());
