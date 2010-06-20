@@ -76,3 +76,29 @@ Foo with(abc: 42) withoutParents
 
 Use regular Floats instead of BigDecimal always.
 Use gnu.math directly
+
+
+----
+
+
+How to handle user extensions of core types? Two ideas:
+Allow global changes to a "platform" style object that includes all the bound names. This will not change existing objects though:
+
+  platform Text = Text withParent(Extensions)
+
+where Text= will synchronize and set the slot on platform to be the new value.
+
+The other choice is to allow user extension of certain objects. This should be done using a Clojure atom style thingy, to ensure safe update:
+
+  Text appendCoreExtension!(Extensions)
+
+Core extensions can be removed and added at this level, but the real parents of Text can never be removed or changed:
+It is only things that are implemented in Java land that can have core extensions - and not all of these have it either - only where it makes sense.
+
+  class TextBase {
+    private final SephObject parent1;
+    private final SephObject parent1;
+    private final ClojureRef<PersistentList> coreExtensions = new ClojureRef(PersistentList.EMPTY);
+  }
+
+
