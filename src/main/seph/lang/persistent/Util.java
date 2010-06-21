@@ -1,5 +1,7 @@
 package seph.lang.persistent;
 
+import java.math.BigInteger;
+
 /**
  * Based on persistent collections in Clojure - see LICENSE.clojure for copyright and licensing information
  */
@@ -29,6 +31,25 @@ public class Util {
 
     static public ISeq ret1(ISeq ret, Object nil){
 		return ret;
+    }
+
+    static public boolean isInteger(Object x){
+        return x instanceof Integer
+			|| x instanceof Long
+			|| x instanceof BigInteger;
+    }
+
+    static public int compare(Object k1, Object k2) {
+        if(k1 == k2)
+            return 0;
+        if(k1 != null) {
+            if(k2 == null)
+                return 1;
+            if(k1 instanceof Number)
+                return Numbers.compare((Number) k1, (Number) k2);
+            return ((Comparable) k1).compareTo(k2);
+		}
+        return -1;
     }
 }
 

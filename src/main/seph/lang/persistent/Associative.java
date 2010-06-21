@@ -5,6 +5,6 @@ package seph.lang.persistent;
  */
 public interface Associative extends PersistentCollection, Lookup {
     boolean containsKey(Object key);
-    MapEntry entryAt(Object key);
+    IMapEntry entryAt(Object key);
     Associative associate(Object key, Object val);
 }
