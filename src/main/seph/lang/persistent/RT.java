@@ -176,6 +176,10 @@ public class RT {
         return seq.first();
     }
 
+    static public Object second(Object x) {
+        return first(next(x));
+    }
+
     static public ISeq next(Object x) {
         if(x instanceof ISeq)
             return ((ISeq) x).next();

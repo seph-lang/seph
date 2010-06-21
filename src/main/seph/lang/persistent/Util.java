@@ -25,6 +25,12 @@ public class Util {
         return k1 != null && k1.equals(k2);
     }
 
+    static public int hash(Object o) {
+        if(o == null)
+            return 0;
+        return o.hashCode();
+    }
+
     static public Object ret1(Object ret, Object nil){
 		return ret;
     }
