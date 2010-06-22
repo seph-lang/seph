@@ -20,10 +20,25 @@
     <pathelement path="${test.classes.dir}"/>
   </path>
 
+  <path id="test.coverage.classpath">
+    <fileset dir="${lib.build.dir}" includes="*.jar"/>
+    <fileset dir="${lib.release.dir}" includes="*.jar"/>
+    <pathelement path="${coverage.classes.dir}"/>
+    <pathelement path="${main.classes.dir}"/>
+    <pathelement path="${test.classes.dir}"/>
+  </path>
+
+  <taskdef resource="tasks.properties">
+    <classpath>
+      <fileset dir="${lib.build.dir}" includes="*.jar"/>
+    </classpath>
+  </taskdef>
+
   <target name="prepare" description="Creates the directories needed for building">
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${main.classes.dir}"/>
     <mkdir dir="${test.classes.dir}"/>
+    <mkdir dir="${coverage.dir}"/>
   </target>
 
   <target name="generate_filters" depends="prepare" description="Generates source files">
@@ -57,6 +72,29 @@
       <src path="${src.test.dir}"/>
       <include name="**/*.java"/>
     </javac>
+  </target>
+
+  <target name="coverage.instrument" depends="compile-tests" description="">
+    <cobertura-instrument todir="${coverage.classes.dir}">
+      <fileset dir="${main.classes.dir}"/>
+    </cobertura-instrument>
+  </target>
+
+  <target name="coverage" depends="coverage.instrument" description="Runs all ISpec tests using Cobertura and produces a report">
+    <junit fork="yes" dir="${basedir}" failureProperty="test.failed">
+      <classpath refid="test.coverage.classpath"/>
+
+      <sysproperty key="file.encoding" value="UTF-8"/>
+      <formatter type="brief" usefile="false" />
+
+      <batchtest fork="yes">
+        <fileset dir="${src.test.dir}">
+          <include name="**/*Test*.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+
+    <cobertura-report srcdir="${src.dir}" destdir="${coverage.report.dir}"/>
   </target>
 
   <target name="test" depends="compile-tests" description="Runs all Seph tests">
