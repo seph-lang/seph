@@ -46,11 +46,11 @@ public class PersistentList extends ASeq implements IPersistentList, List, Count
         return (ISeq) rest;
     }
 
-    public Object peek(){
+    public Object peek() {
         return first();
     }
 
-    public IPersistentList pop(){
+    public IPersistentList pop() {
         if(rest == null) {
             return EMPTY.withMeta(meta());
         }
