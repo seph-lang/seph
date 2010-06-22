@@ -196,4 +196,8 @@ public class RT {
             return PersistentVector.EMPTY;
         return new APersistentVector.SubVector(null, v, start, end);
     }
+
+    static public ISeq keys(Object coll){
+        return APersistentMap.KeySeq.create(seq(coll));
+    }
 }
