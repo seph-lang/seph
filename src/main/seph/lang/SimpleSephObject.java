@@ -3,15 +3,15 @@
  */
 package seph.lang;
 
-import seph.lang.persistent.PersistentMap;
+import seph.lang.persistent.IPersistentMap;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public abstract class SimpleSephObject implements SephObject {
-    final PersistentMap meta;
+    final IPersistentMap meta;
 
-    public SimpleSephObject(PersistentMap meta){
+    public SimpleSephObject(IPersistentMap meta){
         this.meta = meta;
     }
     
@@ -19,9 +19,9 @@ public abstract class SimpleSephObject implements SephObject {
         meta = null;
     }
 
-    final public PersistentMap meta(){
+    final public IPersistentMap meta(){
         return meta;
     }
     
-    abstract public SimpleSephObject withMeta(PersistentMap meta);
+    abstract public SimpleSephObject withMeta(IPersistentMap meta);
 }// SimpleSephObject

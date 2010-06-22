@@ -1,7 +1,5 @@
 package seph.lang.persistent;
 
-import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -15,9 +13,9 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
     static final int HASHTABLE_THRESHOLD = 16;
 
     public static final PersistentArrayMap EMPTY = new PersistentArrayMap();
-    private final PersistentMap _meta;
+    private final IPersistentMap _meta;
 
-    static public PersistentMap create(Map other) {
+    static public IPersistentMap create(Map other) {
         ITransientMap ret = EMPTY.asTransient();
         for(Object o : other.entrySet()) {
             Map.Entry e = (Entry) o;
@@ -31,7 +29,7 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
         this._meta = null;
     }
 
-    public PersistentArrayMap withMeta(PersistentMap meta) {
+    public PersistentArrayMap withMeta(IPersistentMap meta) {
         return new PersistentArrayMap(meta, array);
     }
 
@@ -39,7 +37,7 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
         return new PersistentArrayMap(meta(), init);
     }
 
-    PersistentMap createHT(Object[] init) {
+    IPersistentMap createHT(Object[] init) {
         return PersistentHashMap.create(meta(), init);
     }
 
@@ -64,7 +62,7 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
     }
 
 
-    public PersistentArrayMap(PersistentMap meta, Object[] init) {
+    public PersistentArrayMap(IPersistentMap meta, Object[] init) {
         this._meta = meta;
         this.array = init;
     }
@@ -84,7 +82,7 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
         return null;
     }
 
-    public PersistentMap associateOrFail(Object key, Object val) throws Exception {
+    public IPersistentMap associateOrFail(Object key, Object val) throws Exception {
         int i = indexOf(key);
         Object[] newArray;
         if(i >= 0) {
@@ -102,7 +100,7 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
         return create(newArray);
     }
 
-    public PersistentMap associate(Object key, Object val) {
+    public IPersistentMap associate(Object key, Object val) {
         int i = indexOf(key);
         Object[] newArray;
         if(i >= 0) {
@@ -122,7 +120,7 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
         return create(newArray);
     }
 
-    public PersistentMap without(Object key) {
+    public IPersistentMap without(Object key) {
         int i = indexOf(key);
         if(i >= 0) {
             int newlen = array.length - 2;
@@ -141,8 +139,8 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
         return this;
     }
 
-    public PersistentMap empty() {
-        return (PersistentMap) EMPTY.withMeta(meta());
+    public IPersistentMap empty() {
+        return (IPersistentMap) EMPTY.withMeta(meta());
     }
 
     final public Object valueAt(Object key, Object notFound) {
@@ -180,24 +178,24 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
 
     public ISeq seq(){
         if(array.length > 0)
-            return new MapSeq(array, 0);
+            return new Seq(array, 0);
         return null;
     }
 
-    public PersistentMap meta(){
+    public IPersistentMap meta(){
         return _meta;
     }
 
-    static class MapSeq extends Seq implements Counted {
+    static class Seq extends ASeq implements Counted {
         final Object[] array;
         final int i;
 
-        MapSeq(Object[] array, int i) {
+        Seq(Object[] array, int i) {
             this.array = array;
             this.i = i;
         }
 
-        public MapSeq(PersistentMap meta, Object[] array, int i) {
+        public Seq(IPersistentMap meta, Object[] array, int i) {
             super(meta);
             this.array = array;
             this.i = i;
@@ -209,7 +207,7 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
 
         public ISeq next() {
             if(i + 2 < array.length)
-                return new MapSeq(array, i + 2);
+                return new Seq(array, i + 2);
             return null;
         }
 
@@ -217,8 +215,8 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
             return (array.length - i) / 2;
         }
 
-        public MapSeq withMeta(PersistentMap meta) {
-            return new MapSeq(meta, array, i);
+        public Seq withMeta(IPersistentMap meta) {
+            return new Seq(meta, array, i);
         }
     }
 
@@ -313,7 +311,7 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
             return len / 2;
         }
 	
-        PersistentMap doPersistent() {
+        IPersistentMap doPersistent() {
             ensureEditable();
             owner = null;
             Object[] a = new Object[len];

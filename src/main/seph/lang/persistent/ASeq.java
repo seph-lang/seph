@@ -7,14 +7,14 @@ import seph.lang.SimpleSephObject;
 /**
  * Based on persistent collections in Clojure - see LICENSE.clojure for copyright and licensing information
  */
-public abstract class Seq extends SimpleSephObject implements ISeq, List {
+public abstract class ASeq extends SimpleSephObject implements ISeq, List {
     transient int hash = -1;
 
-    protected Seq(PersistentMap meta) {
+    protected ASeq(IPersistentMap meta) {
         super(meta);
     }
 
-    protected Seq() {
+    protected ASeq() {
     }
 
     public boolean equiv(Object obj){
@@ -37,8 +37,8 @@ public abstract class Seq extends SimpleSephObject implements ISeq, List {
         return new Cons(o, this);
     }
 
-    public PersistentCollection empty(){
-        return PersistentCons.EMPTY;
+    public IPersistentCollection empty(){
+        return PersistentList.EMPTY;
     }
 
     public boolean equals(Object obj) {
@@ -75,7 +75,7 @@ public abstract class Seq extends SimpleSephObject implements ISeq, List {
     public ISeq more() {
         ISeq s = next();
         if(s == null)
-            return PersistentCons.EMPTY;
+            return PersistentList.EMPTY;
         return s;
     }
 

@@ -6,5 +6,5 @@ package seph.lang.persistent;
 public interface ITransientMap extends ITransientAssociative, Counted {
     ITransientMap associate(Object key, Object val);
     ITransientMap without(Object key);
-    PersistentMap persistent();
+    IPersistentMap persistent();
 }

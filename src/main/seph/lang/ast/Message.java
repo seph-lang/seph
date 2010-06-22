@@ -3,17 +3,15 @@
  */
 package seph.lang.ast;
 
-import java.util.List;
-
 import seph.lang.SephObject;
-import seph.lang.persistent.PersistentList;
+import seph.lang.persistent.IPersistentList;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public interface Message {
     String name();
-    PersistentList arguments();
+    IPersistentList arguments();
     Message next();
     Message withNext(Message newNext);
     boolean isLiteral();

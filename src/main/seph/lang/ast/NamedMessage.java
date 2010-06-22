@@ -3,27 +3,25 @@
  */
 package seph.lang.ast;
 
-import java.util.List;
-
 import seph.lang.SephObject;
+import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
-import seph.lang.persistent.PersistentCons;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public final class NamedMessage implements Message, SephObject {
     private final String name;
-    private final PersistentList arguments;
+    private final IPersistentList arguments;
     private final Message next;
 
     private final String filename;
     private final int line;
     private final int position;
 
-    final static PersistentList NO_ARGUMENTS = PersistentCons.EMPTY;
+    final static IPersistentList NO_ARGUMENTS = PersistentList.EMPTY;
     
-    public NamedMessage(String name, PersistentList arguments, Message next, String filename, int line, int position) {
+    public NamedMessage(String name, IPersistentList arguments, Message next, String filename, int line, int position) {
         this.name = name;
         this.arguments = arguments == null ? NO_ARGUMENTS : arguments;
         this.next = next;
@@ -36,7 +34,7 @@ public final class NamedMessage implements Message, SephObject {
         return this.name;
     }
 
-    public PersistentList arguments() {
+    public IPersistentList arguments() {
         return this.arguments;
     }
 

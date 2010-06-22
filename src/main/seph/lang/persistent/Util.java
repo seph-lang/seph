@@ -11,8 +11,8 @@ public class Util {
             return true;
         }
         if(k1 != null) {
-            if(k1 instanceof PersistentCollection && k2 instanceof PersistentCollection) {
-                return ((PersistentCollection)k1).equiv(k2);
+            if(k1 instanceof IPersistentCollection && k2 instanceof IPersistentCollection) {
+                return ((IPersistentCollection)k1).equiv(k2);
             }
             return k1.equals(k2);
 		}

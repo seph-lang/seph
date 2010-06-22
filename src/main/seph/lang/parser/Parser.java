@@ -15,8 +15,8 @@ import seph.lang.ControlFlow;
 import seph.lang.ast.Message;
 import seph.lang.ast.NamedMessage;
 import seph.lang.ast.LiteralMessage;
+import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
-import seph.lang.persistent.PersistentCons;
 
 import gnu.math.IntNum;
 import gnu.math.DFloNum;
@@ -35,11 +35,11 @@ public class Parser {
         this.sourcename = sourcename;
     }
 
-    public PersistentList parseFully() throws IOException, ControlFlow {
-        PersistentList all = parseExpressionChain();
+    public IPersistentList parseFully() throws IOException, ControlFlow {
+        IPersistentList all = parseExpressionChain();
 
         if(all.count() == 0) {
-            all = (PersistentList)all.cons(new NamedMessage(".", null, null, sourcename, 0, 0));
+            all = (IPersistentList)all.cons(new NamedMessage(".", null, null, sourcename, 0, 0));
         }
 
         return all;
@@ -66,7 +66,7 @@ public class Parser {
         return ret;
     }
 
-    private PersistentList parseExpressionChain() throws IOException, ControlFlow {
+    private IPersistentList parseExpressionChain() throws IOException, ControlFlow {
         ArrayList<Message> chain = new ArrayList<Message>();
 
         Message curr = parseExpressions();
@@ -88,7 +88,7 @@ public class Parser {
             }
         }
 
-        return PersistentCons.create(chain);
+        return PersistentList.create(chain);
     }
 
     private int lineNumber = 1;
@@ -319,7 +319,7 @@ public class Parser {
             sb.append((char)rr);
         }
 
-        PersistentList args = null;
+        IPersistentList args = null;
         if(rr == '(') {
             read();
             args = parseExpressionChain();
@@ -449,7 +449,7 @@ public class Parser {
                                 args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
                             }
                             args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
-                            return new NamedMessage(name, PersistentCons.create(args), null, sourcename, l, cc);
+                            return new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc);
                         }
                     }
                 } else {
@@ -480,7 +480,7 @@ public class Parser {
                                 args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
                             }
                             args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
-                            return new NamedMessage(name, PersistentCons.create(args), null, sourcename, l, cc);
+                            return new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc);
                         }
                     }
                 } else {
@@ -542,7 +542,7 @@ public class Parser {
                     if(sb.length() > 0) {
                         args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
                     }
-                    return new NamedMessage(name, PersistentCons.create(args), null, sourcename, l, cc);
+                    return new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc);
                 } else {
                     sb.append((char)rr);
                 }
@@ -556,7 +556,7 @@ public class Parser {
                     if(sb.length() > 0) {
                         args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
                     }
-                    return new NamedMessage(name, PersistentCons.create(args), null, sourcename, l, cc);
+                    return new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc);
                 } else {
                     sb.append((char)rr);
                 }
@@ -806,7 +806,7 @@ public class Parser {
             default:
                 if(rr == '(') {
                     read();
-                    PersistentList args = parseExpressionChain();
+                    IPersistentList args = parseExpressionChain();
                     parseCharacter(')');
                     return new NamedMessage(sb.toString(), args, null, sourcename,  l, cc);
                 } else {
@@ -829,7 +829,7 @@ public class Parser {
     private Message parseEmptyMessageSend() throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
-        PersistentList args = parseExpressionChain();
+        IPersistentList args = parseExpressionChain();
         parseCharacter(')');
 
         return new NamedMessage("", args, null, sourcename,  l, cc);
@@ -842,7 +842,7 @@ public class Parser {
         int r2 = peek2();
 
 
-        PersistentList args = null;
+        IPersistentList args = null;
         if(rr == end && r2 == '(') {
             read();
             read();
@@ -860,7 +860,7 @@ public class Parser {
         int l = lineNumber; int cc = currentCharacter-1;
 
         read();
-        PersistentList args = parseExpressionChain();
+        IPersistentList args = parseExpressionChain();
         parseCharacter(end);
 
         return new NamedMessage(name, args, null, sourcename,  l, cc);

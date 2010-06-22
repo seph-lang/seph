@@ -6,10 +6,10 @@ import java.util.*;
 /**
  * Based on persistent collections in Clojure - see LICENSE.clojure for copyright and licensing information
  */
-public abstract class APersistentMap implements PersistentMap, Map, Iterable, Serializable {
+public abstract class APersistentMap implements IPersistentMap, Map, Iterable, Serializable {
     int _hash = -1;
 
-    public PersistentCollection cons(Object o){
+    public IPersistentCollection cons(Object o){
         if(o instanceof Map.Entry) {
             Map.Entry e = (Map.Entry) o;
             return associate(e.getKey(), e.getValue());
@@ -20,7 +20,7 @@ public abstract class APersistentMap implements PersistentMap, Map, Iterable, Se
             return associate(v.at(0), v.at(1));
         }
 
-        PersistentMap ret = this;
+        IPersistentMap ret = this;
         for(ISeq es = RT.seq(o); es != null; es = es.next()) {
             Map.Entry e = (Map.Entry) es.first();
             ret = ret.associate(e.getKey(), e.getValue());
@@ -80,7 +80,7 @@ public abstract class APersistentMap implements PersistentMap, Map, Iterable, Se
         return _hash;
     }
 
-    static public class KeySeq extends Seq {
+    static public class KeySeq extends ASeq {
         ISeq seq;
 
         static public KeySeq create(ISeq seq){
@@ -93,7 +93,7 @@ public abstract class APersistentMap implements PersistentMap, Map, Iterable, Se
             this.seq = seq;
         }
 
-        private KeySeq(PersistentMap meta, ISeq seq){
+        private KeySeq(IPersistentMap meta, ISeq seq){
             super(meta);
             this.seq = seq;
         }
@@ -106,12 +106,12 @@ public abstract class APersistentMap implements PersistentMap, Map, Iterable, Se
             return create(seq.next());
         }
 
-        public KeySeq withMeta(PersistentMap meta){
+        public KeySeq withMeta(IPersistentMap meta){
             return new KeySeq(meta, seq);
         }
     }
 
-    static public class ValSeq extends Seq {
+    static public class ValSeq extends ASeq {
         ISeq seq;
 
         static public ValSeq create(ISeq seq){
@@ -124,7 +124,7 @@ public abstract class APersistentMap implements PersistentMap, Map, Iterable, Se
             this.seq = seq;
         }
 
-        private ValSeq(PersistentMap meta, ISeq seq){
+        private ValSeq(IPersistentMap meta, ISeq seq){
             super(meta);
             this.seq = seq;
         }
@@ -137,7 +137,7 @@ public abstract class APersistentMap implements PersistentMap, Map, Iterable, Se
             return create(seq.next());
         }
 
-        public ValSeq withMeta(PersistentMap meta){
+        public ValSeq withMeta(IPersistentMap meta){
             return new ValSeq(meta, seq);
         }
     }

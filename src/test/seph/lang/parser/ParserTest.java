@@ -5,9 +5,6 @@ package seph.lang.parser;
 
 import java.io.StringReader;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.junit.Test;
 import org.junit.Ignore;
 import static org.junit.Assert.*;
@@ -18,7 +15,7 @@ import seph.lang.Text;
 import seph.lang.Regexp;
 import seph.lang.ControlFlow;
 import seph.lang.ast.Message;
-import seph.lang.persistent.PersistentCons;
+import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 
 import gnu.math.IntNum;
@@ -45,7 +42,7 @@ public class ParserTest {
         }
     }
 
-    private PersistentList parseAll(String input) {
+    private IPersistentList parseAll(String input) {
         try {
             return new Parser(new Runtime(), new StringReader(input), "<eval>").parseFully();
         } catch(java.io.IOException e) {
@@ -65,7 +62,7 @@ public class ParserTest {
     public void an_empty_string_should_become_a_terminator_message() {
         Message result = parse("");
         assertEquals(".", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -73,7 +70,7 @@ public class ParserTest {
     public void a_string_with_only_spaces_should_become_a_terminator_message() {
         Message result = parse("  ");
         assertEquals(".", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -81,7 +78,7 @@ public class ParserTest {
     public void a_string_with_only_unicode_spaces_should_become_a_terminator_message() {
         Message result = parse("\u0009\u0009\u000b\u000c");
         assertEquals(".", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -89,7 +86,7 @@ public class ParserTest {
     public void a_string_with_a_message_should_become_that_message() {
         Message result = parse("foo");
         assertEquals("foo", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -97,9 +94,9 @@ public class ParserTest {
     public void a_string_with_two_messages_should_become_a_message_chain() {
         Message result = parse("foo bar");
         assertEquals("foo", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertEquals("bar", result.next().name());
-        assertEquals(PersistentCons.EMPTY, result.next().arguments());
+        assertEquals(PersistentList.EMPTY, result.next().arguments());
         assertNull(result.next().next());
     }
 
@@ -107,7 +104,7 @@ public class ParserTest {
     public void octothorp_followed_by_bang_will_be_interpreted_as_a_comment() {
         Message result = parse("#!/foo/bar 123\nfoo");
         assertEquals("foo", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -115,7 +112,7 @@ public class ParserTest {
     public void parses_a_newline_as_a_terminator() {
         Message result = parse("\n");
         assertEquals(".", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -123,7 +120,7 @@ public class ParserTest {
     public void parses_two_newlines_as_one_terminator() {
         Message result = parse("\n\n");
         assertEquals(".", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -131,7 +128,7 @@ public class ParserTest {
     public void parses_a_period_as_one_terminator() {
         Message result = parse(".");
         assertEquals(".", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -139,7 +136,7 @@ public class ParserTest {
     public void parses_a_period_and_a_newline_as_one_terminator() {
         Message result = parse(".\n");
         assertEquals(".", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -147,7 +144,7 @@ public class ParserTest {
     public void parses_a_newline_and_a_period_as_one_terminator() {
         Message result = parse("\n.");
         assertEquals(".", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -155,7 +152,7 @@ public class ParserTest {
     public void parses_period_between_newlines_as_one_terminator() {
         Message result = parse("\n.\n");
         assertEquals(".", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -196,7 +193,7 @@ public class ParserTest {
     public void should_allow_identifier_starting_with_colon() {
         Message result = parse(":foo");
         assertEquals(":foo", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -204,7 +201,7 @@ public class ParserTest {
     public void uses_two_semi_colons() {
         Message result = parse("::");
         assertEquals("::", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -228,7 +225,7 @@ public class ParserTest {
     public void allows_a_single_colon_as_identifier() {
         Message result = parse(":");
         assertEquals(":", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -236,7 +233,7 @@ public class ParserTest {
     public void allows_an_identifier_to_be_ended_with_a_colon() {
         Message result = parse("foo:");
         assertEquals("foo:", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -244,7 +241,7 @@ public class ParserTest {
     public void allows_an_identifier_to_be_split_with_a_colon() {
         Message result = parse("foo:bar");
         assertEquals("foo:bar", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -252,7 +249,7 @@ public class ParserTest {
     public void allows_an_identifier_to_be_split_with_more_than_one_colon() {
         Message result = parse("foo::bar");
         assertEquals("foo::bar", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -260,7 +257,7 @@ public class ParserTest {
     public void allows_an_identifier_interspersed_with_colons() {
         Message result = parse("f:o:o:b:a:r");
         assertEquals("f:o:o:b:a:r", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -268,7 +265,7 @@ public class ParserTest {
     public void allows_a_question_mark_followed_by_a_colon() {
         Message result = parse("foo?:");
         assertEquals("foo?:", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -284,7 +281,7 @@ public class ParserTest {
     public void simple_square_bracket_application_should_be_parsed_correctly() {
         Message result = parse("[]()");
         assertEquals("[]", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -308,7 +305,7 @@ public class ParserTest {
     public void simple_square_bracket_without_parenthesis_should_be_parsed_correctly() {
         Message result = parse("[]");
         assertEquals("[]", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -316,7 +313,7 @@ public class ParserTest {
     public void simple_square_bracket_without_parenthesis_with_spaces_inbetween_should_be_parsed_correctly() {
         Message result = parse("[   ]");
         assertEquals("[]", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -390,7 +387,7 @@ public class ParserTest {
     public void simple_curly_bracket_application_should_be_parsed_correctly() {
         Message result = parse("{}()");
         assertEquals("{}", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -414,7 +411,7 @@ public class ParserTest {
     public void simple_curly_bracket_without_parenthesis_should_be_parsed_correctly() {
         Message result = parse("{}");
         assertEquals("{}", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -422,7 +419,7 @@ public class ParserTest {
     public void simple_curly_bracket_without_parenthesis_with_spaces_inbetween_should_be_parsed_correctly() {
         Message result = parse("{   }");
         assertEquals("{}", result.name());
-        assertEquals(PersistentCons.EMPTY, result.arguments());
+        assertEquals(PersistentList.EMPTY, result.arguments());
         assertNull(result.next());
     }
 
@@ -494,7 +491,7 @@ public class ParserTest {
 
     @Test
     public void parses_the_toplevel_with_commas() {
-        PersistentList result = parseAll("foo,\nbar: method");
+        IPersistentList result = parseAll("foo,\nbar: method");
         assertEquals("foo", ((Message)result.seq().first()).name());
         assertNull(((Message)result.seq().first()).next());
         assertEquals("bar:", ((Message)result.seq().more().first()).name());

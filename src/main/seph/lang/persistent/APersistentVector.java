@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.*;
 
 import seph.lang.SephObject;
-import seph.lang.SimpleSephObject;
 
 /**
  * Based on persistent collections in Clojure - see LICENSE.clojure for copyright and licensing information
@@ -14,7 +13,7 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
 
     public ISeq seq(){
         if(count() > 0)
-            return new VecSeq(this, 0);
+            return new Seq(this, 0);
         return null;
     }
 
@@ -336,16 +335,16 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
         return 0;
     }
 
-    static class VecSeq extends Seq implements IndexedSeq {
+    static class Seq extends ASeq implements IndexedSeq {
         final IPersistentVector v;
         final int i;
 
-        public VecSeq(IPersistentVector v, int i) {
+        public Seq(IPersistentVector v, int i) {
             this.v = v;
             this.i = i;
         }
 
-        VecSeq(PersistentMap meta, IPersistentVector v, int i) {
+        Seq(IPersistentMap meta, IPersistentVector v, int i) {
             super(meta);
             this.v = v;
             this.i = i;
@@ -357,7 +356,7 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
 
         public ISeq next(){
             if(i + 1 < v.count())
-                return new APersistentVector.VecSeq(v, i + 1);
+                return new Seq(v, i + 1);
             return null;
         }
 
@@ -369,12 +368,12 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
             return v.count() - i;
         }
 
-        public APersistentVector.VecSeq withMeta(PersistentMap meta) {
-            return new APersistentVector.VecSeq(meta, v, i);
+        public Seq withMeta(IPersistentMap meta) {
+            return new Seq(meta, v, i);
         }
     }
 
-    public static class RSeq extends Seq implements IndexedSeq, Counted {
+    public static class RSeq extends ASeq implements IndexedSeq, Counted {
         final IPersistentVector v;
         final int i;
 
@@ -383,7 +382,7 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
             this.i = i;
         }
 
-        RSeq(PersistentMap meta, IPersistentVector v, int i){
+        RSeq(IPersistentMap meta, IPersistentVector v, int i){
             super(meta);
             this.v = v;
             this.i = i;
@@ -407,7 +406,7 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
             return i + 1;
         }
 
-        public APersistentVector.RSeq withMeta(PersistentMap meta){
+        public APersistentVector.RSeq withMeta(IPersistentMap meta){
             return new APersistentVector.RSeq(meta, v, i);
         }
     }
@@ -416,9 +415,9 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
         final IPersistentVector v;
         final int start;
         final int end;
-        final PersistentMap _meta;
+        final IPersistentMap _meta;
 
-        public SubVector(PersistentMap meta, IPersistentVector v, int start, int end){
+        public SubVector(IPersistentMap meta, IPersistentVector v, int start, int end){
             this._meta = meta;
 
             if(v instanceof APersistentVector.SubVector) {
@@ -454,17 +453,17 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
             return new SubVector(_meta, v.assocN(end, o), start, end + 1);
         }
 
-        public PersistentCollection empty(){
-            return PersistentCons.EMPTY.withMeta(meta());
+        public IPersistentCollection empty(){
+            return PersistentList.EMPTY.withMeta(meta());
         }
 
-        public SubVector withMeta(PersistentMap meta){
+        public SubVector withMeta(IPersistentMap meta){
             if(meta == _meta)
                 return this;
             return new SubVector(meta, v, start, end);
         }
 
-        public PersistentMap meta(){
+        public IPersistentMap meta(){
             return _meta;
         }
     }

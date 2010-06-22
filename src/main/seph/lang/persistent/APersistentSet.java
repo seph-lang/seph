@@ -10,9 +10,9 @@ import java.util.Set;
  */
 public abstract class APersistentSet  implements IPersistentSet, Collection, Set, Serializable {
     int _hash = -1;
-    final PersistentMap impl;
+    final IPersistentMap impl;
 
-    protected APersistentSet(PersistentMap impl){
+    protected APersistentSet(IPersistentMap impl){
         this.impl = impl;
     }
 

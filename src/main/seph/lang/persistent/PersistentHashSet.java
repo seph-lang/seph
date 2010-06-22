@@ -10,7 +10,7 @@ import seph.lang.SephObject;
 public class PersistentHashSet extends APersistentSet implements SephObject, EditableCollection {
     static public final PersistentHashSet EMPTY = new PersistentHashSet(null, PersistentHashMap.EMPTY);
 
-    final PersistentMap _meta;
+    final IPersistentMap _meta;
 
     public static PersistentHashSet create(Object... init) {
         PersistentHashSet ret = EMPTY;
@@ -68,7 +68,7 @@ public class PersistentHashSet extends APersistentSet implements SephObject, Edi
         return ret;
     }
 
-    PersistentHashSet(PersistentMap meta, PersistentMap impl) {
+    PersistentHashSet(IPersistentMap meta, IPersistentMap impl) {
         super(impl);
         this._meta = meta;
     }
@@ -85,11 +85,11 @@ public class PersistentHashSet extends APersistentSet implements SephObject, Edi
         return new PersistentHashSet(meta(),impl.associate(o,o));
     }
 
-    public PersistentCollection empty() {
+    public IPersistentCollection empty() {
         return EMPTY.withMeta(meta());	
     }
 
-    public PersistentHashSet withMeta(PersistentMap meta) {
+    public PersistentHashSet withMeta(IPersistentMap meta) {
         return new PersistentHashSet(meta, impl);
     }
 
@@ -97,7 +97,7 @@ public class PersistentHashSet extends APersistentSet implements SephObject, Edi
         return new TransientHashSet(((PersistentHashMap) impl).asTransient());
     }
 
-    public PersistentMap meta() {
+    public IPersistentMap meta() {
         return _meta;
     }
 
@@ -106,7 +106,7 @@ public class PersistentHashSet extends APersistentSet implements SephObject, Edi
             super(impl);
         }
 
-        public PersistentCollection persistent() {
+        public IPersistentCollection persistent() {
             return new PersistentHashSet(null, impl.persistent());
         }
     }

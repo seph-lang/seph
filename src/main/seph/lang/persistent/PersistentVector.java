@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import seph.lang.SephObject;
-import seph.lang.SimpleSephObject;
 
 /**
  * Based on persistent collections in Clojure - see LICENSE.clojure for copyright and licensing information
@@ -33,7 +32,7 @@ public class PersistentVector extends APersistentVector implements SephObject, E
     final int shift;
     final Node root;
     final Object[] tail;
-    final PersistentMap _meta;
+    final IPersistentMap _meta;
 
     public final static PersistentVector EMPTY = new PersistentVector(0, 5, EMPTY_NODE, new Object[]{});
 
@@ -66,7 +65,7 @@ public class PersistentVector extends APersistentVector implements SephObject, E
         this.tail = tail;
     }
 
-    PersistentVector(PersistentMap meta, int cnt, int shift, Node root, Object[] tail){
+    PersistentVector(IPersistentMap meta, int cnt, int shift, Node root, Object[] tail){
         this._meta = meta;
         this.cnt = cnt;
         this.shift = shift;
@@ -139,11 +138,11 @@ public class PersistentVector extends APersistentVector implements SephObject, E
         return cnt;
     }
 
-    public PersistentVector withMeta(PersistentMap meta){
+    public PersistentVector withMeta(IPersistentMap meta){
         return new PersistentVector(meta, cnt, shift, root, tail);
     }
 
-    public PersistentMap meta(){
+    public IPersistentMap meta(){
         return _meta;
     }
 
@@ -198,7 +197,7 @@ public class PersistentVector extends APersistentVector implements SephObject, E
         return new ChunkedSeq(this,0,0);
     }
 
-    static public final class ChunkedSeq extends Seq {
+    static public final class ChunkedSeq extends ASeq {
         public final PersistentVector vec;
         final Object[] node;
         final int i;
@@ -211,7 +210,7 @@ public class PersistentVector extends APersistentVector implements SephObject, E
             this.node = vec.arrayFor(i);
         }
 
-        ChunkedSeq(PersistentMap meta, PersistentVector vec, Object[] node, int i, int offset){
+        ChunkedSeq(IPersistentMap meta, PersistentVector vec, Object[] node, int i, int offset){
             super(meta);
             this.vec = vec;
             this.node = node;
@@ -226,7 +225,7 @@ public class PersistentVector extends APersistentVector implements SephObject, E
             this.offset = offset;
         }
 
-        public ChunkedSeq withMeta(PersistentMap meta){
+        public ChunkedSeq withMeta(IPersistentMap meta){
             if(meta == meta())
                 return this;
             return new ChunkedSeq(meta, vec, node, i, offset);
@@ -249,7 +248,7 @@ public class PersistentVector extends APersistentVector implements SephObject, E
         }
     }
 
-    public PersistentCollection empty(){
+    public IPersistentCollection empty(){
         return EMPTY.withMeta(meta());
     }
 

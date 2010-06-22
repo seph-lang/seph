@@ -12,33 +12,33 @@ import seph.lang.SephObject;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public class PersistentConsTest {
+public class PersistentListTest {
     @Test
     public void first_will_return_the_given_first_value() {
         SephObject expected = new Text("foo");
-        assertSame(expected, new PersistentCons(expected).first());
+        assertSame(expected, new PersistentList(expected).first());
     }
 
     @Test
     public void cons_returns_a_cons_with_first_as_the_object_given() {
         SephObject expected = new Text("foo");
-        assertSame(expected, new PersistentCons(null).cons(expected).first());
+        assertSame(expected, new PersistentList(null).cons(expected).first());
     }
 
     @Test
     public void cons_returns_a_new_object() {
-        PersistentCons pc = new PersistentCons(null);
+        PersistentList pc = new PersistentList(null);
         assertNotSame(pc, pc.cons(null));
     }
 
     @Test
     public void next_returns_null_for_a_simple_cons() {
-        assertNull(new PersistentCons(null).next());
+        assertNull(new PersistentList(null).next());
     }
 
     @Test
     public void next_returns_the_next_element() {
-        PersistentCons pc = new PersistentCons(null);
+        PersistentList pc = new PersistentList(null);
         assertSame(pc, pc.cons(null).next());
     }
-}// PersistentConsTest
+}// PersistentListTest

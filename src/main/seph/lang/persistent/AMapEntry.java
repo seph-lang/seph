@@ -1,7 +1,5 @@
 package seph.lang.persistent;
 
-import java.io.StringWriter;
-
 /**
  * Based on persistent collections in Clojure - see LICENSE.clojure for copyright and licensing information
  */
@@ -35,7 +33,7 @@ public abstract class AMapEntry extends APersistentVector implements IMapEntry {
         return asVector().cons(o);
     }
 
-    public PersistentCollection empty(){
+    public IPersistentCollection empty(){
         return null;
     }
 

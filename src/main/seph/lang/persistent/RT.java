@@ -20,7 +20,7 @@ public class RT {
     static int countFrom(Object o){
         if(o == null) {
             return 0;
-        } else if(o instanceof PersistentCollection) {
+        } else if(o instanceof IPersistentCollection) {
             ISeq s = seq(o);
             o = null;
             int i = 0;
@@ -44,8 +44,8 @@ public class RT {
     }
 
     static public ISeq seq(Object coll){
-        if(coll instanceof Seq) {
-            return (Seq) coll;
+        if(coll instanceof ASeq) {
+            return (ASeq) coll;
         } else {
             return seqFrom(coll);
         }

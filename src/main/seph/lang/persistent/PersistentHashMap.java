@@ -2,7 +2,6 @@ package seph.lang.persistent;
 
 import java.io.Serializable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,12 +24,12 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
     final INode root;
     final boolean hasNull;
     final Object nullValue;
-    final PersistentMap _meta;
+    final IPersistentMap _meta;
 
     final public static PersistentHashMap EMPTY = new PersistentHashMap(0, null, false, null);
     final private static Object NOT_FOUND = new Object();
 
-    static public PersistentMap create(Map other) {
+    static public IPersistentMap create(Map other) {
         ITransientMap ret = EMPTY.asTransient();
         for(Object o : other.entrySet())
             {
@@ -90,7 +89,7 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
     /*
      * @param init {key1,val1,key2,val2,...}
      */
-    public static PersistentHashMap create(PersistentMap meta, Object... init) {
+    public static PersistentHashMap create(IPersistentMap meta, Object... init) {
         return create(init).withMeta(meta);
     }
 
@@ -102,7 +101,7 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
         this._meta = null;
     }
 
-    public PersistentHashMap(PersistentMap meta, int count, INode root, boolean hasNull, Object nullValue) {
+    public PersistentHashMap(IPersistentMap meta, int count, INode root, boolean hasNull, Object nullValue) {
         this._meta = meta;
         this.count = count;
         this.root = root;
@@ -122,7 +121,7 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
         return (root != null) ? root.find(0, Util.hash(key), key) : null;
     }
 
-    public PersistentMap associate(Object key, Object val) {
+    public IPersistentMap associate(Object key, Object val) {
         if(key == null) {
             if(hasNull && val == nullValue)
                 return this;
@@ -146,13 +145,13 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
         return valueAt(key, null);
     }
 
-    public PersistentMap associateOrFail(Object key, Object val) throws Exception{
+    public IPersistentMap associateOrFail(Object key, Object val) throws Exception{
         if(containsKey(key))
             throw new Exception("Key already present");
         return associate(key, val);
     }
 
-    public PersistentMap without(Object key) {
+    public IPersistentMap without(Object key) {
         if(key == null)
             return hasNull ? new PersistentHashMap(meta(), count - 1, root, false, null) : this;
         if(root == null)
@@ -176,7 +175,7 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
         return hasNull ? new Cons(new MapEntry(null, nullValue), s) : s;
     }
 
-    public PersistentCollection empty() {
+    public IPersistentCollection empty() {
         return EMPTY.withMeta(meta());	
     }
 
@@ -185,7 +184,7 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
         return (hash >>> shift) & 0x01f;
     }
 
-    public PersistentHashMap withMeta(PersistentMap meta) {
+    public PersistentHashMap withMeta(IPersistentMap meta) {
         return new PersistentHashMap(meta, count, root, hasNull, nullValue);
     }
 
@@ -193,7 +192,7 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
         return new TransientHashMap(this);
     }
 
-    public PersistentMap meta() {
+    public IPersistentMap meta() {
         return _meta;
     }
 
@@ -256,7 +255,7 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
             return this;
         }
 
-        PersistentMap doPersistent() {
+        IPersistentMap doPersistent() {
             edit.set(null);
             return new PersistentHashMap(count, root, hasNull, nullValue);
         }
@@ -357,7 +356,7 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
         }
 	
         public ISeq nodeSeq() {
-            return MapSeq.create(array);
+            return Seq.create(array);
         }
 
         private ArrayNode ensureEditable(AtomicReference<Thread> edit) {
@@ -424,36 +423,36 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
             return editAndSet(edit, idx, n);
         }
 	
-        static class MapSeq extends Seq {
+        static class Seq extends ASeq {
             final INode[] nodes;
             final int i;
-            final ISeq s; 
-		
+            final ISeq s;
+
             static ISeq create(INode[] nodes) {
                 return create(null, nodes, 0, null);
             }
 		
-            private static ISeq create(PersistentMap meta, INode[] nodes, int i, ISeq s) {
+            private static ISeq create(IPersistentMap meta, INode[] nodes, int i, ISeq s) {
                 if (s != null)
-                    return new MapSeq(meta, nodes, i, s);
+                    return new Seq(meta, nodes, i, s);
                 for(int j = i; j < nodes.length; j++)
                     if (nodes[j] != null) {
                         ISeq ns = nodes[j].nodeSeq();
                         if (ns != null)
-                            return new MapSeq(meta, nodes, j + 1, ns);
+                            return new Seq(meta, nodes, j + 1, ns);
                     }
                 return null;
             }
 		
-            private MapSeq(PersistentMap meta, INode[] nodes, int i, ISeq s) {
+            private Seq(IPersistentMap meta, INode[] nodes, int i, ISeq s) {
                 super(meta);
                 this.nodes = nodes;
                 this.i = i;
                 this.s = s;
             }
 
-            public MapSeq withMeta(PersistentMap meta) {
-                return new MapSeq(meta, nodes, i, s);
+            public Seq withMeta(IPersistentMap meta) {
+                return new Seq(meta, nodes, i, s);
             }
 
             public Object first() {
@@ -904,7 +903,7 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
         return 1 << mask(hash, shift);
     }
 
-    static final class NodeSeq extends Seq {
+    static final class NodeSeq extends ASeq {
         final Object[] array;
         final int i;
         final ISeq s;
@@ -933,14 +932,14 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
             return null;
         }
 	
-        NodeSeq(PersistentMap meta, Object[] array, int i, ISeq s) {
+        NodeSeq(IPersistentMap meta, Object[] array, int i, ISeq s) {
             super(meta);
             this.array = array;
             this.i = i;
             this.s = s;
         }
 
-        public NodeSeq withMeta(PersistentMap meta) {
+        public NodeSeq withMeta(IPersistentMap meta) {
             return new NodeSeq(meta, array, i, s);
         }
 

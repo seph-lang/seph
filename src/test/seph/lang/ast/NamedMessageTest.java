@@ -3,16 +3,14 @@
  */
 package seph.lang.ast;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 import seph.lang.SephObject;
+import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
-import seph.lang.persistent.PersistentCons;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -48,7 +46,7 @@ public class NamedMessageTest {
 
     @Test
     public void has_a_list_of_arguments() {
-        PersistentList args = PersistentCons.create(Arrays.<Message>asList(new NamedMessage(null, null, null, null, 0, 0), new NamedMessage(null, null, null, null, 0, 0)));
+        IPersistentList args = PersistentList.create(Arrays.<Message>asList(new NamedMessage(null, null, null, null, 0, 0), new NamedMessage(null, null, null, null, 0, 0)));
         NamedMessage msg = new NamedMessage(null, args, null, null, 0, 0);
         assertSame(args, msg.arguments());
     }
@@ -56,7 +54,7 @@ public class NamedMessageTest {
     @Test
     public void arguments_return_an_empty_array_if_given_null() {
         NamedMessage msg = new NamedMessage(null, null, null, null, 0, 0);
-        assertEquals(PersistentCons.EMPTY, msg.arguments());
+        assertEquals(PersistentList.EMPTY, msg.arguments());
     }
 
     @Test
@@ -67,7 +65,7 @@ public class NamedMessageTest {
 
     @Test
     public void with_next_returns_a_new_object_with_the_same_arguments() {
-        PersistentList expected = new PersistentCons(null);
+        IPersistentList expected = new PersistentList(null);
         NamedMessage msg = new NamedMessage(null, expected, null, null, 0, 0);
         assertSame(expected, msg.withNext(null).arguments());
     }

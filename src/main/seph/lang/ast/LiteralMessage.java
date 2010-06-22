@@ -3,10 +3,8 @@
  */
 package seph.lang.ast;
 
-import java.util.List;
-
 import seph.lang.SephObject;
-import seph.lang.persistent.PersistentList;
+import seph.lang.persistent.IPersistentList;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -31,7 +29,7 @@ public final class LiteralMessage implements Message, SephObject {
         return "<literal:" + literal.getClass().getName() + ">";
     }
 
-    public PersistentList arguments() {
+    public IPersistentList arguments() {
         return NamedMessage.NO_ARGUMENTS;
     }
 

@@ -2,8 +2,6 @@ package seph.lang.persistent;
 
 import java.util.Map;
 
-import seph.lang.persistent.PersistentHashMap.INode;
-
 /**
  * Based on persistent collections in Clojure - see LICENSE.clojure for copyright and licensing information
  */
@@ -13,7 +11,7 @@ abstract class ATransientMap implements ITransientMap {
 	abstract ITransientMap doWithout(Object key);
 	abstract Object doValAt(Object key, Object notFound);
 	abstract int doCount();
-	abstract PersistentMap doPersistent();
+	abstract IPersistentMap doPersistent();
 
 	public ITransientMap conj(Object o) {
 		ensureEditable();
@@ -49,7 +47,7 @@ abstract class ATransientMap implements ITransientMap {
 		return doWithout(key);
 	}
 
-	public final PersistentMap persistent() {
+	public final IPersistentMap persistent() {
 		ensureEditable();
 		return doPersistent();
 	}
