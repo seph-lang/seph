@@ -180,7 +180,6 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
     }
 
     static int mask(int hash, int shift) {
-        //return ((hash << shift) >>> 27);// & 0x01f;
         return (hash >>> shift) & 0x01f;
     }
 
