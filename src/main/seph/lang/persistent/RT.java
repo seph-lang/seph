@@ -56,6 +56,8 @@ public class RT {
             return ((Seqable) coll).seq();
         } else if(coll == null) {
             return null;
+        } else if(coll instanceof Iterable) {
+            return IteratorSeq.create(((Iterable) coll).iterator());
         } else {
             Class c = coll.getClass();
             Class sc = c.getSuperclass();

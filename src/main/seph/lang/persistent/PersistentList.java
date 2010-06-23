@@ -218,17 +218,11 @@ public class PersistentList extends ASeq implements IPersistentList, List, Count
         }
 
         public int indexOf(Object o) {
-            ISeq s = seq();
-            for(int i = 0; s != null; s = s.next(), i++)
-                {
-                    if(Util.equiv(s.first(), o))
-                        return i;
-                }
             return -1;
         }
 
         public int lastIndexOf(Object o) {
-            return reify().lastIndexOf(o);
+            return -1;
         }
 
         public ListIterator listIterator() {
@@ -240,7 +234,7 @@ public class PersistentList extends ASeq implements IPersistentList, List, Count
         }
 
         public Object get(int index) {
-            return RT.nth(this, index);
+            throw new IndexOutOfBoundsException();
         }
 
         public void add(int index, Object element) {
