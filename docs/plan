@@ -1,7 +1,8 @@
 Plan to get somewhere working:
 ------------------------------
 
-  - Add tests for them, checking with a coverage tool
+- Create a new site
+- Create two examples - one based on people, and one on Guy Steeles tail recursion example
 - Implement a simplistic interpreter for simple mimicking
 - Implement a simple, functional operator shuffling
 - Implement a simplistic interpreter for defining and running methods.

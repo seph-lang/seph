@@ -289,4 +289,26 @@ public class PersistentArrayMapTest {
         PersistentArrayMap base = new PersistentArrayMap(meta, new Object[]{"foo", "bar"});
         assertThat(((PersistentArrayMap)base.empty()).meta(), is(meta));
     }
+
+    @Test
+    public void cons_can_add_a_map_entry() {
+        assertThat(((PersistentArrayMap)new PersistentArrayMap(new Object[]{"foo", "bar"}).cons(new AbstractMap.SimpleEntry("foxy", "boxy"))).valueAt("foxy"), is((Object)"boxy"));
+    }
+
+    @Test
+    public void cons_can_add_a_persistent_vector() {
+        assertThat(((PersistentArrayMap)new PersistentArrayMap(new Object[]{"foo", "bar"}).cons(PersistentVector.create("foxy", "boxy"))).valueAt("foxy"), is((Object)"boxy"));
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void cons_will_fail_if_given_a_vector_with_something_else_than_two_elements() {
+        new PersistentArrayMap(new Object[]{"foo", "bar"}).cons(PersistentVector.create("foxy"));
+    }
+
+    @Test
+    public void cons_can_add_a_seqable_thing_of_map_entries() {
+        PersistentArrayMap res = ((PersistentArrayMap)new PersistentArrayMap(new Object[]{"foo", "bar"}).cons(Arrays.asList(new AbstractMap.SimpleEntry("foxy", "boxy"), new AbstractMap.SimpleEntry("maxy", "slaxy"))));
+        assertThat(res.valueAt("foxy"), is((Object)"boxy"));
+        assertThat(res.valueAt("maxy"), is((Object)"slaxy"));
+    }
 }// PersistentArrayMapTest
