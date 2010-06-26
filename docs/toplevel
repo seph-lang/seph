@@ -40,4 +40,34 @@ the fastercsv cell will contain a Module instance with the values specified.
 
 
 
+
 ensure recursive dependencies can be specified
+
+------------------------------------
+
+The above is dated. The new format allows interleaving of lexical scopes and top level definitions, plus lexical scopes using them:
+
+  a = 42,
+
+  foo: #(y, a + 15*y),
+
+  b = foo(10),
+
+  bar: b,
+  fux: foo(b)
+
+is the same as:
+
+  Module definition(m,
+    a = 42 + dependencies[:param1]
+    definition(
+      with(foo: #(y, a + 15*y)) definition(
+        b = foo(10)
+        definition(
+          with(bar: b) definition(
+            with(fux: foo(b))))))) collapseToParent(Module)
+
+  blarg: from("something", param1: 10)
+
+"definition" establishes a new lexical scope with a parent scope outside. It executes with the receiving module as self, and returns the last value. This should be a module. If the last returned value is not a module, return self.
+definition also takes any keyword arguments as dependencies to that module, so a module can be created with a specific dependency.
