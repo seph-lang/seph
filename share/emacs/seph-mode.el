@@ -200,20 +200,21 @@
                                  ;; "Symbol"
                                  ;; "System"
                                  ;; "Text"
+                                 "Something"
                                  )
   "seph mode prototype names")
 
 (defconst seph-cell-names '(
                             ;; "print"
-                            ;; "println"
+                            "println"
 
                             ;; "cell"
                             ;; "cell?"
                             ;; "documentation"
 
-                            ;; "if"
+                            "if"
                             ;; "unless"
-                            ;; "while"
+                            "while"
                             ;; "until"
                             ;; "loop"
                             ;; "for"
@@ -353,8 +354,8 @@
                                 ;; "break"
                                 ;; "continue"
 
-                                ;; "mimic"
-                                ;; "self"
+                                "with"
+                                "self"
                                 ;; "use"
 
                                 ;; "fn"
@@ -369,9 +370,9 @@
                                 ;; "dlecrox"
                                 ;; "dsyntax"
 
-                                ;; "true"
-                                ;; "false"
-                                ;; "nil"
+                                "true"
+                                "false"
+                                "nil"
                                 )
   "seph mode operator names")
 

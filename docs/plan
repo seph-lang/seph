@@ -1,20 +1,6 @@
 Plan to get somewhere working:
 ------------------------------
 
-- Create a new site
-- Create two examples - one based on people, and one on Guy Steeles tail recursion example
-     (use local blocks for the people example)
-
-- Implement a simplistic interpreter for simple mimicking
-- Implement a simple, functional operator shuffling
-- Implement a simplistic interpreter for defining and running methods.
-- Generate simple bytecode for the above
-- Integrate KILIM into simple bytecode
-- Integrate tail recursion into the above
-
-
-
-
 
 
 
@@ -48,3 +34,16 @@ To implement for fact:
   - *
   - -
   - println
+
+
+
+
+
+Lexical scopes:
+ - sent to every invocation of something. BIF's will need to be able to take:
+         ThreadContext, Scope, Self         
+
+ - local variables
+ - pointer to outer scope 
+
+is the object scope separate from the lexical scope? does a lexical scope capture self? ... probably not - it would be hard to implement methods correctly in that case.
