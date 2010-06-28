@@ -237,6 +237,10 @@
                             ;; "list"
                             ;; "dict"
                             ;; "set"
+                            "set"
+                            "list"
+                            "dict"
+                            "vector"
 
                             ;; "with"
                             ;; "kind"
@@ -425,9 +429,9 @@
   (list
     '("\\([[:alnum:]!?_:-]+\\)[[:space:]]*=[^=][[:space:]]*[[:alnum:]_:-]+[[:space:]]+mimic" 1 seph-font-lock-object-mimic-face)
     '("\\([[:alnum:]!?_:-]+\\)[[:space:]]*[+*/-]?=[^=]" 1 seph-font-lock-object-assign-face)
-    '("#/.*?/[oxpniums]*" 0 seph-font-lock-regexp-face)
-    '("#r\\[.*?\\][oxpniums]*" 0 seph-font-lock-regexp-face)
-    '("#\\[" 0 seph-font-lock-string-face t)
+    '("%/.*?/[oxpniums]*" 0 seph-font-lock-regexp-face)
+    '("%r\\[.*?\\][oxpniums]*" 0 seph-font-lock-regexp-face)
+    '("%\\[" 0 seph-font-lock-string-face t)
     '("\\([^\\\\]\\|\\\\\\\\\\)\\(#{[^}]*}\\)" 2 seph-font-lock-expression-face t)
     `(,(regexp-opt seph-prototype-names 'words) . seph-font-lock-known-kind-face)
     `(,(regexp-opt seph-standout-names 'words) . font-lock-warning-face)

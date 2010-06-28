@@ -10,7 +10,7 @@ Adjoin: IntSet with(
 
 Union: IntSet with(
   empty?:    #(left empty? && right empty?),
-  contains?: #(y, obj == y || s contains?(y))
+  contains?: #(y, left contains?(y) || right contains?(y))
 ),
 
 Empty: IntSet with(
