@@ -113,7 +113,7 @@
 
   <target name="jar" depends="test" description="Create the seph.jar file">
     <jar destfile="${lib.dir}/seph.jar">
-      <fileset dir="${classes.dir}">
+      <fileset dir="${main.classes.dir}">
         <include name="**/*.class"/>
         <include name="**/*.sp"/>
         <include name="**/*.properties"/>

@@ -60,4 +60,8 @@ public final class LiteralMessage implements Message, SephObject {
     public int position() {
         return this.position;
     }
+
+    public String toString() {
+        return literal + (next == null ? "" : " " + next.toString());
+    }
 }// LiteralMessage

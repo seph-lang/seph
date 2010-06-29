@@ -16,4 +16,8 @@ public class Text implements SephObject {
     public String text() {
         return this.text;
     }
+
+    public String toString() {
+        return "\"" + text + "\"";
+    }
 }// Text

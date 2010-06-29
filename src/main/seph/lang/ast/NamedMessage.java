@@ -6,6 +6,7 @@ package seph.lang.ast;
 import seph.lang.SephObject;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
+import seph.lang.persistent.ISeq;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -64,5 +65,24 @@ public final class NamedMessage implements Message, SephObject {
 
     public int position() {
         return this.position;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(name);
+        if(arguments.seq() != null) {
+            sb.append("(");
+            String sep = "";
+            for(ISeq seq = arguments.seq(); seq != null; seq = seq.next()) {
+                sb.append(sep).append(seq.first());
+                sep = ", ";
+            }
+            sb.append(")");
+        }
+        if(next != null) {
+            sb.append(" ").append(next);
+        }
+        return sb.toString();
     }
 }// NamedMessage

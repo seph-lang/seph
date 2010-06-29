@@ -3,6 +3,16 @@
  */
 package seph.lang;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.IOException;
+
+import seph.lang.parser.Parser;
 import seph.lang.parser.StringUtils;
 
 /**
@@ -19,5 +29,20 @@ public class Runtime {
 
     public Regexp newRegexp(String pattern, String flags) {
         return Regexp.create(new StringUtils().replaceRegexpEscapes(pattern), flags);
+    }
+
+    public Object evaluateStream(String name, Reader reader) throws ControlFlow, IOException {
+        SephObject msg = (SephObject)new Parser(this, reader, name).parseFully().seq().first();
+
+        System.err.println(msg);
+        return null;
+    }
+
+    public Object evaluateFile(File f) throws ControlFlow, IOException {
+        return evaluateStream(f.getCanonicalPath(), new InputStreamReader(new FileInputStream(f), "UTF-8"));
+    }
+
+    public Object evaluateFile(String filename) throws ControlFlow, IOException {
+        return evaluateStream(filename, new InputStreamReader(new FileInputStream(new File(filename)), "UTF-8"));
     }
 }// Runtime
