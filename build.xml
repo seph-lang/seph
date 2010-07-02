@@ -43,11 +43,11 @@
   </target>
 
   <target name="generate_filters" depends="prepare" description="Generates source files">
-    <exec executable="ruby" input="generate_filter_data.rb" failonerror="false" failifexecutionfails="false"/>
+    <exec executable="ruby" input="utils/generate_filter_data.rb" failonerror="false" failifexecutionfails="false"/>
   </target>
 
   <target name="generate_bim_stubs" depends="prepare" description="Generates stubs for necessary files to get dependencies to built in modules to compile">
-    <exec executable="ruby" input="generate_bim_stubs.rb" failonerror="true" failifexecutionfails="true"/>
+    <exec executable="ruby" input="utils/generate_bim_stubs.rb" failonerror="true" failifexecutionfails="true"/>
   </target>
 
   <target name="compile" depends="generate_filters,generate_bim_stubs" description="Compile the source files for the project.">
