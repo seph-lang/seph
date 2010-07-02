@@ -8,26 +8,13 @@ import seph.lang.persistent.IPersistentList;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-@SephKind(parent="Something")
-public class Text implements SephObject {
-    private final String text;
-
-    public Text(String text) {
-        this.text = text;
-    }
-
-    public String text() {
-        return this.text;
-    }
-
-    public String toString() {
-        return "\"" + text + "\"";
-    }
-
+@SephSingleton
+public class Base implements SephObject {
+    public final static Base instance = new Base();
 
 
     public SephObject get(String cellName) {
-        return seph.lang.bim.TextBase.get(cellName);
+        return seph.lang.bim.BaseBase.get(cellName);
     }
 
     public boolean isActivatable() {
@@ -37,4 +24,4 @@ public class Text implements SephObject {
     public SephObject activateWith(SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
-}// Text
+}// Base

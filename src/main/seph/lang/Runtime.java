@@ -12,13 +12,17 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.IOException;
 
+import seph.lang.ast.Message;
 import seph.lang.parser.Parser;
 import seph.lang.parser.StringUtils;
+import seph.lang.interpreter.MessageInterpreter;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class Runtime {
+    public final static Object TRUE = new Object();
+
     public Text newText(String stringBeforeEscapeMangling) {
         return new Text(new StringUtils().replaceEscapes(stringBeforeEscapeMangling));
     }
@@ -32,10 +36,8 @@ public class Runtime {
     }
 
     public Object evaluateStream(String name, Reader reader) throws ControlFlow, IOException {
-        SephObject msg = (SephObject)new Parser(this, reader, name).parseFully().seq().first();
-
-        System.err.println(msg);
-        return null;
+        Message msg = (Message)new Parser(this, reader, name).parseFully().seq().first();
+        return new MessageInterpreter(this, new Ground()).evaluate(msg);
     }
 
     public Object evaluateFile(File f) throws ControlFlow, IOException {

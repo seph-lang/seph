@@ -13,7 +13,6 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
     static final int HASHTABLE_THRESHOLD = 16;
 
     public static final PersistentArrayMap EMPTY = new PersistentArrayMap();
-    private final IPersistentMap _meta;
 
     static public IPersistentMap create(Map other) {
         ITransientMap ret = EMPTY.asTransient();
@@ -25,8 +24,8 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
     }
 
     protected PersistentArrayMap() {
+        super();
         this.array = new Object[]{};
-        this._meta = null;
     }
 
     public PersistentArrayMap withMeta(IPersistentMap meta) {
@@ -57,13 +56,13 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
      * @param init {key1,val1,key2,val2,...}
      */
     public PersistentArrayMap(Object[] init) {
+        super();
         this.array = init;
-        this._meta = null;
     }
 
 
     public PersistentArrayMap(IPersistentMap meta, Object[] init) {
-        this._meta = meta;
+        super(meta);
         this.array = init;
     }
 
@@ -180,10 +179,6 @@ public class PersistentArrayMap extends APersistentMap implements SephObject, Ed
         if(array.length > 0)
             return new Seq(array, 0);
         return null;
-    }
-
-    public IPersistentMap meta(){
-        return _meta;
     }
 
     static class Seq extends ASeq implements Counted {

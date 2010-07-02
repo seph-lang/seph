@@ -4,12 +4,20 @@ import java.io.Serializable;
 import java.util.*;
 
 import seph.lang.SephObject;
+import seph.lang.SimpleSephObject;
 
 /**
  * Based on persistent collections in Clojure - see LICENSE.clojure for copyright and licensing information
  */
-public abstract class APersistentVector implements IPersistentVector, Iterable, List, RandomAccess, Comparable, Serializable {
+public abstract class APersistentVector extends SimpleSephObject implements IPersistentVector, Iterable, List, RandomAccess, Comparable, Serializable {
     int _hash = -1;
+
+    protected APersistentVector(IPersistentMap meta) {
+        super(meta);
+    }
+
+    protected APersistentVector() {
+    }
 
     public ISeq seq(){
         if(count() > 0)
@@ -415,10 +423,9 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
         final IPersistentVector v;
         final int start;
         final int end;
-        final IPersistentMap _meta;
 
         public SubVector(IPersistentMap meta, IPersistentVector v, int start, int end){
-            this._meta = meta;
+            super(meta);
 
             if(v instanceof APersistentVector.SubVector) {
                 APersistentVector.SubVector sv = (APersistentVector.SubVector) v;
@@ -442,7 +449,7 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
                 throw new IndexOutOfBoundsException();
             else if(start + i == end)
                 return cons(val);
-            return new SubVector(_meta, v.assocN(start + i, val), start, end);
+            return new SubVector(meta(), v.assocN(start + i, val), start, end);
         }
 
         public int count(){
@@ -450,7 +457,7 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
         }
 
         public IPersistentVector cons(Object o){
-            return new SubVector(_meta, v.assocN(end, o), start, end + 1);
+            return new SubVector(meta(), v.assocN(end, o), start, end + 1);
         }
 
         public IPersistentCollection empty(){
@@ -458,13 +465,9 @@ public abstract class APersistentVector implements IPersistentVector, Iterable, 
         }
 
         public SubVector withMeta(IPersistentMap meta){
-            if(meta == _meta)
+            if(meta == meta())
                 return this;
             return new SubVector(meta, v, start, end);
-        }
-
-        public IPersistentMap meta(){
-            return _meta;
         }
     }
 }

@@ -10,8 +10,6 @@ import seph.lang.SephObject;
 public class PersistentHashSet extends APersistentSet implements SephObject, EditableCollection {
     static public final PersistentHashSet EMPTY = new PersistentHashSet(null, PersistentHashMap.EMPTY);
 
-    final IPersistentMap _meta;
-
     public static PersistentHashSet create(Object... init) {
         PersistentHashSet ret = EMPTY;
         for(int i = 0; i < init.length; i++) {
@@ -69,8 +67,7 @@ public class PersistentHashSet extends APersistentSet implements SephObject, Edi
     }
 
     PersistentHashSet(IPersistentMap meta, IPersistentMap impl) {
-        super(impl);
-        this._meta = meta;
+        super(meta, impl);
     }
 
     public IPersistentSet disjoin(Object key) throws Exception{
@@ -95,10 +92,6 @@ public class PersistentHashSet extends APersistentSet implements SephObject, Edi
 
     public ITransientCollection asTransient() {
         return new TransientHashSet(((PersistentHashMap) impl).asTransient());
-    }
-
-    public IPersistentMap meta() {
-        return _meta;
     }
 
     static final class TransientHashSet extends ATransientSet {

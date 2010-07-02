@@ -39,13 +39,18 @@
     <mkdir dir="${main.classes.dir}"/>
     <mkdir dir="${test.classes.dir}"/>
     <mkdir dir="${coverage.dir}"/>
+    <mkdir dir="${src.gen.dir}"/>
   </target>
 
   <target name="generate_filters" depends="prepare" description="Generates source files">
     <exec executable="ruby" input="generate_filter_data.rb" failonerror="false" failifexecutionfails="false"/>
   </target>
 
-  <target name="compile" depends="generate_filters" description="Compile the source files for the project.">
+  <target name="generate_bim_stubs" depends="prepare" description="Generates stubs for necessary files to get dependencies to built in modules to compile">
+    <exec executable="ruby" input="generate_bim_stubs.rb" failonerror="true" failifexecutionfails="true"/>
+  </target>
+
+  <target name="compile" depends="generate_filters,generate_bim_stubs" description="Compile the source files for the project.">
     <filter filtersfile="version_data.properties"/>
     <filter token="VERSION" value="0"/>
     <filter token="VERSION_RUNTIME" value="0.0.1"/>
@@ -54,6 +59,7 @@
     <javac destdir="${main.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" encoding="UTF-8">
       <classpath refid="build.classpath"/>
       <src path="${src.dir}"/>
+      <src path="${src.gen.dir}"/>
       <include name="**/*.java"/>
     </javac>
 
@@ -166,6 +172,7 @@
 
   <target name="clean" description="clean almost everything">
     <delete dir="${build.dir}"/>
+    <delete dir="${src.gen.dir}"/>
     <delete file="${lib.dir}/seph.jar" quiet="true"/>
   </target>
 </project>

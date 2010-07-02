@@ -5,6 +5,8 @@ package seph.lang;
 
 import org.jregex.Pattern;
 
+import seph.lang.persistent.IPersistentList;
+
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
@@ -33,5 +35,19 @@ public class Regexp implements SephObject {
 
     public String flags() {
         return this.flags;
+    }
+
+
+
+    public SephObject get(String cellName) {
+        return null;
+    }
+
+    public boolean isActivatable() {
+        return false;
+    }
+
+    public SephObject activateWith(SephObject receiver, IPersistentList arguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// Regexp

@@ -3,8 +3,24 @@
 
 package gnu.math;
 
-public abstract class Numeric extends java.lang.Number implements seph.lang.SephObject
+import seph.lang.persistent.IPersistentList;
+import seph.lang.SephObject;
+
+public abstract class Numeric extends java.lang.Number implements SephObject
 {
+
+    public SephObject get(String cellName) {
+        return null;
+    }
+
+    public boolean isActivatable() {
+        return false;
+    }
+
+    public SephObject activateWith(SephObject receiver, IPersistentList arguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
   public float floatValue () { return (float) doubleValue(); }
   public int intValue() { return (int) longValue(); }
   public long longValue() { return (long) doubleValue(); }

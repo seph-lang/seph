@@ -32,7 +32,6 @@ public class PersistentVector extends APersistentVector implements SephObject, E
     final int shift;
     final Node root;
     final Object[] tail;
-    final IPersistentMap _meta;
 
     public final static PersistentVector EMPTY = new PersistentVector(0, 5, EMPTY_NODE, new Object[]{});
 
@@ -58,7 +57,7 @@ public class PersistentVector extends APersistentVector implements SephObject, E
     }
 
     PersistentVector(int cnt, int shift, Node root, Object[] tail){
-        this._meta = null;
+        super();
         this.cnt = cnt;
         this.shift = shift;
         this.root = root;
@@ -66,7 +65,7 @@ public class PersistentVector extends APersistentVector implements SephObject, E
     }
 
     PersistentVector(IPersistentMap meta, int cnt, int shift, Node root, Object[] tail){
-        this._meta = meta;
+        super(meta);
         this.cnt = cnt;
         this.shift = shift;
         this.root = root;
@@ -140,10 +139,6 @@ public class PersistentVector extends APersistentVector implements SephObject, E
 
     public PersistentVector withMeta(IPersistentMap meta){
         return new PersistentVector(meta, cnt, shift, root, tail);
-    }
-
-    public IPersistentMap meta(){
-        return _meta;
     }
 
     public PersistentVector cons(Object val){

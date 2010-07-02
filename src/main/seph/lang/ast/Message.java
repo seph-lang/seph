@@ -3,6 +3,7 @@
  */
 package seph.lang.ast;
 
+import seph.lang.Runtime;
 import seph.lang.SephObject;
 import seph.lang.persistent.IPersistentList;
 
@@ -19,5 +20,7 @@ public interface Message {
     String filename();
     int line();
     int position();
+
+    SephObject sendTo(SephObject receiver, Runtime runtime);
 }// Message
 

@@ -24,7 +24,6 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
     final INode root;
     final boolean hasNull;
     final Object nullValue;
-    final IPersistentMap _meta;
 
     final public static PersistentHashMap EMPTY = new PersistentHashMap(0, null, false, null);
     final private static Object NOT_FOUND = new Object();
@@ -94,15 +93,15 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
     }
 
     PersistentHashMap(int count, INode root, boolean hasNull, Object nullValue) {
+        super();
         this.count = count;
         this.root = root;
         this.hasNull = hasNull;
         this.nullValue = nullValue;
-        this._meta = null;
     }
 
     public PersistentHashMap(IPersistentMap meta, int count, INode root, boolean hasNull, Object nullValue) {
-        this._meta = meta;
+        super(meta);
         this.count = count;
         this.root = root;
         this.hasNull = hasNull;
@@ -189,10 +188,6 @@ public class PersistentHashMap extends APersistentMap implements EditableCollect
 
     public TransientHashMap asTransient() {
         return new TransientHashMap(this);
-    }
-
-    public IPersistentMap meta() {
-        return _meta;
     }
 
     static final class TransientHashMap extends ATransientMap {

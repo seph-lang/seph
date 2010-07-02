@@ -3,11 +3,20 @@ package seph.lang.persistent;
 import java.io.Serializable;
 import java.util.*;
 
+import seph.lang.SimpleSephObject;
+
 /**
  * Based on persistent collections in Clojure - see LICENSE.clojure for copyright and licensing information
  */
-public abstract class APersistentMap implements IPersistentMap, Map, Iterable, Serializable {
+public abstract class APersistentMap extends SimpleSephObject implements IPersistentMap, Map, Iterable, Serializable {
     int _hash = -1;
+
+    protected APersistentMap(IPersistentMap meta) {
+        super(meta);
+    }
+
+    protected APersistentMap() {
+    }
 
     public IPersistentCollection cons(Object o){
         if(o instanceof Map.Entry) {

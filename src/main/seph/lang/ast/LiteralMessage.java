@@ -4,6 +4,7 @@
 package seph.lang.ast;
 
 import seph.lang.SephObject;
+import seph.lang.Runtime;
 import seph.lang.persistent.IPersistentList;
 
 /**
@@ -63,5 +64,22 @@ public final class LiteralMessage implements Message, SephObject {
 
     public String toString() {
         return literal + (next == null ? "" : " " + next.toString());
+    }
+
+    public SephObject sendTo(SephObject receiver, Runtime runtime) {
+        return literal;
+    }
+
+
+    public SephObject get(String cellName) {
+        return null;
+    }
+
+    public boolean isActivatable() {
+        return false;
+    }
+
+    public SephObject activateWith(SephObject receiver, IPersistentList arguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// LiteralMessage

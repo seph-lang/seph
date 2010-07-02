@@ -4,6 +4,7 @@
 package seph.lang.ast;
 
 import seph.lang.SephObject;
+import seph.lang.Runtime;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.ISeq;
@@ -23,7 +24,7 @@ public final class NamedMessage implements Message, SephObject {
     final static IPersistentList NO_ARGUMENTS = PersistentList.EMPTY;
     
     public NamedMessage(String name, IPersistentList arguments, Message next, String filename, int line, int position) {
-        this.name = name;
+        this.name = name == null ? null : name.intern();
         this.arguments = arguments == null ? NO_ARGUMENTS : arguments;
         this.next = next;
         this.filename = filename;
@@ -84,5 +85,30 @@ public final class NamedMessage implements Message, SephObject {
             sb.append(" ").append(next);
         }
         return sb.toString();
+    }
+
+    public SephObject sendTo(SephObject receiver, Runtime runtime) {
+        SephObject value = receiver.get(name);
+        if(value == null) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+
+        if(value.isActivatable()) {
+            return value.activateWith(receiver, arguments);
+        }
+        return value;
+    }
+
+
+    public SephObject get(String cellName) {
+        return null;
+    }
+
+    public boolean isActivatable() {
+        return false;
+    }
+
+    public SephObject activateWith(SephObject receiver, IPersistentList arguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// NamedMessage

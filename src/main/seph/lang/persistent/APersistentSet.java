@@ -5,14 +5,22 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
+import seph.lang.SimpleSephObject;
+
 /**
  * Based on persistent collections in Clojure - see LICENSE.clojure for copyright and licensing information
  */
-public abstract class APersistentSet  implements IPersistentSet, Collection, Set, Serializable {
+public abstract class APersistentSet  extends SimpleSephObject implements IPersistentSet, Collection, Set, Serializable {
     int _hash = -1;
     final IPersistentMap impl;
 
-    protected APersistentSet(IPersistentMap impl){
+    protected APersistentSet(IPersistentMap impl) {
+        super();
+        this.impl = impl;
+    }
+
+    protected APersistentSet(IPersistentMap meta, IPersistentMap impl) {
+        super(meta);
         this.impl = impl;
     }
 
