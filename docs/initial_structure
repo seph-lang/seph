@@ -46,10 +46,3 @@ class Selector {
     this.id = id;
   }
 }
-
-
-
-Things to add for initial version:
- - LinkedList implementation (Cons, Empty)
- - PersistentMap
- - Numbers
