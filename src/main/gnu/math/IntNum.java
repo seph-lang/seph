@@ -9,7 +9,6 @@ import java.math.BigInteger;
 /** A class for infinite-precision integers.
  * @author Per Bothner
  */
-
 public class IntNum extends RatNum implements Externalizable
 {
   /** All integers are stored in 2's-complement form.

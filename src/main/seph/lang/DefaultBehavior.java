@@ -8,7 +8,7 @@ import seph.lang.persistent.IPersistentList;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-@SephSingleton(parent="IODefaultBehavior")
+@SephSingleton(parents="IODefaultBehavior")
 public class DefaultBehavior implements SephObject {
     public final static DefaultBehavior instance = new DefaultBehavior();
 

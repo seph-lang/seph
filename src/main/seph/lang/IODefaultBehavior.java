@@ -3,6 +3,7 @@
  */
 package seph.lang;
 
+import seph.lang.ast.NamedMessage;
 import seph.lang.persistent.IPersistentList;
 
 /**
@@ -13,9 +14,9 @@ public class IODefaultBehavior implements SephObject {
     public final static IODefaultBehavior instance = new IODefaultBehavior();
 
     @SephMethod
-    public final static SephObject println() {
-        System.err.println("Calling println, yay!");
-        return null;
+    public final static SephObject println(SephObject receiver) {
+        System.out.println(((Text)new NamedMessage("asText", null, null, null, -1, -1).sendTo(receiver, null)).text());
+        return Runtime.NIL;
     }
 
     public SephObject get(String cellName) {

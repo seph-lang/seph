@@ -3,14 +3,13 @@
 
 package gnu.math;
 
+import seph.lang.*;
 import seph.lang.persistent.IPersistentList;
-import seph.lang.SephObject;
 
 public abstract class Numeric extends java.lang.Number implements SephObject
 {
-
     public SephObject get(String cellName) {
-        return null;
+        return seph.lang.bim.NumberBase.get(cellName);
     }
 
     public boolean isActivatable() {

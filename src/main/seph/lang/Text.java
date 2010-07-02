@@ -8,7 +8,7 @@ import seph.lang.persistent.IPersistentList;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-@SephKind(parent="Something")
+@SephKind(parents="Something")
 public class Text implements SephObject {
     private final String text;
 
@@ -36,5 +36,10 @@ public class Text implements SephObject {
 
     public SephObject activateWith(SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    @SephMethod
+    public final static SephObject asText(SephObject receiver) {
+        return receiver;
     }
 }// Text

@@ -1,27 +1,8 @@
 Plan to get somewhere working:
 ------------------------------
 
-
-
-
-
 - Unify methods and fns? Code will have both an object scope and a lexical scope. Lookup will use lexical scope first and only fall back on object after that. Force object by doing @.
     Setting things will be easy - since we know they will happen at the lexical level. No need to lookup things in the object scope.
-
-  Change name in that case At this point it makes sense to have syntax.
-
-    plus: #(x, y, x+y)   (returns DefaultMethod)
-    
-Make # a keyword - something the compiler recognizes and that will introduce a compilation boundary. Possibly allow a lambda too.
-
-
-
-
-
-
-
-
-
 
 To implement for fact:
  - Top level notation
@@ -34,9 +15,6 @@ To implement for fact:
   - *
   - -
   - println
-
-
-
 
 
 Lexical scopes:

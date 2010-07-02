@@ -8,7 +8,7 @@ import seph.lang.persistent.IPersistentList;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-@SephSingleton(parent="SephGround")
+@SephSingleton(parents="SephGround")
 public class Ground implements SephObject {
     public final static Ground instance = new Ground();
 
