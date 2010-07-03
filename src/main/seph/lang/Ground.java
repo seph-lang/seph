@@ -15,6 +15,21 @@ public class Ground implements SephObject {
     @SephCell
     public final static SephObject Something = null;
 
+    @SephCell
+    public final static SephObject Ground = null;
+
+    @SephCell
+    public final static SephObject SephGround = null;
+
+    @SephCell
+    public final static SephObject Base = null;
+
+    @SephCell
+    public final static SephObject DefaultBehavior = null;
+
+    @SephCell
+    public final static SephObject IODefaultBehavior = null;
+
     public SephObject get(String cellName) {
         return seph.lang.bim.GroundBase.get(cellName);
     }
