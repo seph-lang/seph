@@ -5,6 +5,7 @@ package seph.lang.ast;
 
 import seph.lang.SephObject;
 import seph.lang.Runtime;
+import seph.lang.LexicalScope;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.ISeq;
@@ -87,14 +88,14 @@ public final class NamedMessage implements Message, SephObject {
         return sb.toString();
     }
 
-    public SephObject sendTo(SephObject receiver, Runtime runtime) {
+    public SephObject sendTo(LexicalScope scope, SephObject receiver, Runtime runtime) {
         SephObject value = receiver.get(name);
         if(value == null) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
 
         if(value.isActivatable()) {
-            return value.activateWith(receiver, arguments);
+            return value.activateWith(scope, receiver, arguments);
         }
         return value;
     }
@@ -108,7 +109,7 @@ public final class NamedMessage implements Message, SephObject {
         return false;
     }
 
-    public SephObject activateWith(SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// NamedMessage

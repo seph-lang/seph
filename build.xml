@@ -48,6 +48,7 @@
       <src path="${src.dir}"/>
       <include name="seph/lang/anno/AnnotationBimCreator.java"/>
       <include name="seph/lang/SephSingleton.java"/>
+      <include name="seph/lang/SephCell.java"/>
       <include name="seph/lang/SephMethod.java"/>
       <include name="seph/lang/SephKind.java"/>
     </javac>

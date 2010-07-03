@@ -47,7 +47,7 @@ public class Regexp implements SephObject {
         return false;
     }
 
-    public SephObject activateWith(SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// Regexp

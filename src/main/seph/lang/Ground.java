@@ -12,9 +12,8 @@ import seph.lang.persistent.IPersistentList;
 public class Ground implements SephObject {
     public final static Ground instance = new Ground();
 
-    public final SephObject parent1 = SephGround.instance;
-
-
+    @SephCell
+    public final static SephObject Something = null;
 
     public SephObject get(String cellName) {
         return seph.lang.bim.GroundBase.get(cellName);
@@ -24,7 +23,7 @@ public class Ground implements SephObject {
         return false;
     }
 
-    public SephObject activateWith(SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// Ground

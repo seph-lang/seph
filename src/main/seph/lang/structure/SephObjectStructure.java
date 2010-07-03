@@ -25,7 +25,7 @@ public abstract class SephObjectStructure implements SephObject {
         return meta.valueAt(activatable) == seph.lang.Runtime.TRUE;
     }
 
-    public SephObject activateWith(SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// SephObjectStructure

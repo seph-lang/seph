@@ -5,6 +5,2466 @@ import seph.lang.*;
 import seph.lang.persistent.*;
 
 public class SephObjectFactory {
+    public static SephObject spreadAndCreate(IPersistentMap meta, SephObject parent0, IPersistentMap keywords) {
+        switch(keywords.count()) {
+        case 0: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+
+            return create(meta, parent0);
+        }      
+
+        case 1: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0);
+        }      
+
+        case 2: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1);
+        }      
+
+        case 3: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2);
+        }      
+
+        case 4: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3);
+        }      
+
+        case 5: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4);
+        }      
+
+        case 6: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5);
+        }      
+
+        case 7: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6);
+        }      
+
+        case 8: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7);
+        }      
+
+        case 9: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8);
+        }      
+
+        case 10: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9);
+        }      
+
+        case 11: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10);
+        }      
+
+        case 12: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11);
+        }      
+
+        case 13: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12);
+        }      
+
+        case 14: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13);
+        }      
+
+        case 15: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14);
+        }      
+
+        case 16: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15);
+        }      
+
+        case 17: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16);
+        }      
+
+        case 18: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17);
+        }      
+
+        case 19: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18);
+        }      
+
+        case 20: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector19 = (String)current.key();
+            SephObject value19 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18, selector19, value19);
+        }      
+
+        case 21: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector19 = (String)current.key();
+            SephObject value19 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector20 = (String)current.key();
+            SephObject value20 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18, selector19, value19, selector20, value20);
+        }      
+
+        case 22: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector19 = (String)current.key();
+            SephObject value19 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector20 = (String)current.key();
+            SephObject value20 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector21 = (String)current.key();
+            SephObject value21 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18, selector19, value19, selector20, value20, selector21, value21);
+        }      
+
+        case 23: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector19 = (String)current.key();
+            SephObject value19 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector20 = (String)current.key();
+            SephObject value20 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector21 = (String)current.key();
+            SephObject value21 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector22 = (String)current.key();
+            SephObject value22 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18, selector19, value19, selector20, value20, selector21, value21, selector22, value22);
+        }      
+
+        case 24: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector19 = (String)current.key();
+            SephObject value19 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector20 = (String)current.key();
+            SephObject value20 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector21 = (String)current.key();
+            SephObject value21 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector22 = (String)current.key();
+            SephObject value22 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector23 = (String)current.key();
+            SephObject value23 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18, selector19, value19, selector20, value20, selector21, value21, selector22, value22, selector23, value23);
+        }      
+
+        case 25: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector19 = (String)current.key();
+            SephObject value19 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector20 = (String)current.key();
+            SephObject value20 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector21 = (String)current.key();
+            SephObject value21 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector22 = (String)current.key();
+            SephObject value22 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector23 = (String)current.key();
+            SephObject value23 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector24 = (String)current.key();
+            SephObject value24 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18, selector19, value19, selector20, value20, selector21, value21, selector22, value22, selector23, value23, selector24, value24);
+        }      
+
+        case 26: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector19 = (String)current.key();
+            SephObject value19 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector20 = (String)current.key();
+            SephObject value20 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector21 = (String)current.key();
+            SephObject value21 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector22 = (String)current.key();
+            SephObject value22 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector23 = (String)current.key();
+            SephObject value23 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector24 = (String)current.key();
+            SephObject value24 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector25 = (String)current.key();
+            SephObject value25 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18, selector19, value19, selector20, value20, selector21, value21, selector22, value22, selector23, value23, selector24, value24, selector25, value25);
+        }      
+
+        case 27: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector19 = (String)current.key();
+            SephObject value19 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector20 = (String)current.key();
+            SephObject value20 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector21 = (String)current.key();
+            SephObject value21 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector22 = (String)current.key();
+            SephObject value22 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector23 = (String)current.key();
+            SephObject value23 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector24 = (String)current.key();
+            SephObject value24 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector25 = (String)current.key();
+            SephObject value25 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector26 = (String)current.key();
+            SephObject value26 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18, selector19, value19, selector20, value20, selector21, value21, selector22, value22, selector23, value23, selector24, value24, selector25, value25, selector26, value26);
+        }      
+
+        case 28: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector19 = (String)current.key();
+            SephObject value19 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector20 = (String)current.key();
+            SephObject value20 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector21 = (String)current.key();
+            SephObject value21 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector22 = (String)current.key();
+            SephObject value22 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector23 = (String)current.key();
+            SephObject value23 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector24 = (String)current.key();
+            SephObject value24 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector25 = (String)current.key();
+            SephObject value25 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector26 = (String)current.key();
+            SephObject value26 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector27 = (String)current.key();
+            SephObject value27 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18, selector19, value19, selector20, value20, selector21, value21, selector22, value22, selector23, value23, selector24, value24, selector25, value25, selector26, value26, selector27, value27);
+        }      
+
+        case 29: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector19 = (String)current.key();
+            SephObject value19 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector20 = (String)current.key();
+            SephObject value20 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector21 = (String)current.key();
+            SephObject value21 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector22 = (String)current.key();
+            SephObject value22 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector23 = (String)current.key();
+            SephObject value23 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector24 = (String)current.key();
+            SephObject value24 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector25 = (String)current.key();
+            SephObject value25 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector26 = (String)current.key();
+            SephObject value26 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector27 = (String)current.key();
+            SephObject value27 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector28 = (String)current.key();
+            SephObject value28 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18, selector19, value19, selector20, value20, selector21, value21, selector22, value22, selector23, value23, selector24, value24, selector25, value25, selector26, value26, selector27, value27, selector28, value28);
+        }      
+
+        case 30: {
+            ISeq seq = keywords.seq();
+            MapEntry current = (MapEntry)seq.first();
+           
+            String selector0 = (String)current.key();
+            SephObject value0 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector1 = (String)current.key();
+            SephObject value1 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector2 = (String)current.key();
+            SephObject value2 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector3 = (String)current.key();
+            SephObject value3 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector4 = (String)current.key();
+            SephObject value4 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector5 = (String)current.key();
+            SephObject value5 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector6 = (String)current.key();
+            SephObject value6 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector7 = (String)current.key();
+            SephObject value7 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector8 = (String)current.key();
+            SephObject value8 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector9 = (String)current.key();
+            SephObject value9 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector10 = (String)current.key();
+            SephObject value10 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector11 = (String)current.key();
+            SephObject value11 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector12 = (String)current.key();
+            SephObject value12 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector13 = (String)current.key();
+            SephObject value13 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector14 = (String)current.key();
+            SephObject value14 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector15 = (String)current.key();
+            SephObject value15 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector16 = (String)current.key();
+            SephObject value16 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector17 = (String)current.key();
+            SephObject value17 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector18 = (String)current.key();
+            SephObject value18 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector19 = (String)current.key();
+            SephObject value19 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector20 = (String)current.key();
+            SephObject value20 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector21 = (String)current.key();
+            SephObject value21 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector22 = (String)current.key();
+            SephObject value22 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector23 = (String)current.key();
+            SephObject value23 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector24 = (String)current.key();
+            SephObject value24 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector25 = (String)current.key();
+            SephObject value25 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector26 = (String)current.key();
+            SephObject value26 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector27 = (String)current.key();
+            SephObject value27 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector28 = (String)current.key();
+            SephObject value28 = (SephObject)current.val();
+            seq = seq.next();
+            current = (MapEntry)seq.first();
+
+            String selector29 = (String)current.key();
+            SephObject value29 = (SephObject)current.val();
+            return create(meta, parent0, selector0, value0, selector1, value1, selector2, value2, selector3, value3, selector4, value4, selector5, value5, selector6, value6, selector7, value7, selector8, value8, selector9, value9, selector10, value10, selector11, value11, selector12, value12, selector13, value13, selector14, value14, selector15, value15, selector16, value16, selector17, value17, selector18, value18, selector19, value19, selector20, value20, selector21, value21, selector22, value22, selector23, value23, selector24, value24, selector25, value25, selector26, value26, selector27, value27, selector28, value28, selector29, value29);
+        }      
+
+        default: 
+            return create(meta, parent0, keywords);
+        }
+    }
+
     public final static SephObject create(IPersistentMap meta) {
         return new SephObject_0_0(meta);
     }

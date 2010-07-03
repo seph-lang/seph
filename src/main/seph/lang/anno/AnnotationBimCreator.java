@@ -27,6 +27,7 @@ import static java.util.Collections.*;
 import static com.sun.mirror.util.DeclarationVisitors.*;
 
 import seph.lang.SephMethod;
+import seph.lang.SephCell;
 import seph.lang.SephKind;
 import seph.lang.SephSingleton;
 
@@ -34,7 +35,7 @@ import seph.lang.SephSingleton;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class AnnotationBimCreator implements AnnotationProcessorFactory {
-    private static final Collection<String> supportedAnnotations = unmodifiableCollection(Arrays.asList("seph.lang.SephMethod", "seph.lang.SephSingleton", "seph.lang.SephKind"));
+    private static final Collection<String> supportedAnnotations = unmodifiableCollection(Arrays.asList("seph.lang.SephMethod", "seph.lang.SephCell", "seph.lang.SephSingleton", "seph.lang.SephKind"));
     private static final Collection<String> supportedOptions = emptySet();
 
     public Collection<String> supportedAnnotationTypes() {
@@ -91,6 +92,18 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                         methods.put(name, md);
                     }
 
+                    Map<String, FieldDeclaration> fields = new LinkedHashMap<String, FieldDeclaration>();
+
+                    for(FieldDeclaration fd : cd.getFields()) {
+                        SephCell anno = fd.getAnnotation(SephCell.class);
+                        if (anno == null) {
+                            continue;
+                        }
+
+                        String name = fd.getSimpleName();
+                        fields.put(name, fd);
+                    }
+
                     ByteArrayOutputStream bytes = new ByteArrayOutputStream(1024);
                     out = new PrintStream(bytes);
 
@@ -110,10 +123,17 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                         out.println("    public final static SephObject cell_" + cell + " = " + cell + "Impl.instance;");
                     }
                     out.println();
+                    for(String cell : fields.keySet()) {
+                        out.println("    public final static SephObject cell_" + cell + " = " + cell + ".instance;");
+                    }
+                    out.println();
 
                     out.println("    public static SephObject get(String name) {");
                     out.println("        name = name.intern();");
                     for(String cell : methods.keySet()) {
+                        out.println("        if(name == \"" + cell + "\") return cell_" + cell + ";");
+                    }
+                    for(String cell : fields.keySet()) {
                         out.println("        if(name == \"" + cell + "\") return cell_" + cell + ";");
                     }
                     out.println();
@@ -143,21 +163,48 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
             }
 
             private void generateMethod(ClassDeclaration cd, String name, MethodDeclaration md) throws IOException {
+                boolean hasRestKeywords = false;
+                boolean hasRestPositional = false;
+                int positionalArity = 0;
+                int givenPositional = 0;
+                boolean hasReceiver = false;
+
                 out.println("    public final static class " + name + "Impl extends SephMethodObject {");
                 out.println();
                 out.println("        public final static " + name + "Impl instance = new " + name + "Impl();");
-                out.println("        public SephObject activateWith(SephObject receiver, IPersistentList arguments) {");
-                switch(md.getParameters().size()) {
-                case 0:
-                    out.println("            return " + cd.getQualifiedName() + "." + md.getSimpleName() + "();");
-                    break;
-                case 1:
-                    out.println("            return " + cd.getQualifiedName() + "." + md.getSimpleName() + "(receiver);");
-                    break;
-                default:
-                    out.println("            return null;");
-                    break;
+                out.println("        public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {");
+                String sep = "";
+                StringBuilder sb = new StringBuilder();
+                for(ParameterDeclaration pd : md.getParameters()) {
+                    sb.append(sep);
+                    String tname = pd.getType().toString();
+                    if(tname.equals("seph.lang.LexicalScope")) {
+                        sb.append("scope");
+                    } else if(tname.equals("seph.lang.SephObject")) {
+                        if(!hasReceiver) {
+                            sb.append("receiver");
+                            hasReceiver = true;
+                        } else {
+                            sb.append("args.arg" + positionalArity);
+                            positionalArity++;
+                        }
+                    } else if(tname.equals("seph.lang.persistent.IPersistentMap")) {
+                        sb.append("args.restKeywords");
+                        hasRestKeywords = true;
+                    } else if(tname.equals("seph.lang.persistent.IPersistentList")) {
+                        sb.append("args.restPositional");
+                        hasRestPositional = true;
+                    }
+                    sep = ", ";
                 }
+
+                if(positionalArity > 5) {
+                    throw new RuntimeException("Built in functions can't take more than five positional arguments. Use a rest argument instead (for " + md + ")");
+                }
+
+                out.println("            ArgumentResult args = parseAndEvaluateArguments(scope, arguments, "+positionalArity+", "+hasRestPositional+", " +hasRestKeywords+ ");");
+
+                out.println("            return " + cd.getQualifiedName() + "." + md.getSimpleName() + "(" + sb + ");");
                 out.println("        }");
                 out.println("    }");
                 out.println();

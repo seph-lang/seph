@@ -235,6 +235,21 @@ JAVA
   [p1, p2, p3, p4].join("\n\n")
 end
 
+def cell_count_cases
+  spaces = "            "
+  CELLS.map do |num|
+    <<JAVA
+        case #{num}: {
+#{spaces}ISeq seq = keywords.seq();
+#{spaces}MapEntry current = (MapEntry)seq.first();
+           
+#{num.times.map{|cc| "#{spaces}String selector#{cc} = (String)current.key();\n#{spaces}SephObject value#{cc} = (SephObject)current.val();#{if (num-1) != cc; "\n#{spaces}seq = seq.next();\n#{spaces}current = (MapEntry)seq.first();"; end}"}.join("\n\n")}
+#{spaces}return create(meta, #{(["parent0"] + num.times.map{|cc| "selector#{cc}, value#{cc}"}).join(", ")});
+        }      
+JAVA
+  end.join("\n")
+end
+
 File.open("src/main/seph/lang/structure/SephObjectFactory.java", "w") do |f|
   f.write <<JAVA
 /* THIS FILE IS GENERATED. DO NOT EDIT */
@@ -244,6 +259,14 @@ import seph.lang.*;
 import seph.lang.persistent.*;
 
 public class SephObjectFactory {
+    public static SephObject spreadAndCreate(IPersistentMap meta, SephObject parent0, IPersistentMap keywords) {
+        switch(keywords.count()) {
+#{cell_count_cases}
+        default: 
+            return create(meta, parent0, keywords);
+        }
+    }
+
 #{all_factories}
 }
 JAVA

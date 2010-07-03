@@ -5,6 +5,7 @@ package seph.lang.interpreter;
 
 import seph.lang.Runtime;
 import seph.lang.SephObject;
+import seph.lang.LexicalScope;
 
 import seph.lang.ast.Message;
 import seph.lang.ast.LiteralMessage;
@@ -16,10 +17,12 @@ import seph.lang.ast.NamedMessage;
 public class MessageInterpreter {
     private final Runtime runtime;
     private final SephObject ground;
+    private final LexicalScope scope;
 
     public MessageInterpreter(final Runtime runtime, final SephObject ground) {
         this.runtime = runtime;
         this.ground = ground;
+        this.scope = new LexicalScope(this);
     }
 
     public Object evaluate(Message msg) {
@@ -27,7 +30,7 @@ public class MessageInterpreter {
         Message currentMessage = msg;
 
         while(currentMessage != null) {
-            receiver = currentMessage.sendTo(receiver, runtime);
+            receiver = currentMessage.sendTo(scope, receiver, runtime);
             currentMessage = currentMessage.next();
 
             if(currentMessage != null && currentMessage.name().equals(".")) {
