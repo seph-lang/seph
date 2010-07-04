@@ -26,4 +26,9 @@ public class DefaultBehavior implements SephObject {
     public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
+
+    @SephMethod(name="")
+    public final static SephObject blank(SephObject receiver, SephObject arg) {
+        return arg;
+    }
 }// DefaultBehavior

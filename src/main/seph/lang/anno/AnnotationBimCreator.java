@@ -130,8 +130,13 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
 
                     out.println("    public static SephObject get(String name) {");
                     out.println("        name = name.intern();");
-                    for(String cell : methods.keySet()) {
-                        out.println("        if(name == \"" + cell + "\") return cell_" + cell + ";");
+                    for(Map.Entry<String,MethodDeclaration> entry : methods.entrySet()) {
+                        String name = entry.getKey();
+                        SephMethod anno = entry.getValue().getAnnotation(SephMethod.class);
+                        if(anno.name().length > 0) {
+                            name = anno.name()[0];
+                        }
+                        out.println("        if(name == \"" + name + "\") return cell_" + entry.getKey() + ";");
                     }
                     for(String cell : fields.keySet()) {
                         out.println("        if(name == \"" + cell + "\") return cell_" + cell + ";");

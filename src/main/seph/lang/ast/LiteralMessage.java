@@ -43,6 +43,10 @@ public final class LiteralMessage implements Message, SephObject {
         return new LiteralMessage(this.literal, newNext, filename, line, position);
     }
 
+    public Message withArguments(IPersistentList args) {
+        return this;
+    }
+
     public boolean isLiteral() {
         return true;
     }
@@ -65,6 +69,16 @@ public final class LiteralMessage implements Message, SephObject {
 
     public String toString() {
         return literal + (next == null ? "" : " " + next.toString());
+    }
+
+    public boolean equals(Object other) {
+        boolean ret = this == other;
+        if(!ret && other != null && (other instanceof LiteralMessage)) {
+            LiteralMessage lm = (LiteralMessage)other;
+            ret = (this.literal == null ? lm.literal == null : this.literal.equals(lm.literal)) &&
+                (this.next == null ? lm.next == null : this.next.equals(lm.next));
+        }
+        return ret;
     }
 
     public SephObject sendTo(LexicalScope scope, SephObject receiver, Runtime runtime) {

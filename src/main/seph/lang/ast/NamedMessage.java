@@ -49,6 +49,10 @@ public final class NamedMessage implements Message, SephObject {
         return new NamedMessage(this.name, this.arguments, newNext, filename, line, position);
     }
 
+    public Message withArguments(IPersistentList args) {
+        return new NamedMessage(this.name, args, this.next, filename, line, position);
+    }
+
     public boolean isLiteral() {
         return false;
     }
@@ -86,6 +90,17 @@ public final class NamedMessage implements Message, SephObject {
             sb.append(" ").append(next);
         }
         return sb.toString();
+    }
+
+    public boolean equals(Object other) {
+        boolean ret = this == other;
+        if(!ret && other != null && (other instanceof NamedMessage)) {
+            NamedMessage lm = (NamedMessage)other;
+            ret = (this.name == null ? lm.name == null : this.name.equals(lm.name)) &&
+                (this.arguments == null ? lm.arguments == null : this.arguments.equals(lm.arguments)) &&
+                (this.next == null ? lm.next == null : this.next.equals(lm.next));
+        }
+        return ret;
     }
 
     public SephObject sendTo(LexicalScope scope, SephObject receiver, Runtime runtime) {

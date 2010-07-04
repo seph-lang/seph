@@ -16,6 +16,7 @@ public interface Message {
     IPersistentList arguments();
     Message next();
     Message withNext(Message newNext);
+    Message withArguments(IPersistentList args);
     boolean isLiteral();
     SephObject literal();
     String filename();

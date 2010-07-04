@@ -14,4 +14,9 @@ public class Number {
     public final static SephObject asText(SephObject receiver) {
         return new Text(((Numeric)receiver).toString());
     }
+
+    @SephMethod(name="+")
+    public final static SephObject plus(SephObject receiver, SephObject addend) {
+        return ((Numeric)receiver).add(addend);
+    }
 }// Number
