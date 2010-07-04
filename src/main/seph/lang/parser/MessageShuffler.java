@@ -22,7 +22,8 @@ public class MessageShuffler {
         Message current = input;
         List<Message> separated = new ArrayList<Message>();
         while(current != null) {
-            if(current.name().equals("+") && current.arguments().count() == 0) {
+            String name = current.name();
+            if(current.arguments().count() == 0 && (name.equals("+") || name.equals("<=>"))) {
                 separated.add(current.withArguments(new PersistentList(current.next())));
                 current = null;
             } else {
