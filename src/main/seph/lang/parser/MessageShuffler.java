@@ -18,12 +18,92 @@ import seph.lang.persistent.ISeq;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class MessageShuffler {
+    private boolean isOperator(String name) {
+        return name.equals("+") || 
+            name.equals("<=>") || 
+            name.equals("<")  || 
+            name.equals(">")  || 
+            name.equals(">=")  || 
+            name.equals("<=")  || 
+            name.equals("≤")  || 
+            name.equals("≥") ||
+            name.equals("!=") ||
+            name.equals("≠") ||
+            name.equals("==") ||
+            name.equals("===") ||
+            name.equals("=~") ||
+            name.equals("!~") ||
+            name.equals("-") ||
+            name.equals("+") ||
+            name.equals("*") ||
+            name.equals("/") ||
+            name.equals("**") ||
+            name.equals("%") ||
+            name.equals("=>") ||
+            name.equals("..") ||
+            name.equals("...") ||
+            name.equals("<<") ||
+            name.equals(">>") ||
+            name.equals("&") ||
+            name.equals("|") ||
+            name.equals("^") ||
+            name.equals("&&") ||
+            name.equals("||") ||
+            name.equals("?&") ||
+            name.equals("?|") ||
+            name.equals("or") ||
+            name.equals("and") ||
+            name.equals("->") ||
+            name.equals("+>") ||
+            name.equals("!>") ||
+            name.equals("<>") ||
+            name.equals("&>") ||
+            name.equals("%>") ||
+            name.equals("#>") ||
+            name.equals("@>") ||
+            name.equals("/>") ||
+            name.equals("*>") ||
+            name.equals("?>") ||
+            name.equals("|>") ||
+            name.equals("^>") ||
+            name.equals("~>") ||
+            name.equals("->>") ||
+            name.equals("+>>") ||
+            name.equals("!>>") ||
+            name.equals("<>>") ||
+            name.equals("&>>") ||
+            name.equals("%>>") ||
+            name.equals("#>>") ||
+            name.equals("@>>") ||
+            name.equals("/>>") ||
+            name.equals("*>>") ||
+            name.equals("?>>") ||
+            name.equals("|>>") ||
+            name.equals("^>>") ||
+            name.equals("~>>") ||
+            name.equals("=>>") ||
+            name.equals("**>") ||
+            name.equals("**>>") ||
+            name.equals("&&>") ||
+            name.equals("&&>>") ||
+            name.equals("||>") ||
+            name.equals("||>>") ||
+            name.equals("$>") ||
+            name.equals("$>>") ||
+            name.equals("<->") ||
+            name.equals("<-") ||
+            name.equals("nand") ||
+            name.equals("nor") ||
+            name.equals("xor") ||
+            name.equals("return");
+    }
+
     public Message shuffle(Message input) {
         Message current = input;
         List<Message> separated = new ArrayList<Message>();
         while(current != null) {
             String name = current.name();
-            if(current.arguments().count() == 0 && (name.equals("+") || name.equals("<=>"))) {
+            if(current.arguments().count() == 0 && isOperator(name)) {
                 separated.add(current.withArguments(new PersistentList(current.next())));
                 current = null;
             } else {
