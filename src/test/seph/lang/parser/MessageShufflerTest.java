@@ -212,7 +212,6 @@ public class MessageShufflerTest {
     // Stop at terminators
     // Assignment operators
 
-
 //     describe("precedence",
 //       it("should work correctly for + and *",
 //         m = parse("2+3*4")
