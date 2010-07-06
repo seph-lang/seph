@@ -62,7 +62,7 @@ public class Parser {
         IPersistentList all = parseCommaSeparatedMessageChains();
 
         if(all.count() == 0) {
-            all = (IPersistentList)all.cons(new NamedMessage(".", null, null, sourcename, 0, 0));
+            all = (IPersistentList)all.cons(NamedMessage.create(".", null, null, sourcename, 0, 0));
         }
 
         return all;
@@ -86,9 +86,9 @@ public class Parser {
         }
     }
 
-    private final static IPersistentMap DEFAULT_OPERATORS;
-    private final static IPersistentMap DEFAULT_ASSIGNMENT_OPERATORS;
-    private final static IPersistentSet DEFAULT_UNARY_OPERATORS;
+    public final static IPersistentMap DEFAULT_OPERATORS;
+    public final static IPersistentMap DEFAULT_ASSIGNMENT_OPERATORS;
+    public final static IPersistentSet DEFAULT_UNARY_OPERATORS;
 
     private final static IPersistentMap addOpEntry(String name, int precedence, IPersistentMap current){
         return current.associate(name, new OpEntry(name, precedence));
@@ -597,7 +597,7 @@ public class Parser {
             read();
             args = parseCommaSeparatedMessageChains();
             parseCharacter(')');
-            top.currentMessageChain.add(new NamedMessage(sb.toString(), args, null, sourcename, l, cc));
+            top.currentMessageChain.add(NamedMessage.create(sb.toString(), args, null, sourcename, l, cc));
             top.added();
         } else {
             possibleOperator(sb.toString(), sourcename, l, cc);
@@ -653,7 +653,7 @@ public class Parser {
             read();
             IPersistentList args = parseCommaSeparatedMessageChains();
             parseCharacter(')');
-            top.currentMessageChain.add(new NamedMessage(result, args, null, sourcename,  l, cc));
+            top.currentMessageChain.add(NamedMessage.create(result, args, null, sourcename,  l, cc));
             top.added();
             return;
         } else {
@@ -687,7 +687,7 @@ public class Parser {
         }
 
         top.popOperatorsTo(999999);
-        top.currentMessageChain.add(new NamedMessage(".", null, null, sourcename, l, cc));
+        top.currentMessageChain.add(NamedMessage.create(".", null, null, sourcename, l, cc));
         top.added();
     }
 
@@ -738,7 +738,7 @@ public class Parser {
                                 args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
                             }
                             args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
-                            top.currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                            top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc));
                             top.added();
                             return;
                         }
@@ -773,7 +773,7 @@ public class Parser {
                                 args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
                             }
                             args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
-                            top.currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                            top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc));
                             top.added();
                             return;
                         }
@@ -839,7 +839,7 @@ public class Parser {
                     if(sb.length() > 0) {
                         args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
                     }
-                    top.currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                    top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc));
                     top.added();
                     return;
                 } else {
@@ -857,7 +857,7 @@ public class Parser {
                     if(sb.length() > 0) {
                         args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
                     }
-                    top.currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                    top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc));
                     top.added();
                     return;
                 } else {
@@ -1106,11 +1106,11 @@ public class Parser {
                 } else {
                     List<Message> currentChain = top.currentMessageChain;
                     Message last = currentChain.remove(currentChain.size() - 1);
-                    currentChain.add(new NamedMessage(name, new PersistentList(last), null, sourcename, l, cc));
+                    currentChain.add(NamedMessage.create(name, new PersistentList(last), null, sourcename, l, cc));
                     top.added();
                 }
             } else {
-                top.currentMessageChain.add(new NamedMessage(name, null, null, sourcename,  l, cc));
+                top.currentMessageChain.add(NamedMessage.create(name, null, null, sourcename,  l, cc));
                 top.added();
             }
         }
@@ -1159,7 +1159,7 @@ public class Parser {
                     read();
                     IPersistentList args = parseCommaSeparatedMessageChains();
                     parseCharacter(')');
-                    top.currentMessageChain.add(new NamedMessage(sb.toString(), args, null, sourcename,  l, cc));
+                    top.currentMessageChain.add(NamedMessage.create(sb.toString(), args, null, sourcename,  l, cc));
                     top.added();
                     return;
                 } else {
@@ -1186,7 +1186,7 @@ public class Parser {
         IPersistentList args = parseCommaSeparatedMessageChains();
         parseCharacter(')');
 
-        top.currentMessageChain.add(new NamedMessage("", args, null, sourcename,  l, cc));
+        top.currentMessageChain.add(NamedMessage.create("", args, null, sourcename,  l, cc));
         top.added();
     }
 
@@ -1208,7 +1208,7 @@ public class Parser {
             parseCharacter(end);
         }
 
-        top.currentMessageChain.add(new NamedMessage(name, args, null, sourcename,  l, cc));
+        top.currentMessageChain.add(NamedMessage.create(name, args, null, sourcename,  l, cc));
         top.added();
     }
 
@@ -1219,7 +1219,7 @@ public class Parser {
         IPersistentList args = parseCommaSeparatedMessageChains();
         parseCharacter(end);
 
-        top.currentMessageChain.add(new NamedMessage(name, args, null, sourcename,  l, cc));
+        top.currentMessageChain.add(NamedMessage.create(name, args, null, sourcename,  l, cc));
         top.added();
     }
 

@@ -6,6 +6,7 @@ package seph.lang.ast;
 import seph.lang.SephObject;
 import seph.lang.Runtime;
 import seph.lang.LexicalScope;
+import seph.lang.parser.Parser;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.ISeq;
@@ -13,7 +14,7 @@ import seph.lang.persistent.ISeq;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public final class NamedMessage implements Message, SephObject {
+public class NamedMessage implements Message, SephObject {
     private final String name;
     private final IPersistentList arguments;
     private final Message next;
@@ -23,8 +24,34 @@ public final class NamedMessage implements Message, SephObject {
     private final int position;
 
     final static IPersistentList NO_ARGUMENTS = PersistentList.EMPTY;
+
+    public final static NamedMessage create(String name, IPersistentList arguments, Message next, String filename, int line, int position) {
+        if(name == null) {
+            return new NamedMessage(null, arguments, next, filename, line, position);
+        }
+
+        if(name.equals(".")) {
+            return new Terminator(name, arguments, next, filename, line, position);
+        } else if(Parser.DEFAULT_ASSIGNMENT_OPERATORS.valueAt(name) != null) {
+            return new Assignment(name, arguments, next, filename, line, position);
+        } else {
+            return new NamedMessage(name, arguments, next, filename, line, position);
+        }
+    }
+
+    public final static class Terminator extends NamedMessage {
+        public Terminator(String name, IPersistentList arguments, Message next, String filename, int line, int position) {
+            super(name, arguments, next, filename, line, position);
+        }
+    }
+
+    public final static class Assignment extends NamedMessage {
+        public Assignment(String name, IPersistentList arguments, Message next, String filename, int line, int position) {
+            super(name, arguments, next, filename, line, position);
+        }
+    }
     
-    public NamedMessage(String name, IPersistentList arguments, Message next, String filename, int line, int position) {
+    NamedMessage(String name, IPersistentList arguments, Message next, String filename, int line, int position) {
         this.name = name == null ? null : name.intern();
         this.arguments = arguments == null ? NO_ARGUMENTS : arguments;
         this.next = next;
@@ -46,11 +73,11 @@ public final class NamedMessage implements Message, SephObject {
     }
 
     public Message withNext(Message newNext) {
-        return new NamedMessage(this.name, this.arguments, newNext, filename, line, position);
+        return NamedMessage.create(this.name, this.arguments, newNext, filename, line, position);
     }
 
     public Message withArguments(IPersistentList args) {
-        return new NamedMessage(this.name, args, this.next, filename, line, position);
+        return NamedMessage.create(this.name, args, this.next, filename, line, position);
     }
 
     public boolean isLiteral() {

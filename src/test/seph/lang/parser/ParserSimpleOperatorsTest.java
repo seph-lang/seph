@@ -46,19 +46,19 @@ public class ParserSimpleOperatorsTest {
     }
 
     private static Message msg(String name) {
-        return new NamedMessage(name, null, null, null, -1, -1);
+        return NamedMessage.create(name, null, null, null, -1, -1);
     }
 
     private static Message msg(String name, Message next) {
-        return new NamedMessage(name, null, next, null, -1, -1);
+        return NamedMessage.create(name, null, next, null, -1, -1);
     }
 
     private static Message msg(String name, IPersistentList args, Message next) {
-        return new NamedMessage(name, args, next, null, -1, -1);
+        return NamedMessage.create(name, args, next, null, -1, -1);
     }
 
     private static Message msg(String name, IPersistentList args) {
-        return new NamedMessage(name, args, null, null, -1, -1);
+        return NamedMessage.create(name, args, null, null, -1, -1);
     }
 
     private String operator;
