@@ -21,6 +21,7 @@ import seph.lang.persistent.ISeq;
  */
 public class MutableMessage implements Message {
     public List<Message> arguments;
+    public Message realArguments;
 
     private final String name;
     private final Message next;
@@ -42,46 +43,46 @@ public class MutableMessage implements Message {
     }
 
     public IPersistentList arguments() {
-        return null;
+        throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 
     public Message next() {
-        return this.next;
+        throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 
     public Message withNext(Message newNext) {
-        return null;
+        return new NamedMessage(name, realArguments == null ? null : new PersistentList(realArguments), newNext, filename, line, position);
     }
 
     public Message withArguments(IPersistentList args) {
-        return null;
+        throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 
     public boolean isLiteral() {
-        return false;
+        throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 
     public SephObject literal() {
-        return null;
+        throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 
     public String filename() {
-        return this.filename;
+        throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 
     public int line() {
-        return this.line;
+        throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 
     public int position() {
-        return this.position;
+        throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 
     public SephObject sendTo(LexicalScope scope, SephObject receiver, Runtime runtime) {
-        return null;
+        throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 
-    public NamedMessage fix() {
-        return new NamedMessage(name, arguments != null ? PersistentList.create(arguments) : null, next, filename, line, position);
+    public String toString() {
+        return "mutable<" + name + ">";
     }
 }// MutableMessage

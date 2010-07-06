@@ -11,6 +11,8 @@ import java.util.ListIterator;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 import seph.lang.Runtime;
 import seph.lang.ControlFlow;
@@ -49,37 +51,223 @@ public class Parser {
         return all;
     }
 
-    private ISeq messageChainStack = ((ISeq)PersistentList.EMPTY).cons(null);
-    private List<Message> currentMessageChain = null;
-
-    private void push(List<Message> messageChain) {
-        messageChainStack = messageChainStack.cons(currentMessageChain);
-        currentMessageChain = messageChain;
+    public static class OpEntry {
+        public final String name;
+        public final int precedence;
+        public OpEntry(String name, int precedence) { 
+            this.name = name; 
+            this.precedence = precedence;
+        }
     }
 
-    private void pop() {
-        currentMessageChain = (List<Message>)messageChainStack.first();
-        messageChainStack = messageChainStack.next();
+    private final static Map<String, OpEntry> operators = new HashMap();
+    private final static Set<String> unaryOperators = new HashSet();
+    static {
+        operators.put("!", new OpEntry("!", 0));
+        operators.put("~", new OpEntry("~", 0));
+        operators.put("$", new OpEntry("$", 0));
+        operators.put("?", new OpEntry("?", 0));
+
+        operators.put("**", new OpEntry("**", 1));
+
+        operators.put("*", new OpEntry("*", 2));
+        operators.put("/", new OpEntry("/", 2));
+        operators.put("%", new OpEntry("%", 2));
+
+        operators.put("+", new OpEntry("+", 3));
+        operators.put("-", new OpEntry("-", 3));
+        operators.put("∪", new OpEntry("∪", 3));
+        operators.put("∩", new OpEntry("∩", 3));
+
+        operators.put("<<", new OpEntry("<<", 4));
+        operators.put(">>", new OpEntry(">>", 4));
+
+        operators.put("<=>", new OpEntry("<=>", 5));
+        operators.put(">", new OpEntry(">", 5));
+        operators.put("<", new OpEntry("<", 5));
+        operators.put("<=", new OpEntry("<=", 5));
+        operators.put(">=", new OpEntry(">=", 5));
+        operators.put("<>", new OpEntry("<>", 5));
+        operators.put("<>>", new OpEntry("<>>", 5));
+        operators.put("≤", new OpEntry("≤", 5));
+        operators.put("≥", new OpEntry("≥", 5));
+        operators.put("⊂", new OpEntry("⊂", 5));
+        operators.put("⊃", new OpEntry("⊃", 5));
+        operators.put("⊆", new OpEntry("⊆", 5));
+        operators.put("⊇", new OpEntry("⊇", 5));
+
+        operators.put("==", new OpEntry("==", 6));
+        operators.put("!=", new OpEntry("!=", 6));
+        operators.put("≠", new OpEntry("≠", 6));
+        operators.put("===", new OpEntry("===", 6));
+        operators.put("=~", new OpEntry("=~", 6));
+        operators.put("!~", new OpEntry("!~", 6));
+
+        operators.put("&", new OpEntry("&", 7));
+
+        operators.put("^", new OpEntry("^", 8));
+
+        operators.put("|", new OpEntry("|", 9));
+
+        operators.put("&&", new OpEntry("&&", 10));
+        operators.put("?&", new OpEntry("?&", 10));
+
+        operators.put("||", new OpEntry("||", 11));
+        operators.put("?|", new OpEntry("?|", 11));
+
+        operators.put("..", new OpEntry("..", 12));
+        operators.put("...", new OpEntry("...", 12));
+
+        operators.put("=>", new OpEntry("=>", 12));
+        operators.put("<->", new OpEntry("<->", 12));
+        operators.put("->", new OpEntry("->", 12));
+        operators.put("∘", new OpEntry("∘",12));
+        operators.put("+>", new OpEntry("+>", 12));
+        operators.put("!>", new OpEntry("!>", 12));
+        operators.put("&>", new OpEntry("&>", 12));
+        operators.put("%>", new OpEntry("%>", 12));
+        operators.put("#>", new OpEntry("#>", 12));
+        operators.put("@>", new OpEntry("@>", 12));
+        operators.put("/>", new OpEntry("/>", 12));
+        operators.put("*>", new OpEntry("*>", 12));
+        operators.put("?>", new OpEntry("?>", 12));
+        operators.put("|>", new OpEntry("|>", 12));
+        operators.put("^>", new OpEntry("^>", 12));
+        operators.put("~>", new OpEntry("~>", 12));
+        operators.put("->>", new OpEntry("->>", 12));
+        operators.put("+>>", new OpEntry("+>>", 12));
+        operators.put("!>>", new OpEntry("!>>", 12));
+        operators.put("&>>", new OpEntry("&>>", 12));
+        operators.put("%>>", new OpEntry("%>>", 12));
+        operators.put("#>>", new OpEntry("#>>", 12));
+        operators.put("@>>", new OpEntry("@>>", 12));
+        operators.put("/>>", new OpEntry("/>>", 12));
+        operators.put("*>>", new OpEntry("*>>", 12));
+        operators.put("?>>", new OpEntry("?>>", 12));
+        operators.put("|>>", new OpEntry("|>>", 12));
+        operators.put("^>>", new OpEntry("^>>", 12));
+        operators.put("~>>", new OpEntry("~>>", 12));
+        operators.put("=>>", new OpEntry("=>>", 12));
+        operators.put("**>", new OpEntry("**>", 12));
+        operators.put("**>>", new OpEntry("**>>", 12));
+        operators.put("&&>", new OpEntry("&&>", 12));
+        operators.put("&&>>", new OpEntry("&&>>", 12));
+        operators.put("||>", new OpEntry("||>", 12));
+        operators.put("||>>", new OpEntry("||>>", 12));
+        operators.put("$>", new OpEntry("$>", 12));
+        operators.put("$>>", new OpEntry("$>>", 12));
+
+        operators.put("+=", new OpEntry("+=", 13));
+        operators.put("-=", new OpEntry("-=", 13));
+        operators.put("**=", new OpEntry("**=", 13));
+        operators.put("*=", new OpEntry("*=", 13));
+        operators.put("/=", new OpEntry("/=", 13));
+        operators.put("%=", new OpEntry("%=", 13));
+        operators.put("and", new OpEntry("and", 13));
+        operators.put("nand", new OpEntry("nand", 13));
+        operators.put("&=", new OpEntry("&=", 13));
+        operators.put("&&=", new OpEntry("&&=", 13));
+        operators.put("^=", new OpEntry("^=", 13));
+        operators.put("or", new OpEntry("or", 13));
+        operators.put("xor", new OpEntry("xor", 13));
+        operators.put("nor", new OpEntry("nor", 13));
+        operators.put("|=", new OpEntry("|=", 13));
+        operators.put("||=", new OpEntry("||=", 13));
+        operators.put("<<=", new OpEntry("<<=",13));
+        operators.put(">>=", new OpEntry(">>=",13));
+
+        operators.put("<-", new OpEntry("<-", 14));
+
+        operators.put("return", new OpEntry("return", 14));
+        operators.put("import", new OpEntry("import", 14));
+
+        unaryOperators.add("-");
+        unaryOperators.add("+");
+        unaryOperators.add("!");
+        unaryOperators.add("~");
+        unaryOperators.add("$");
     }
 
-    private Message parseMessageChain() throws IOException, ControlFlow {
-        List<Message> result = new ArrayList<Message>();
+    private static class Level {
+        public final int precedence;
+        public final MutableMessage operatorMessage;
+        public final Level parent;
+        public final boolean unary;
 
-        push(result);
-        while(parseMessage());
-        pop();
+        public Level(int precedence, MutableMessage op, Level parent, boolean unary) {
+            this.precedence = precedence;
+            this.operatorMessage = op;
+            this.parent = parent;
+            this.unary = unary;
+        }
+    }
 
-        Message ret = null;
-        for(ListIterator<Message> i = result.listIterator(result.size()); i.hasPrevious();) {
-            ret = i.previous().withNext(ret);
-		}
+    private final static class ChainContext {
+        public final ChainContext parent;
 
-        if(ret != null) {
-            while(ret.name().equals(".") && ret.next() != null) {
-                ret = ret.next();
+        public ChainContext(ChainContext parent) {
+            this.parent = parent;
+        }
+
+        private ISeq messageChainStack = ((ISeq)PersistentList.EMPTY).cons(null);
+        private List<Message> currentMessageChain = null;
+
+        public void push(List<Message> messageChain) {
+            messageChainStack = messageChainStack.cons(currentMessageChain);
+            currentMessageChain = messageChain;
+        }
+
+        public Message pop() {
+            Message ret = null;
+            for(ListIterator<Message> i = currentMessageChain.listIterator(currentMessageChain.size()); i.hasPrevious();) {
+                ret = i.previous().withNext(ret);
+            }
+
+            if(ret != null) {
+                while(ret.name().equals(".") && ret.next() != null) {
+                    ret = ret.next();
+                }
+            }
+
+            currentMessageChain = (List<Message>)messageChainStack.first();
+            messageChainStack = messageChainStack.next();
+
+            return ret;
+        }
+
+        private Level currentLevel = new Level(-1, null, null, false);
+
+        public void popOperatorsTo(int precedence) {
+            while((currentLevel.precedence != -1 || currentLevel.unary) && currentLevel.precedence <= precedence) {
+                currentLevel.operatorMessage.realArguments = pop();
+                currentLevel = currentLevel.parent;
             }
         }
 
+        public void push(int precedence, MutableMessage op, boolean unary) {
+            currentLevel = new Level(precedence, op, currentLevel, unary);
+            List<Message> args = new ArrayList<Message>();
+            op.arguments = args;
+            push(args);
+        }
+
+        public void added() {
+            if(currentLevel.unary) {
+                currentLevel.operatorMessage.realArguments = pop();
+                currentLevel = currentLevel.parent;
+            }
+        }
+    }
+
+    private ChainContext top = new ChainContext(null);
+
+    private Message parseMessageChain() throws IOException, ControlFlow {
+        top = new ChainContext(top);
+        top.push(new ArrayList<Message>());
+        while(parseMessage());
+        top.popOperatorsTo(999999);
+        Message ret = top.pop();
+        top = top.parent;
         return ret;
     }
 
@@ -359,8 +547,11 @@ public class Parser {
             read();
             args = parseCommaSeparatedMessageChains();
             parseCharacter(')');
+            top.currentMessageChain.add(new NamedMessage(sb.toString(), args, null, sourcename, l, cc));
+            top.added();
+        } else {
+            possibleOperator(sb.toString(), sourcename, l, cc);
         }
-        currentMessageChain.add(new NamedMessage(sb.toString(), args, null, sourcename, l, cc));
     }
 
     private void parseComment() throws IOException {
@@ -387,7 +578,7 @@ public class Parser {
     };
 
 
-    private void parseRange() throws IOException {
+    private void parseRange() throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         int count = 2;
@@ -408,7 +599,16 @@ public class Parser {
             result = sb.toString();
         }
 
-        currentMessageChain.add(new NamedMessage(result, null, null, sourcename, l, cc));
+        if(rr == '(') {
+            read();
+            IPersistentList args = parseCommaSeparatedMessageChains();
+            parseCharacter(')');
+            top.currentMessageChain.add(new NamedMessage(result, args, null, sourcename,  l, cc));
+            top.added();
+            return;
+        } else {
+            possibleOperator(result, sourcename, l, cc);
+        }
     }
 
     private void parseTerminator(int indicator) throws IOException {
@@ -436,7 +636,8 @@ public class Parser {
             }
         }
 
-        currentMessageChain.add(new NamedMessage(".", null, null, sourcename, l, cc));
+        top.currentMessageChain.add(new NamedMessage(".", null, null, sourcename, l, cc));
+        top.added();
     }
 
     private void parseRegexpLiteral(int indicator) throws IOException, ControlFlow {
@@ -478,14 +679,16 @@ public class Parser {
                             break;
                         default:
                             if(name == null) {
-                                currentMessageChain.add(new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc));
+                                top.currentMessageChain.add(new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc));
+                                top.added();
                                 return;
                             }
                             if(pattern.length() > 0) {
                                 args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
                             }
                             args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
-                            currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                            top.currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                            top.added();
                             return;
                         }
                     }
@@ -511,14 +714,16 @@ public class Parser {
                             break;
                         default:
                             if(name == null) {
-                                currentMessageChain.add(new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc));
+                                top.currentMessageChain.add(new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc));
+                                top.added();
                                 return;
                             }
                             if(pattern.length() > 0) {
                                 args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
                             }
                             args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
-                            currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                            top.currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                            top.added();
                             return;
                         }
                     }
@@ -576,13 +781,15 @@ public class Parser {
                 read();
                 if(dquote) {
                     if(name == null) {
-                        currentMessageChain.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
+                        top.currentMessageChain.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
+                        top.added();
                         return;
                     }
                     if(sb.length() > 0) {
                         args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
                     }
-                    currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                    top.currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                    top.added();
                     return;
                 } else {
                     sb.append((char)rr);
@@ -592,13 +799,15 @@ public class Parser {
                 read();
                 if(!dquote) {
                     if(name == null) {
-                        currentMessageChain.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
+                        top.currentMessageChain.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
+                        top.added();
                         return;
                     }
                     if(sb.length() > 0) {
                         args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
                     }
-                    currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                    top.currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                    top.added();
                     return;
                 } else {
                     sb.append((char)rr);
@@ -808,50 +1017,32 @@ public class Parser {
         }
     }
 
-    private static class Level {
-        public final int precedence;
-        public final MutableMessage operatorMessage;
-
-        public Level(int precedence, MutableMessage op) {
-            this.precedence = precedence;
-            this.operatorMessage = op;
-        }
+    private boolean isUnary(String name) {
+        List<Message> cc = top.currentMessageChain;
+        return unaryOperators.contains(name) && (cc.isEmpty() || cc.get(cc.size()-1).name().equals("."));
     }
 
-    private IPersistentCollection levels = PersistentList.EMPTY;
-    private Level topLevel = new Level(-1, null);
-
-    public static class OpEntry {
-        public final String name;
-        public final int precedence;
-        public OpEntry(String name, int precedence) { 
-            this.name = name; 
-            this.precedence = precedence;
-        }
-    }
-
-    private final static Map<String, OpEntry> operators = new HashMap();
-    static {
-        operators.put("+", new OpEntry("+", 3));
-        operators.put("*", new OpEntry("*", 2));
-    }
-
-    private void popOperatorsTo(int precedence) {
-    }
-
-    private void push(Level level) {
-    }
-
-    private Message possibleOperator(String name, String sourcename, int l, int cc) {
+    private void possibleOperator(String name, String sourcename, int l, int cc) {
         OpEntry op = operators.get(name);
         if(op != null) {
-            popOperatorsTo(op.precedence);
-            MutableMessage result = new MutableMessage(name, null, sourcename,  l, cc);
-            push(new Level(op.precedence, result));
-            System.err.println("have potential " + op.name + " operator");
-            return result.fix();
+            boolean unary = isUnary(name);
+            if(!unary) {
+                top.popOperatorsTo(op.precedence);
+                List<Message> currentChain = top.currentMessageChain;
+                MutableMessage result = new MutableMessage(name, null, sourcename,  l, cc);
+                currentChain.add(result);
+                top.added();
+                top.push(op.precedence, result, false);
+            } else {
+                List<Message> currentChain = top.currentMessageChain;
+                MutableMessage result = new MutableMessage(name, null, sourcename,  l, cc);
+                currentChain.add(result);
+                top.added();
+                top.push(-1, result, true);
+            }
         } else {
-            return new NamedMessage(name, null, null, sourcename,  l, cc);
+            top.currentMessageChain.add(new NamedMessage(name, null, null, sourcename,  l, cc));
+            top.added();
         }
     }
 
@@ -898,10 +1089,11 @@ public class Parser {
                     read();
                     IPersistentList args = parseCommaSeparatedMessageChains();
                     parseCharacter(')');
-                    currentMessageChain.add(new NamedMessage(sb.toString(), args, null, sourcename,  l, cc));
+                    top.currentMessageChain.add(new NamedMessage(sb.toString(), args, null, sourcename,  l, cc));
+                    top.added();
                     return;
                 } else {
-                    currentMessageChain.add(possibleOperator(sb.toString(), sourcename, l, cc));
+                    possibleOperator(sb.toString(), sourcename, l, cc);
                     return;
                 }
             }
@@ -924,7 +1116,8 @@ public class Parser {
         IPersistentList args = parseCommaSeparatedMessageChains();
         parseCharacter(')');
 
-        currentMessageChain.add(new NamedMessage("", args, null, sourcename,  l, cc));
+        top.currentMessageChain.add(new NamedMessage("", args, null, sourcename,  l, cc));
+        top.added();
     }
 
     private void parseOpenCloseMessageSend(char end, String name) throws IOException, ControlFlow {
@@ -945,7 +1138,8 @@ public class Parser {
             parseCharacter(end);
         }
 
-        currentMessageChain.add(new NamedMessage(name, args, null, sourcename,  l, cc));
+        top.currentMessageChain.add(new NamedMessage(name, args, null, sourcename,  l, cc));
+        top.added();
     }
 
     private void parseSimpleOpenCloseMessageSend(char end, String name) throws IOException, ControlFlow {
@@ -955,7 +1149,8 @@ public class Parser {
         IPersistentList args = parseCommaSeparatedMessageChains();
         parseCharacter(end);
 
-        currentMessageChain.add(new NamedMessage(name, args, null, sourcename,  l, cc));
+        top.currentMessageChain.add(new NamedMessage(name, args, null, sourcename,  l, cc));
+        top.added();
     }
 
     private int readNumbersInto(StringBuilder sb) throws IOException {
@@ -1158,7 +1353,8 @@ public class Parser {
         }
 
         try {
-            currentMessageChain.add(new LiteralMessage(decimal ? new DFloNum(sb.toString()) : IntNum.valueOf(sb.toString(), radix), null, sourcename, l, cc));
+            top.currentMessageChain.add(new LiteralMessage(decimal ? new DFloNum(sb.toString()) : IntNum.valueOf(sb.toString(), radix), null, sourcename, l, cc));
+            top.added();
         } catch(NumberFormatException e) {
             fail(e.getMessage());
             return;

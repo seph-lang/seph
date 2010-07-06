@@ -2141,28 +2141,312 @@ public class ParserTest {
         return new NamedMessage(name, args, null, null, -1, -1);
     }
 
-    // @Test
-    // public void parsing_a_simple_expression_generates_correct_associativity() {
-    //     Message result = parse("foo1 + foo2 * foo3");
-    //     // same as:     foo1 +(foo2 *(foo3))
-    //     Message expected = msg("foo1", msg("+", PersistentList.create(Arrays.asList(msg("foo2", msg("*", PersistentList.create(Arrays.asList(msg("foo3")))))))));
-    //     assertThat(result, is(equalTo(expected)));
-    // }
+    @Test
+    public void parsing_a_simple_expression_generates_correct_associativity() {
+        Message result = parse("foo1 + foo2 * foo3");
+        // same as:     foo1 +(foo2 *(foo3))
+        Message expected = msg("foo1", msg("+", PersistentList.create(Arrays.asList(msg("foo2", msg("*", PersistentList.create(Arrays.asList(msg("foo3")))))))));
+        assertThat(result, is(equalTo(expected)));
+    }
 
-    // @Test
-    // public void parsing_another_simple_expression_generates_correct_associativity() {
-    //     Message result = parse("foo1 * foo2 + foo3");
-    //     // same as:     foo1 *(foo2) +(foo3)
-    //     Message expected = msg("foo1", msg("*", PersistentList.create(Arrays.asList(msg("foo2"))), msg("+", PersistentList.create(Arrays.asList(msg("foo3"))))));
-    //     assertThat(result, is(equalTo(expected)));
-    // }
+    @Test
+    public void parsing_another_simple_expression_generates_correct_associativity() {
+        Message result = parse("foo1 * foo2 + foo3");
+        // same as:     foo1 *(foo2) +(foo3)
+        Message expected = msg("foo1", msg("*", PersistentList.create(Arrays.asList(msg("foo2"))), msg("+", PersistentList.create(Arrays.asList(msg("foo3"))))));
+        assertThat(result, is(equalTo(expected)));
+    }
 
-    // @Test
-    // public void parsing_an_arithmetic_expression_generates_the_correct_associativity() {
-    //     Message result = parse("foo1 + foo2 * foo3 / ( foo4 - foo5 ) ** foo6 ** foo7");
-    //     // same as:     foo1 +(foo2 *(foo3) /((foo4 -(foo5)) **(foo6) **(foo7)))"
-    //     Message expected = msg("foo1", msg("+", PersistentList.create(Arrays.asList(msg("foo2", msg("*", PersistentList.create(Arrays.asList(msg("foo3"))), msg("/", PersistentList.create(Arrays.asList(msg("", PersistentList.create(Arrays.asList(msg("foo4", msg("-", PersistentList.create(Arrays.asList(msg("foo5"))))))), msg("**", PersistentList.create(Arrays.asList(msg("foo6"))), msg("**", PersistentList.create(Arrays.asList(msg("foo7")))))))))))))));
+    @Test
+    public void parsing_an_arithmetic_expression_generates_the_correct_associativity() {
+        Message result = parse("foo1 + foo2 * foo3 / ( foo4 - foo5 ) ** foo6 ** foo7");
+        // same as:     foo1 +(foo2 *(foo3) /((foo4 -(foo5)) **(foo6) **(foo7)))"
+        Message expected = msg("foo1", msg("+", PersistentList.create(Arrays.asList(msg("foo2", msg("*", PersistentList.create(Arrays.asList(msg("foo3"))), msg("/", PersistentList.create(Arrays.asList(msg("", PersistentList.create(Arrays.asList(msg("foo4", msg("-", PersistentList.create(Arrays.asList(msg("foo5"))))))), msg("**", PersistentList.create(Arrays.asList(msg("foo6"))), msg("**", PersistentList.create(Arrays.asList(msg("foo7")))))))))))))));
                                                                                     
-    //     assertThat(result, is(equalTo(expected)));
-    // }
+        assertThat(result, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parse_a_plus_message() {
+        Message m = parse("foo + bar");
+        Message expected = msg("foo", msg("+", PersistentList.create(Arrays.asList(msg("bar")))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_a_plus_message_with_preceding_messages() {
+        Message m = parse("bux foo + bar");
+        Message expected = msg("bux", msg("foo", msg("+", PersistentList.create(Arrays.asList(msg("bar"))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_a_plus_message_with_following_messages() {
+        Message m = parse("foo + bar something");
+        Message expected = msg("foo", msg("+", PersistentList.create(Arrays.asList(msg("bar", msg("something"))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_a_plus_message_inside_of_an_argument_list() {
+        Message m = parse("foo(bar + bux foo, blargus) bar");
+        Message expected = msg("foo", PersistentList.create(Arrays.asList(msg("bar", msg("+", PersistentList.create(Arrays.asList(msg("bux", msg("foo")))))), msg("blargus"))), msg("bar"));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_minus_correctly() {
+        Message m = parse("-foo");
+        Message expected = msg("-", PersistentList.create(Arrays.asList(msg("foo"))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_minus_correctly_with_following_messages() {
+        Message m = parse("-foo println");
+        Message expected = msg("-", PersistentList.create(Arrays.asList(msg("foo"))), msg("println"));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_minus_correctly_with_following_messages_when_already_in_prefix_form() {
+        Message m = parse("-(foo) println");
+        Message expected = msg("-", PersistentList.create(Arrays.asList(msg("foo"))), msg("println"));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_minus_several_times_over() {
+        Message m = parse("- -(foo)");
+        Message expected = msg("-", PersistentList.create(Arrays.asList(msg("-", PersistentList.create(Arrays.asList(msg("foo")))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_binary_operator_in_simple_expression() {
+        Message m = parse("map(*foo)");
+        Message expected = msg("map", PersistentList.create(Arrays.asList(msg("*", PersistentList.create(Arrays.asList(msg("foo")))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_binary_operator_in_complex_expression() {
+        Message m = parse("map(* foo + five - thirteen / three)");
+        Message expected = msg("map", PersistentList.create(Arrays.asList(msg("*", PersistentList.create(Arrays.asList(msg("foo"))), msg("+", PersistentList.create(Arrays.asList(msg("five"))), msg("-", PersistentList.create(Arrays.asList(msg("thirteen", msg("/", PersistentList.create(Arrays.asList(msg("three")))))))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_bang_correctly() {
+        Message m = parse("!false");
+        Message expected = msg("!", PersistentList.create(Arrays.asList(msg("false"))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_bang_correctly_with_following_messages() {
+        Message m = parse("!false println");
+        Message expected = msg("!", PersistentList.create(Arrays.asList(msg("false"))), msg("println"));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_bang_correctly_with_following_messages_when_already_in_prefix_form() {
+        Message m = parse("!(false)");
+        Message expected = msg("!", PersistentList.create(Arrays.asList(msg("false"))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_bang_in_expression() {
+        Message m = parse("true && !false");
+        Message expected = msg("true", msg("&&", PersistentList.create(Arrays.asList(msg("!", PersistentList.create(Arrays.asList(msg("false"))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_tilde_correctly() {
+        Message m = parse("~false");
+        Message expected = msg("~", PersistentList.create(Arrays.asList(msg("false"))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_tilde_correctly_with_following_messages() {
+        Message m = parse("~false println");
+        Message expected = msg("~", PersistentList.create(Arrays.asList(msg("false"))), msg("println"));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_tilde_correctly_with_following_messages_when_already_in_prefix_form() {
+        Message m = parse("~(false)");
+        Message expected = msg("~", PersistentList.create(Arrays.asList(msg("false"))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_tilde_in_expression() {
+        Message m = parse("true && ~false");
+        Message expected = msg("true", msg("&&", PersistentList.create(Arrays.asList(msg("~", PersistentList.create(Arrays.asList(msg("false"))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_dollar_correctly() {
+        Message m = parse("$false");
+        Message expected = msg("$", PersistentList.create(Arrays.asList(msg("false"))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_dollar_correctly_with_following_messages() {
+        Message m = parse("$false println");
+        Message expected = msg("$", PersistentList.create(Arrays.asList(msg("false"))), msg("println"));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_dollar_correctly_with_following_messages_when_already_in_prefix_form() {
+        Message m = parse("$(false)");
+        Message expected = msg("$", PersistentList.create(Arrays.asList(msg("false"))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void parses_unary_dollar_in_expression() {
+        Message m = parse("true && $false");
+        Message expected = msg("true", msg("&&", PersistentList.create(Arrays.asList(msg("$", PersistentList.create(Arrays.asList(msg("false"))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_plus_and_mult() {
+        Message m = parse("foo+bar*quux");
+        Message expected = msg("foo", msg("+", PersistentList.create(Arrays.asList(msg("bar", msg("*", PersistentList.create(Arrays.asList(msg("quux")))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_mult_and_plus() {
+        Message m = parse("foo*bar+quux");
+        Message expected = msg("foo", msg("*", PersistentList.create(Arrays.asList(msg("bar"))), msg("+", PersistentList.create(Arrays.asList(msg("quux"))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_plus_and_mult_with_spaces() {
+        Message m = parse("foo + bar * quux");
+        Message expected = msg("foo", msg("+", PersistentList.create(Arrays.asList(msg("bar", msg("*", PersistentList.create(Arrays.asList(msg("quux")))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_mult_and_plus_with_spaces() {
+        Message m = parse("foo * bar + quux");
+        Message expected = msg("foo", msg("*", PersistentList.create(Arrays.asList(msg("bar"))), msg("+", PersistentList.create(Arrays.asList(msg("quux"))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_plus_and_div() {
+        Message m = parse("foo+bar/quux");
+        Message expected = msg("foo", msg("+", PersistentList.create(Arrays.asList(msg("bar", msg("/", PersistentList.create(Arrays.asList(msg("quux")))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_div_and_plus() {
+        Message m = parse("foo/bar+quux");
+        Message expected = msg("foo", msg("/", PersistentList.create(Arrays.asList(msg("bar"))), msg("+", PersistentList.create(Arrays.asList(msg("quux"))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_plus_and_div_with_spaces() {
+        Message m = parse("foo + bar / quux");
+        Message expected = msg("foo", msg("+", PersistentList.create(Arrays.asList(msg("bar", msg("/", PersistentList.create(Arrays.asList(msg("quux")))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_div_and_plus_with_spaces() {
+        Message m = parse("foo / bar + quux");
+        Message expected = msg("foo", msg("/", PersistentList.create(Arrays.asList(msg("bar"))), msg("+", PersistentList.create(Arrays.asList(msg("quux"))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+
+    @Test
+    public void handles_precedence_for_minus_and_mult() {
+        Message m = parse("foo-bar*quux");
+        Message expected = msg("foo", msg("-", PersistentList.create(Arrays.asList(msg("bar", msg("*", PersistentList.create(Arrays.asList(msg("quux")))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_mult_and_minus() {
+        Message m = parse("foo*bar-quux");
+        Message expected = msg("foo", msg("*", PersistentList.create(Arrays.asList(msg("bar"))), msg("-", PersistentList.create(Arrays.asList(msg("quux"))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_minus_and_mult_with_spaces() {
+        Message m = parse("foo - bar * quux");
+        Message expected = msg("foo", msg("-", PersistentList.create(Arrays.asList(msg("bar", msg("*", PersistentList.create(Arrays.asList(msg("quux")))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_mult_and_minus_with_spaces() {
+        Message m = parse("foo * bar - quux");
+        Message expected = msg("foo", msg("*", PersistentList.create(Arrays.asList(msg("bar"))), msg("-", PersistentList.create(Arrays.asList(msg("quux"))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_minus_and_div() {
+        Message m = parse("foo-bar/quux");
+        Message expected = msg("foo", msg("-", PersistentList.create(Arrays.asList(msg("bar", msg("/", PersistentList.create(Arrays.asList(msg("quux")))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_div_and_minus() {
+        Message m = parse("foo/bar-quux");
+        Message expected = msg("foo", msg("/", PersistentList.create(Arrays.asList(msg("bar"))), msg("-", PersistentList.create(Arrays.asList(msg("quux"))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_minus_and_div_with_spaces() {
+        Message m = parse("foo - bar / quux");
+        Message expected = msg("foo", msg("-", PersistentList.create(Arrays.asList(msg("bar", msg("/", PersistentList.create(Arrays.asList(msg("quux")))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_div_and_minus_with_spaces() {
+        Message m = parse("foo / bar - quux");
+        Message expected = msg("foo", msg("/", PersistentList.create(Arrays.asList(msg("bar"))), msg("-", PersistentList.create(Arrays.asList(msg("quux"))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_unary_minus() {
+        Message m = parse("foo * -bar");
+        Message expected = msg("foo", msg("*", PersistentList.create(Arrays.asList(msg("-", PersistentList.create(Arrays.asList(msg("bar"))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+    @Test
+    public void handles_precedence_for_unary_plus() {
+        Message m = parse("foo * +bar");
+        Message expected = msg("foo", msg("*", PersistentList.create(Arrays.asList(msg("+", PersistentList.create(Arrays.asList(msg("bar"))))))));
+        assertThat(m, is(equalTo(expected)));
+    }
+
+
+    // assignment operators
 }// ParserTest
