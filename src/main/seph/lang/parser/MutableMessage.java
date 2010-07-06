@@ -3,6 +3,7 @@
  */
 package seph.lang.parser;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -22,6 +23,7 @@ import seph.lang.persistent.ISeq;
 public class MutableMessage implements Message {
     public List<Message> arguments;
     public Message realArguments;
+    public Message firstArgument;
 
     private final String name;
     private final Message next;
@@ -51,7 +53,10 @@ public class MutableMessage implements Message {
     }
 
     public Message withNext(Message newNext) {
-        return new NamedMessage(name, realArguments == null ? null : new PersistentList(realArguments), newNext, filename, line, position);
+        IPersistentList args = realArguments == null ? null :
+            (firstArgument == null ? new PersistentList(realArguments) : PersistentList.create(Arrays.asList(firstArgument, realArguments)));
+
+        return new NamedMessage(name, args, newNext, filename, line, position);
     }
 
     public Message withArguments(IPersistentList args) {

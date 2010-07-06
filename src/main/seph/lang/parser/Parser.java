@@ -21,6 +21,11 @@ import seph.lang.ast.NamedMessage;
 import seph.lang.ast.LiteralMessage;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.IPersistentCollection;
+import seph.lang.persistent.IPersistentMap;
+import seph.lang.persistent.IPersistentSet;
+import seph.lang.persistent.PersistentHashMap;
+import seph.lang.persistent.PersistentHashSet;
+import seph.lang.persistent.PersistentArrayMap;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.ISeq;
 
@@ -35,10 +40,22 @@ public class Parser {
     private final Reader reader;
     private final String sourcename;
 
+    private final IPersistentMap operators;
+    private final IPersistentMap assignmentOperators;
+    private final IPersistentSet unaryOperators;
+
     public Parser(Runtime runtime, Reader reader, String sourcename) {
+        this(runtime, reader, sourcename, DEFAULT_OPERATORS, DEFAULT_ASSIGNMENT_OPERATORS, DEFAULT_UNARY_OPERATORS);
+    }
+
+    public Parser(Runtime runtime, Reader reader, String sourcename, IPersistentMap operators, IPersistentMap assignmentOperators, IPersistentSet unaryOperators) {
         this.runtime = runtime;
         this.reader = reader;
         this.sourcename = sourcename;
+
+        this.operators = operators;
+        this.assignmentOperators = assignmentOperators;
+        this.unaryOperators = unaryOperators;
     }
 
     public IPersistentList parseFully() throws IOException, ControlFlow {
@@ -60,132 +77,165 @@ public class Parser {
         }
     }
 
-    private final static Map<String, OpEntry> operators = new HashMap();
-    private final static Set<String> unaryOperators = new HashSet();
+    public static class OpArity {
+        public final String name;
+        public final int arity;
+        public OpArity(String name, int arity) { 
+            this.name = name; 
+            this.arity = arity;
+        }
+    }
+
+    private final static IPersistentMap DEFAULT_OPERATORS;
+    private final static IPersistentMap DEFAULT_ASSIGNMENT_OPERATORS;
+    private final static IPersistentSet DEFAULT_UNARY_OPERATORS;
+
+    private final static IPersistentMap addOpEntry(String name, int precedence, IPersistentMap current){
+        return current.associate(name, new OpEntry(name, precedence));
+    }
+
+    private final static IPersistentMap addOpArity(String name, int arity, IPersistentMap current){
+        return current.associate(name, new OpArity(name, arity));
+    }
+
     static {
-        operators.put("!", new OpEntry("!", 0));
-        operators.put("~", new OpEntry("~", 0));
-        operators.put("$", new OpEntry("$", 0));
-        operators.put("?", new OpEntry("?", 0));
+        IPersistentMap operators = PersistentArrayMap.EMPTY;
+        operators = addOpEntry("!", 0, operators);
+        
+        operators = addOpEntry("~", 0, operators);
+        operators = addOpEntry("$", 0, operators);
+        operators = addOpEntry("?", 0, operators);
 
-        operators.put("**", new OpEntry("**", 1));
+        operators = addOpEntry("**", 1, operators);
 
-        operators.put("*", new OpEntry("*", 2));
-        operators.put("/", new OpEntry("/", 2));
-        operators.put("%", new OpEntry("%", 2));
+        operators = addOpEntry("*", 2, operators);
+        operators = addOpEntry("/", 2, operators);
+        operators = addOpEntry("%", 2, operators);
 
-        operators.put("+", new OpEntry("+", 3));
-        operators.put("-", new OpEntry("-", 3));
-        operators.put("∪", new OpEntry("∪", 3));
-        operators.put("∩", new OpEntry("∩", 3));
+        operators = addOpEntry("+", 3, operators);
+        operators = addOpEntry("-", 3, operators);
+        operators = addOpEntry("∪", 3, operators);
+        operators = addOpEntry("∩", 3, operators);
 
-        operators.put("<<", new OpEntry("<<", 4));
-        operators.put(">>", new OpEntry(">>", 4));
+        operators = addOpEntry("<<", 4, operators);
+        operators = addOpEntry(">>", 4, operators);
 
-        operators.put("<=>", new OpEntry("<=>", 5));
-        operators.put(">", new OpEntry(">", 5));
-        operators.put("<", new OpEntry("<", 5));
-        operators.put("<=", new OpEntry("<=", 5));
-        operators.put(">=", new OpEntry(">=", 5));
-        operators.put("<>", new OpEntry("<>", 5));
-        operators.put("<>>", new OpEntry("<>>", 5));
-        operators.put("≤", new OpEntry("≤", 5));
-        operators.put("≥", new OpEntry("≥", 5));
-        operators.put("⊂", new OpEntry("⊂", 5));
-        operators.put("⊃", new OpEntry("⊃", 5));
-        operators.put("⊆", new OpEntry("⊆", 5));
-        operators.put("⊇", new OpEntry("⊇", 5));
+        operators = addOpEntry("<=>", 5, operators);
+        operators = addOpEntry(">", 5, operators);
+        operators = addOpEntry("<", 5, operators);
+        operators = addOpEntry("<=", 5, operators);
+        operators = addOpEntry(">=", 5, operators);
+        operators = addOpEntry("<>", 5, operators);
+        operators = addOpEntry("<>>", 5, operators);
+        operators = addOpEntry("≤", 5, operators);
+        operators = addOpEntry("≥", 5, operators);
+        operators = addOpEntry("⊂", 5, operators);
+        operators = addOpEntry("⊃", 5, operators);
+        operators = addOpEntry("⊆", 5, operators);
+        operators = addOpEntry("⊇", 5, operators);
 
-        operators.put("==", new OpEntry("==", 6));
-        operators.put("!=", new OpEntry("!=", 6));
-        operators.put("≠", new OpEntry("≠", 6));
-        operators.put("===", new OpEntry("===", 6));
-        operators.put("=~", new OpEntry("=~", 6));
-        operators.put("!~", new OpEntry("!~", 6));
+        operators = addOpEntry("==", 6, operators);
+        operators = addOpEntry("!=", 6, operators);
+        operators = addOpEntry("≠", 6, operators);
+        operators = addOpEntry("===", 6, operators);
+        operators = addOpEntry("=~", 6, operators);
+        operators = addOpEntry("!~", 6, operators);
 
-        operators.put("&", new OpEntry("&", 7));
+        operators = addOpEntry("&", 7, operators);
 
-        operators.put("^", new OpEntry("^", 8));
+        operators = addOpEntry("^", 8, operators);
 
-        operators.put("|", new OpEntry("|", 9));
+        operators = addOpEntry("|", 9, operators);
 
-        operators.put("&&", new OpEntry("&&", 10));
-        operators.put("?&", new OpEntry("?&", 10));
+        operators = addOpEntry("&&", 10, operators);
+        operators = addOpEntry("?&", 10, operators);
 
-        operators.put("||", new OpEntry("||", 11));
-        operators.put("?|", new OpEntry("?|", 11));
+        operators = addOpEntry("||", 11, operators);
+        operators = addOpEntry("?|", 11, operators);
 
-        operators.put("..", new OpEntry("..", 12));
-        operators.put("...", new OpEntry("...", 12));
+        operators = addOpEntry("..", 12, operators);
+        operators = addOpEntry("...", 12, operators);
 
-        operators.put("=>", new OpEntry("=>", 12));
-        operators.put("<->", new OpEntry("<->", 12));
-        operators.put("->", new OpEntry("->", 12));
-        operators.put("∘", new OpEntry("∘",12));
-        operators.put("+>", new OpEntry("+>", 12));
-        operators.put("!>", new OpEntry("!>", 12));
-        operators.put("&>", new OpEntry("&>", 12));
-        operators.put("%>", new OpEntry("%>", 12));
-        operators.put("#>", new OpEntry("#>", 12));
-        operators.put("@>", new OpEntry("@>", 12));
-        operators.put("/>", new OpEntry("/>", 12));
-        operators.put("*>", new OpEntry("*>", 12));
-        operators.put("?>", new OpEntry("?>", 12));
-        operators.put("|>", new OpEntry("|>", 12));
-        operators.put("^>", new OpEntry("^>", 12));
-        operators.put("~>", new OpEntry("~>", 12));
-        operators.put("->>", new OpEntry("->>", 12));
-        operators.put("+>>", new OpEntry("+>>", 12));
-        operators.put("!>>", new OpEntry("!>>", 12));
-        operators.put("&>>", new OpEntry("&>>", 12));
-        operators.put("%>>", new OpEntry("%>>", 12));
-        operators.put("#>>", new OpEntry("#>>", 12));
-        operators.put("@>>", new OpEntry("@>>", 12));
-        operators.put("/>>", new OpEntry("/>>", 12));
-        operators.put("*>>", new OpEntry("*>>", 12));
-        operators.put("?>>", new OpEntry("?>>", 12));
-        operators.put("|>>", new OpEntry("|>>", 12));
-        operators.put("^>>", new OpEntry("^>>", 12));
-        operators.put("~>>", new OpEntry("~>>", 12));
-        operators.put("=>>", new OpEntry("=>>", 12));
-        operators.put("**>", new OpEntry("**>", 12));
-        operators.put("**>>", new OpEntry("**>>", 12));
-        operators.put("&&>", new OpEntry("&&>", 12));
-        operators.put("&&>>", new OpEntry("&&>>", 12));
-        operators.put("||>", new OpEntry("||>", 12));
-        operators.put("||>>", new OpEntry("||>>", 12));
-        operators.put("$>", new OpEntry("$>", 12));
-        operators.put("$>>", new OpEntry("$>>", 12));
+        operators = addOpEntry("=>", 12, operators);
+        operators = addOpEntry("<->", 12, operators);
+        operators = addOpEntry("->", 12, operators);
+        operators = addOpEntry("∘",12, operators);
+        operators = addOpEntry("+>", 12, operators);
+        operators = addOpEntry("!>", 12, operators);
+        operators = addOpEntry("&>", 12, operators);
+        operators = addOpEntry("%>", 12, operators);
+        operators = addOpEntry("#>", 12, operators);
+        operators = addOpEntry("@>", 12, operators);
+        operators = addOpEntry("/>", 12, operators);
+        operators = addOpEntry("*>", 12, operators);
+        operators = addOpEntry("?>", 12, operators);
+        operators = addOpEntry("|>", 12, operators);
+        operators = addOpEntry("^>", 12, operators);
+        operators = addOpEntry("~>", 12, operators);
+        operators = addOpEntry("->>", 12, operators);
+        operators = addOpEntry("+>>", 12, operators);
+        operators = addOpEntry("!>>", 12, operators);
+        operators = addOpEntry("&>>", 12, operators);
+        operators = addOpEntry("%>>", 12, operators);
+        operators = addOpEntry("#>>", 12, operators);
+        operators = addOpEntry("@>>", 12, operators);
+        operators = addOpEntry("/>>", 12, operators);
+        operators = addOpEntry("*>>", 12, operators);
+        operators = addOpEntry("?>>", 12, operators);
+        operators = addOpEntry("|>>", 12, operators);
+        operators = addOpEntry("^>>", 12, operators);
+        operators = addOpEntry("~>>", 12, operators);
+        operators = addOpEntry("=>>", 12, operators);
+        operators = addOpEntry("**>", 12, operators);
+        operators = addOpEntry("**>>", 12, operators);
+        operators = addOpEntry("&&>", 12, operators);
+        operators = addOpEntry("&&>>", 12, operators);
+        operators = addOpEntry("||>", 12, operators);
+        operators = addOpEntry("||>>", 12, operators);
+        operators = addOpEntry("$>", 12, operators);
+        operators = addOpEntry("$>>", 12, operators);
 
-        operators.put("+=", new OpEntry("+=", 13));
-        operators.put("-=", new OpEntry("-=", 13));
-        operators.put("**=", new OpEntry("**=", 13));
-        operators.put("*=", new OpEntry("*=", 13));
-        operators.put("/=", new OpEntry("/=", 13));
-        operators.put("%=", new OpEntry("%=", 13));
-        operators.put("and", new OpEntry("and", 13));
-        operators.put("nand", new OpEntry("nand", 13));
-        operators.put("&=", new OpEntry("&=", 13));
-        operators.put("&&=", new OpEntry("&&=", 13));
-        operators.put("^=", new OpEntry("^=", 13));
-        operators.put("or", new OpEntry("or", 13));
-        operators.put("xor", new OpEntry("xor", 13));
-        operators.put("nor", new OpEntry("nor", 13));
-        operators.put("|=", new OpEntry("|=", 13));
-        operators.put("||=", new OpEntry("||=", 13));
-        operators.put("<<=", new OpEntry("<<=",13));
-        operators.put(">>=", new OpEntry(">>=",13));
+        operators = addOpEntry("and", 13, operators);
+        operators = addOpEntry("nand", 13, operators);
+        operators = addOpEntry("or", 13, operators);
+        operators = addOpEntry("xor", 13, operators);
+        operators = addOpEntry("nor", 13, operators);
 
-        operators.put("<-", new OpEntry("<-", 14));
+        operators = addOpEntry("<-", 14, operators);
 
-        operators.put("return", new OpEntry("return", 14));
-        operators.put("import", new OpEntry("import", 14));
+        operators = addOpEntry("return", 14, operators);
+        operators = addOpEntry("import", 14, operators);
 
-        unaryOperators.add("-");
-        unaryOperators.add("+");
-        unaryOperators.add("!");
-        unaryOperators.add("~");
-        unaryOperators.add("$");
+        DEFAULT_OPERATORS = operators;
+
+        DEFAULT_UNARY_OPERATORS = (IPersistentSet)PersistentHashSet.EMPTY
+            .cons("-")
+            .cons("+")
+            .cons("!")
+            .cons("~")
+            .cons("$");
+
+        IPersistentMap aoperators = PersistentArrayMap.EMPTY;
+        
+        aoperators = addOpArity("=",  2, aoperators);
+        aoperators = addOpArity("+=", 2, aoperators);
+        aoperators = addOpArity("+=", 2, aoperators);
+        aoperators = addOpArity("-=", 2, aoperators);
+        aoperators = addOpArity("**=",2, aoperators);
+        aoperators = addOpArity("*=", 2, aoperators);
+        aoperators = addOpArity("/=", 2, aoperators);
+        aoperators = addOpArity("%=", 2, aoperators);
+        aoperators = addOpArity("&=", 2, aoperators);
+        aoperators = addOpArity("&&=",2, aoperators);
+        aoperators = addOpArity("^=", 2, aoperators);
+        aoperators = addOpArity("|=", 2, aoperators);
+        aoperators = addOpArity("||=",2, aoperators);
+        aoperators = addOpArity("<<=",2, aoperators);
+        aoperators = addOpArity(">>=",2, aoperators);
+        aoperators = addOpArity("++", 1, aoperators);
+        aoperators = addOpArity("--", 1, aoperators);
+
+        DEFAULT_ASSIGNMENT_OPERATORS = aoperators;
     }
 
     private static class Level {
@@ -636,6 +686,7 @@ public class Parser {
             }
         }
 
+        top.popOperatorsTo(999999);
         top.currentMessageChain.add(new NamedMessage(".", null, null, sourcename, l, cc));
         top.added();
     }
@@ -1023,7 +1074,7 @@ public class Parser {
     }
 
     private void possibleOperator(String name, String sourcename, int l, int cc) {
-        OpEntry op = operators.get(name);
+        OpEntry op = (OpEntry)operators.valueAt(name);
         if(op != null) {
             boolean unary = isUnary(name);
             if(!unary) {
@@ -1041,8 +1092,27 @@ public class Parser {
                 top.push(-1, result, true);
             }
         } else {
-            top.currentMessageChain.add(new NamedMessage(name, null, null, sourcename,  l, cc));
-            top.added();
+            OpArity opa = (OpArity)assignmentOperators.valueAt(name);
+            if(opa != null && top.currentMessageChain.size() > 0) {
+                if(opa.arity == 2) {
+                    top.popOperatorsTo(13);
+                    List<Message> currentChain = top.currentMessageChain;
+                    Message last = currentChain.remove(currentChain.size() - 1);
+                    MutableMessage result = new MutableMessage(name, null, sourcename,  l, cc);
+                    currentChain.add(result);
+                    top.added();
+                    top.push(13, result, false);
+                    result.firstArgument = last;
+                } else {
+                    List<Message> currentChain = top.currentMessageChain;
+                    Message last = currentChain.remove(currentChain.size() - 1);
+                    currentChain.add(new NamedMessage(name, new PersistentList(last), null, sourcename, l, cc));
+                    top.added();
+                }
+            } else {
+                top.currentMessageChain.add(new NamedMessage(name, null, null, sourcename,  l, cc));
+                top.added();
+            }
         }
     }
 
