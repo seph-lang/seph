@@ -130,6 +130,20 @@
     </junit>
   </target>
 
+  <target name="test-parser" depends="compile-tests" description="Runs all Seph tests">
+    <junit fork="yes" forkMode="once" haltonfailure="true" showoutput="true" timeout="1800000">
+      <classpath refid="test.classpath"/>
+      <sysproperty key="file.encoding" value="UTF-8"/>
+      <formatter type="brief" usefile="false" />
+
+      <batchtest fork="yes">
+        <fileset dir="${src.test.dir}">
+          <include name="**/ParserTest.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
   <target name="jar" depends="test" description="Create the seph.jar file">
     <jar destfile="${lib.dir}/seph.jar">
       <fileset dir="${main.classes.dir}">

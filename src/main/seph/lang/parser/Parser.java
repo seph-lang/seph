@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 import seph.lang.Runtime;
 import seph.lang.ControlFlow;
@@ -16,7 +18,9 @@ import seph.lang.ast.Message;
 import seph.lang.ast.NamedMessage;
 import seph.lang.ast.LiteralMessage;
 import seph.lang.persistent.IPersistentList;
+import seph.lang.persistent.IPersistentCollection;
 import seph.lang.persistent.PersistentList;
+import seph.lang.persistent.ISeq;
 
 import gnu.math.IntNum;
 import gnu.math.DFloNum;
@@ -36,7 +40,7 @@ public class Parser {
     }
 
     public IPersistentList parseFully() throws IOException, ControlFlow {
-        IPersistentList all = parseExpressionChain();
+        IPersistentList all = parseCommaSeparatedMessageChains();
 
         if(all.count() == 0) {
             all = (IPersistentList)all.cons(new NamedMessage(".", null, null, sourcename, 0, 0));
@@ -45,12 +49,25 @@ public class Parser {
         return all;
     }
 
-    private Message parseExpressions() throws IOException, ControlFlow {
+    private ISeq messageChainStack = ((ISeq)PersistentList.EMPTY).cons(null);
+    private List<Message> currentMessageChain = null;
+
+    private void push(List<Message> messageChain) {
+        messageChainStack = messageChainStack.cons(currentMessageChain);
+        currentMessageChain = messageChain;
+    }
+
+    private void pop() {
+        currentMessageChain = (List<Message>)messageChainStack.first();
+        messageChainStack = messageChainStack.next();
+    }
+
+    private Message parseMessageChain() throws IOException, ControlFlow {
         List<Message> result = new ArrayList<Message>();
-        Message c;
-        while((c = parseExpression()) != null) {
-            result.add(c);
-        }
+
+        push(result);
+        while(parseMessage());
+        pop();
 
         Message ret = null;
         for(ListIterator<Message> i = result.listIterator(result.size()); i.hasPrevious();) {
@@ -66,19 +83,19 @@ public class Parser {
         return ret;
     }
 
-    private IPersistentList parseExpressionChain() throws IOException, ControlFlow {
+    private IPersistentList parseCommaSeparatedMessageChains() throws IOException, ControlFlow {
         ArrayList<Message> chain = new ArrayList<Message>();
 
-        Message curr = parseExpressions();
+        Message curr = parseMessageChain();
         while(curr != null) {
             chain.add(curr);
             readWhiteSpace();
             int rr = peek();
             if(rr == ',') {
                 read();
-                curr = parseExpressions();
+                curr = parseMessageChain();
                 if(curr == null) {
-                    fail("Expected expression following comma");
+                    fail("Expected message chain following comma");
                 }
             } else {
                 if(curr != null && curr.name().equals(".") && curr.next() == null) {
@@ -168,52 +185,60 @@ public class Parser {
         return saved2;
     }
 
-    private Message parseExpression() throws IOException, ControlFlow {
+    private boolean parseMessage() throws IOException, ControlFlow {
         int rr;
         while(true) {
             rr = peek();
             switch(rr) {
             case -1:
                 read();
-                return null;
+                return false;
             case ',':
             case ')':
             case ']':
             case '}':
-                return null;
+                return false;
             case '(':
                 read();
-                return parseEmptyMessageSend();
+                parseEmptyMessageSend();
+                return true;
             case '[':
                 read();
-                return parseOpenCloseMessageSend(']', "[]");
+                parseOpenCloseMessageSend(']', "[]");
+                return true;
             case '{':
                 read();
-                return parseOpenCloseMessageSend('}', "{}");
+                parseOpenCloseMessageSend('}', "{}");
+                return true;
             case '#':
                 read();
                 switch(peek()) {
                 case '{':
-                    return parseSimpleOpenCloseMessageSend('}', "set");
+                    parseSimpleOpenCloseMessageSend('}', "set");
+                    return true;
                 case '[':
-                    return parseSimpleOpenCloseMessageSend(']', "vector");
+                    parseSimpleOpenCloseMessageSend(']', "vector");
+                    return true;
                 case '!':
                     parseComment();
                     break;
                 default:
-                    return parseOperatorChars('#');
+                    parseOperatorChars('#');
+                    return true;
                 }
                 break;
             case '"':
                 read();
-                return parseText('"');
+                parseText('"');
+                return true;
             case '.':
                 read();
                 if((rr = peek()) == '.') {
-                    return parseRange();
+                    parseRange();
                 } else {
-                    return parseTerminator('.');
+                    parseTerminator('.');
                 }
+                return true;
             case ';':
                 read();
                 parseComment();
@@ -228,7 +253,8 @@ public class Parser {
             case '\r':
             case '\n':
                 read();
-                return parseTerminator(rr);
+                parseTerminator(rr);
+                return true;
             case '\\':
                 read();
                 if((rr = peek()) == '\n') {
@@ -248,24 +274,30 @@ public class Parser {
             case '8':
             case '9':
                 read();
-                return parseNumber(rr);
+                parseNumber(rr);
+                return true;
             case '%':
                 read();
                 switch(peek()) {
                 case '/':
-                    return parseRegexpLiteral('/');
+                    parseRegexpLiteral('/');
+                    break;
                 case 'r':
-                    return parseRegexpLiteral('r');
+                    parseRegexpLiteral('r');
+                    break;
                 case '[':
-                    return parseText('[');
+                    parseText('[');
+                    break;
                 default:
-                    return parseOperatorChars('%');
+                    parseOperatorChars('%');
                 }
+                return true;
             case '+':
             case '-':
                 if(isDigit(peek2())) {
                     read();
-                    return parseNumber(rr);
+                    parseNumber(rr);
+                    return true;
                 }
             case '*':
             case '<':
@@ -283,17 +315,20 @@ public class Parser {
             case '`':
             case '/':
                 read();
-                return parseOperatorChars(rr);
+                parseOperatorChars(rr);
+                return true;
             case ':':
                 read();
                 if(isLetter(rr = peek()) || isIDDigit(rr)) {
-                    return parseRegularMessageSend(':');
+                    parseRegularMessageSend(':');
                 } else {
-                    return parseOperatorChars(':');
+                    parseOperatorChars(':');
                 }
+                return true;
             default:
                 read();
-                return parseRegularMessageSend(rr);
+                parseRegularMessageSend(rr);
+                return true;
             }
         }
     }
@@ -308,7 +343,7 @@ public class Parser {
         }
     }
 
-    private Message parseRegularMessageSend(int indicator) throws IOException, ControlFlow {
+    private void parseRegularMessageSend(int indicator) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         StringBuilder sb = new StringBuilder();
@@ -322,10 +357,10 @@ public class Parser {
         IPersistentList args = null;
         if(rr == '(') {
             read();
-            args = parseExpressionChain();
+            args = parseCommaSeparatedMessageChains();
             parseCharacter(')');
         }
-        return new NamedMessage(sb.toString(), args, null, sourcename, l, cc);
+        currentMessageChain.add(new NamedMessage(sb.toString(), args, null, sourcename, l, cc));
     }
 
     private void parseComment() throws IOException {
@@ -352,7 +387,7 @@ public class Parser {
     };
 
 
-    private Message parseRange() throws IOException {
+    private void parseRange() throws IOException {
         int l = lineNumber; int cc = currentCharacter-1;
 
         int count = 2;
@@ -373,10 +408,10 @@ public class Parser {
             result = sb.toString();
         }
 
-        return new NamedMessage(result, null, null, sourcename, l, cc);
+        currentMessageChain.add(new NamedMessage(result, null, null, sourcename, l, cc));
     }
 
-    private Message parseTerminator(int indicator) throws IOException {
+    private void parseTerminator(int indicator) throws IOException {
         int l = lineNumber; int cc = currentCharacter-1;
 
         int rr;
@@ -401,10 +436,10 @@ public class Parser {
             }
         }
 
-        return new NamedMessage(".", null, null, sourcename, l, cc);
+        currentMessageChain.add(new NamedMessage(".", null, null, sourcename, l, cc));
     }
 
-    private Message parseRegexpLiteral(int indicator) throws IOException, ControlFlow {
+    private void parseRegexpLiteral(int indicator) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         StringBuilder sb = new StringBuilder();
@@ -443,13 +478,15 @@ public class Parser {
                             break;
                         default:
                             if(name == null) {
-                                return new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc);
+                                currentMessageChain.add(new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc));
+                                return;
                             }
                             if(pattern.length() > 0) {
                                 args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
                             }
                             args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
-                            return new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc);
+                            currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                            return;
                         }
                     }
                 } else {
@@ -474,13 +511,15 @@ public class Parser {
                             break;
                         default:
                             if(name == null) {
-                                return new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc);
+                                currentMessageChain.add(new LiteralMessage(runtime.newRegexp(pattern, sb.toString()), null, sourcename, l, cc));
+                                return;
                             }
                             if(pattern.length() > 0) {
                                 args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
                             }
                             args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
-                            return new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc);
+                            currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                            return;
                         }
                     }
                 } else {
@@ -494,7 +533,7 @@ public class Parser {
                     args.add(new LiteralMessage(runtime.newUnescapedText(sb.toString()), null, sourcename, l, cc));
                     sb = new StringBuilder();
                     name = "internal:compositeRegexp";
-                    args.add(parseExpressions());
+                    args.add(parseMessageChain());
                     readWhiteSpace();
                     parseCharacter('}');
                 } else {
@@ -513,7 +552,7 @@ public class Parser {
         }
     }
 
-    private Message parseText(int indicator) throws IOException, ControlFlow {
+    private void parseText(int indicator) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         StringBuilder sb = new StringBuilder();
@@ -537,12 +576,14 @@ public class Parser {
                 read();
                 if(dquote) {
                     if(name == null) {
-                        return new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc);
+                        currentMessageChain.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
+                        return;
                     }
                     if(sb.length() > 0) {
                         args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
                     }
-                    return new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc);
+                    currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                    return;
                 } else {
                     sb.append((char)rr);
                 }
@@ -551,12 +592,14 @@ public class Parser {
                 read();
                 if(!dquote) {
                     if(name == null) {
-                        return new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc);
+                        currentMessageChain.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
+                        return;
                     }
                     if(sb.length() > 0) {
                         args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
                     }
-                    return new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc);
+                    currentMessageChain.add(new NamedMessage(name, PersistentList.create(args), null, sourcename, l, cc));
+                    return;
                 } else {
                     sb.append((char)rr);
                 }
@@ -568,7 +611,7 @@ public class Parser {
                     args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
                     sb = new StringBuilder();
                     name = "internal:concatenateText";
-                    args.add(parseExpressions());
+                    args.add(parseMessageChain());
                     readWhiteSpace();
                     parseCharacter('}');
                 } else {
@@ -765,7 +808,54 @@ public class Parser {
         }
     }
 
-    private Message parseOperatorChars(int indicator) throws IOException, ControlFlow {
+    private static class Level {
+        public final int precedence;
+        public final MutableMessage operatorMessage;
+
+        public Level(int precedence, MutableMessage op) {
+            this.precedence = precedence;
+            this.operatorMessage = op;
+        }
+    }
+
+    private IPersistentCollection levels = PersistentList.EMPTY;
+    private Level topLevel = new Level(-1, null);
+
+    public static class OpEntry {
+        public final String name;
+        public final int precedence;
+        public OpEntry(String name, int precedence) { 
+            this.name = name; 
+            this.precedence = precedence;
+        }
+    }
+
+    private final static Map<String, OpEntry> operators = new HashMap();
+    static {
+        operators.put("+", new OpEntry("+", 3));
+        operators.put("*", new OpEntry("*", 2));
+    }
+
+    private void popOperatorsTo(int precedence) {
+    }
+
+    private void push(Level level) {
+    }
+
+    private Message possibleOperator(String name, String sourcename, int l, int cc) {
+        OpEntry op = operators.get(name);
+        if(op != null) {
+            popOperatorsTo(op.precedence);
+            MutableMessage result = new MutableMessage(name, null, sourcename,  l, cc);
+            push(new Level(op.precedence, result));
+            System.err.println("have potential " + op.name + " operator");
+            return result.fix();
+        } else {
+            return new NamedMessage(name, null, null, sourcename,  l, cc);
+        }
+    }
+
+    private void parseOperatorChars(int indicator) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         StringBuilder sb = new StringBuilder();
@@ -806,11 +896,13 @@ public class Parser {
             default:
                 if(rr == '(') {
                     read();
-                    IPersistentList args = parseExpressionChain();
+                    IPersistentList args = parseCommaSeparatedMessageChains();
                     parseCharacter(')');
-                    return new NamedMessage(sb.toString(), args, null, sourcename,  l, cc);
+                    currentMessageChain.add(new NamedMessage(sb.toString(), args, null, sourcename,  l, cc));
+                    return;
                 } else {
-                    return new NamedMessage(sb.toString(), null, null, sourcename,  l, cc);
+                    currentMessageChain.add(possibleOperator(sb.toString(), sourcename, l, cc));
+                    return;
                 }
             }
         }
@@ -826,16 +918,16 @@ public class Parser {
         }
     }
 
-    private Message parseEmptyMessageSend() throws IOException, ControlFlow {
+    private void parseEmptyMessageSend() throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
-        IPersistentList args = parseExpressionChain();
+        IPersistentList args = parseCommaSeparatedMessageChains();
         parseCharacter(')');
 
-        return new NamedMessage("", args, null, sourcename,  l, cc);
+        currentMessageChain.add(new NamedMessage("", args, null, sourcename,  l, cc));
     }
 
-    private Message parseOpenCloseMessageSend(char end, String name) throws IOException, ControlFlow {
+    private void parseOpenCloseMessageSend(char end, String name) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         int rr = peek();
@@ -846,24 +938,24 @@ public class Parser {
         if(rr == end && r2 == '(') {
             read();
             read();
-            args = parseExpressionChain();
+            args = parseCommaSeparatedMessageChains();
             parseCharacter(')');
         } else {
-            args = parseExpressionChain();
+            args = parseCommaSeparatedMessageChains();
             parseCharacter(end);
         }
 
-        return new NamedMessage(name, args, null, sourcename,  l, cc);
+        currentMessageChain.add(new NamedMessage(name, args, null, sourcename,  l, cc));
     }
 
-    private Message parseSimpleOpenCloseMessageSend(char end, String name) throws IOException, ControlFlow {
+    private void parseSimpleOpenCloseMessageSend(char end, String name) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
 
         read();
-        IPersistentList args = parseExpressionChain();
+        IPersistentList args = parseCommaSeparatedMessageChains();
         parseCharacter(end);
 
-        return new NamedMessage(name, args, null, sourcename,  l, cc);
+        currentMessageChain.add(new NamedMessage(name, args, null, sourcename,  l, cc));
     }
 
     private int readNumbersInto(StringBuilder sb) throws IOException {
@@ -999,7 +1091,7 @@ public class Parser {
         }
     }
 
-    private Message parseNumber(int indicator) throws IOException, ControlFlow {
+    private void parseNumber(int indicator) throws IOException, ControlFlow {
         int l = lineNumber; int cc = currentCharacter-1;
         boolean decimal = false;
         StringBuilder sb = new StringBuilder();
@@ -1066,10 +1158,10 @@ public class Parser {
         }
 
         try {
-            return new LiteralMessage(decimal ? new DFloNum(sb.toString()) : IntNum.valueOf(sb.toString(), radix), null, sourcename, l, cc);
+            currentMessageChain.add(new LiteralMessage(decimal ? new DFloNum(sb.toString()) : IntNum.valueOf(sb.toString(), radix), null, sourcename, l, cc));
         } catch(NumberFormatException e) {
             fail(e.getMessage());
-            return null;
+            return;
         }
     }
 

@@ -3,11 +3,13 @@
  */
 package seph.lang.parser;
 
+import java.util.Arrays;
 import java.io.StringReader;
 
 import org.junit.Test;
 import org.junit.Ignore;
 import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
 
 import seph.lang.Runtime;
 import seph.lang.SephObject;
@@ -15,6 +17,7 @@ import seph.lang.Text;
 import seph.lang.Regexp;
 import seph.lang.ControlFlow;
 import seph.lang.ast.Message;
+import seph.lang.ast.NamedMessage;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 
@@ -1229,7 +1232,7 @@ public class ParserTest {
         Parser.Failure f = (Parser.Failure)error.getValue();
         assertEquals(2, f.line);
         assertEquals(8, f.character);
-        assertEquals("Expected expression following comma", f.message);
+        assertEquals("Expected message chain following comma", f.message);
         assertEquals("blargus3.sp", f.source);
     }
 
@@ -2121,4 +2124,45 @@ public class ParserTest {
         assertEquals(3, result.line());
         assertEquals(1, result.position());
     }
+
+    private static Message msg(String name) {
+        return new NamedMessage(name, null, null, null, -1, -1);
+    }
+
+    private static Message msg(String name, Message next) {
+        return new NamedMessage(name, null, next, null, -1, -1);
+    }
+
+    private static Message msg(String name, IPersistentList args, Message next) {
+        return new NamedMessage(name, args, next, null, -1, -1);
+    }
+
+    private static Message msg(String name, IPersistentList args) {
+        return new NamedMessage(name, args, null, null, -1, -1);
+    }
+
+    // @Test
+    // public void parsing_a_simple_expression_generates_correct_associativity() {
+    //     Message result = parse("foo1 + foo2 * foo3");
+    //     // same as:     foo1 +(foo2 *(foo3))
+    //     Message expected = msg("foo1", msg("+", PersistentList.create(Arrays.asList(msg("foo2", msg("*", PersistentList.create(Arrays.asList(msg("foo3")))))))));
+    //     assertThat(result, is(equalTo(expected)));
+    // }
+
+    // @Test
+    // public void parsing_another_simple_expression_generates_correct_associativity() {
+    //     Message result = parse("foo1 * foo2 + foo3");
+    //     // same as:     foo1 *(foo2) +(foo3)
+    //     Message expected = msg("foo1", msg("*", PersistentList.create(Arrays.asList(msg("foo2"))), msg("+", PersistentList.create(Arrays.asList(msg("foo3"))))));
+    //     assertThat(result, is(equalTo(expected)));
+    // }
+
+    // @Test
+    // public void parsing_an_arithmetic_expression_generates_the_correct_associativity() {
+    //     Message result = parse("foo1 + foo2 * foo3 / ( foo4 - foo5 ) ** foo6 ** foo7");
+    //     // same as:     foo1 +(foo2 *(foo3) /((foo4 -(foo5)) **(foo6) **(foo7)))"
+    //     Message expected = msg("foo1", msg("+", PersistentList.create(Arrays.asList(msg("foo2", msg("*", PersistentList.create(Arrays.asList(msg("foo3"))), msg("/", PersistentList.create(Arrays.asList(msg("", PersistentList.create(Arrays.asList(msg("foo4", msg("-", PersistentList.create(Arrays.asList(msg("foo5"))))))), msg("**", PersistentList.create(Arrays.asList(msg("foo6"))), msg("**", PersistentList.create(Arrays.asList(msg("foo7")))))))))))))));
+                                                                                    
+    //     assertThat(result, is(equalTo(expected)));
+    // }
 }// ParserTest
