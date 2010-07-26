@@ -34,14 +34,10 @@ public class NamedMessage implements Message, SephObject {
             return new Terminator(name, arguments, next, filename, line, position);
         } else if(Parser.DEFAULT_ASSIGNMENT_OPERATORS.containsKey(name)) {
             return new Assignment(name, arguments, next, filename, line, position);
+        } else if(name.equals("#")) {
+            return new Abstraction(name, arguments, next, filename, line, position);
         } else {
             return new NamedMessage(name, arguments, next, filename, line, position);
-        }
-    }
-
-    public final static class Terminator extends NamedMessage {
-        public Terminator(String name, IPersistentList arguments, Message next, String filename, int line, int position) {
-            super(name, arguments, next, filename, line, position);
         }
     }
 
@@ -141,7 +137,6 @@ public class NamedMessage implements Message, SephObject {
 
         return value;
     }
-
 
     public SephObject get(String cellName) {
         return null;

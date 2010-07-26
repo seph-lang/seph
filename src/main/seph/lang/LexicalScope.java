@@ -24,6 +24,10 @@ public class LexicalScope {
         return (SephObject)this.currentInterpreter.evaluate(message);
     }
 
+    public SephObject evaluate(SephObject ground, Message message) {
+        return (SephObject)this.currentInterpreter.withGround(ground).evaluate(message);
+    }
+
     private IPersistentMap values = PersistentArrayMap.EMPTY;
 
     public void assign(String name, SephObject value) {

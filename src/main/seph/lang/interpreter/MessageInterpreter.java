@@ -25,6 +25,16 @@ public class MessageInterpreter {
         this.scope = new LexicalScope(this);
     }
 
+    private MessageInterpreter(final Runtime runtime, final SephObject ground, final LexicalScope scope) {
+        this.runtime = runtime;
+        this.ground = ground;
+        this.scope = scope;
+    }
+
+    public MessageInterpreter withGround(SephObject ground) {
+        return new MessageInterpreter(this.runtime, ground, this.scope);
+    }
+
     public Object evaluate(Message msg) {
         SephObject receiver = ground;
         Message currentMessage = msg;

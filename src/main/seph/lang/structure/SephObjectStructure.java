@@ -22,7 +22,7 @@ public abstract class SephObjectStructure implements SephObject {
     }
 
     public boolean isActivatable() {
-        return meta.valueAt(activatable) == seph.lang.Runtime.TRUE;
+        return meta != null && meta.valueAt(activatable) == seph.lang.Runtime.TRUE;
     }
 
     public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
