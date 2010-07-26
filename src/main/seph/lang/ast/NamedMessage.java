@@ -32,7 +32,7 @@ public class NamedMessage implements Message, SephObject {
 
         if(name.equals(".")) {
             return new Terminator(name, arguments, next, filename, line, position);
-        } else if(Parser.DEFAULT_ASSIGNMENT_OPERATORS.valueAt(name) != null) {
+        } else if(Parser.DEFAULT_ASSIGNMENT_OPERATORS.containsKey(name)) {
             return new Assignment(name, arguments, next, filename, line, position);
         } else {
             return new NamedMessage(name, arguments, next, filename, line, position);
@@ -45,12 +45,6 @@ public class NamedMessage implements Message, SephObject {
         }
     }
 
-    public final static class Assignment extends NamedMessage {
-        public Assignment(String name, IPersistentList arguments, Message next, String filename, int line, int position) {
-            super(name, arguments, next, filename, line, position);
-        }
-    }
-    
     NamedMessage(String name, IPersistentList arguments, Message next, String filename, int line, int position) {
         this.name = name == null ? null : name.intern();
         this.arguments = arguments == null ? NO_ARGUMENTS : arguments;
@@ -131,14 +125,20 @@ public class NamedMessage implements Message, SephObject {
     }
 
     public SephObject sendTo(LexicalScope scope, SephObject receiver, Runtime runtime) {
-        SephObject value = receiver.get(name);
-        if(value == null) {
+        SephObject value = scope.get(name);
+
+        if(null == value) {
+            value = receiver.get(name);
+        }
+
+        if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
 
         if(value.isActivatable()) {
             return value.activateWith(scope, receiver, arguments);
         }
+
         return value;
     }
 

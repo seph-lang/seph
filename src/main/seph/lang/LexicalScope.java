@@ -5,11 +5,15 @@ package seph.lang;
 
 import seph.lang.ast.Message;
 import seph.lang.interpreter.MessageInterpreter;
+import seph.lang.persistent.IPersistentMap;
+import seph.lang.persistent.PersistentArrayMap;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class LexicalScope {
+    public final static LexicalScope EMPTY = new LexicalScope(null);
+    
     private final MessageInterpreter currentInterpreter;
 
     public LexicalScope(MessageInterpreter currentInterpreter) {
@@ -18,5 +22,15 @@ public class LexicalScope {
 
     public SephObject evaluate(Message message) {
         return (SephObject)this.currentInterpreter.evaluate(message);
+    }
+
+    private IPersistentMap values = PersistentArrayMap.EMPTY;
+
+    public void assign(String name, SephObject value) {
+        values = values.associate(name, value);
+    }
+
+    public SephObject get(String name) {
+        return (SephObject)values.valueAt(name);
     }
 }// LexicalScope

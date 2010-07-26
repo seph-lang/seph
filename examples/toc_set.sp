@@ -1,7 +1,7 @@
 IntSet: Something with(
   empty?: false,
   adjoin: #(x, Adjoin with(s: self, obj: x)),
-  union: #(x, Union with(left: self, right: x))
+  ∪: #(x, Union with(left: self, right: x))
 ),
 
 Adjoin: IntSet with(
