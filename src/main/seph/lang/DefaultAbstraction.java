@@ -15,18 +15,20 @@ import seph.lang.persistent.ISeq;
  */
 public class DefaultAbstraction extends SimpleSephObject {
     private Message code;
+    private LexicalScope capture;
 
-    private DefaultAbstraction(Message code) {
+    private DefaultAbstraction(Message code, LexicalScope capture) {
         super(PersistentArrayMap.EMPTY.associate(activatable, Runtime.TRUE));
         this.code = code;
+        this.capture = capture;
     }
 
     public final static DefaultAbstraction createFrom(Abstraction message, LexicalScope scope) {
         Message code = (Message)message.arguments().seq().first();
-        return new DefaultAbstraction(code);
+        return new DefaultAbstraction(code, scope);
     }
 
     public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
-        return scope.evaluate(receiver, code);
+        return capture.newScopeWith(receiver).evaluate(code);
     }
 }// DefaultAbstraction

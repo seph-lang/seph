@@ -21,8 +21,16 @@ import seph.lang.interpreter.MessageInterpreter;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class Runtime {
-    public final static SephObject TRUE = new SimpleSephObject() {};
-    public final static SephObject NIL  = new SimpleSephObject() {};
+    public final static SephObject TRUE = new SimpleSephObject() {
+            public String toString() {
+                return "true";
+            }
+        };
+    public final static SephObject NIL  = new SimpleSephObject() {
+            public String toString() {
+                return "nil";
+            }
+        };
 
     public Text newText(String stringBeforeEscapeMangling) {
         return new Text(new StringUtils().replaceEscapes(stringBeforeEscapeMangling));

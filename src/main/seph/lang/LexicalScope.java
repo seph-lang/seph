@@ -12,29 +12,56 @@ import seph.lang.persistent.PersistentArrayMap;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class LexicalScope {
-    public final static LexicalScope EMPTY = new LexicalScope(null);
+    public final static LexicalScope ROOT = new LexicalScope(null) {
+            public LexicalScope find(String name, LexicalScope def) {
+                return def;
+            }
+
+            public SephObject get(String name) {
+                return null;
+            }
+        };
     
     private final MessageInterpreter currentInterpreter;
+    private final LexicalScope parent;
 
     public LexicalScope(MessageInterpreter currentInterpreter) {
+        this(currentInterpreter, ROOT);
+    }
+
+    public LexicalScope(MessageInterpreter currentInterpreter, LexicalScope parent) {
         this.currentInterpreter = currentInterpreter;
+        this.parent = parent;
+    }
+
+    public LexicalScope newScopeWith(SephObject ground) {
+        return currentInterpreter.newScope(ground);
     }
 
     public SephObject evaluate(Message message) {
         return (SephObject)this.currentInterpreter.evaluate(message);
     }
 
-    public SephObject evaluate(SephObject ground, Message message) {
-        return (SephObject)this.currentInterpreter.withGround(ground).evaluate(message);
-    }
-
     private IPersistentMap values = PersistentArrayMap.EMPTY;
 
+    public LexicalScope find(String name, LexicalScope def) {
+        if(values.containsKey(name)) {
+            return this;
+        } else {
+            return parent.find(name, def);
+        }
+    }
+
     public void assign(String name, SephObject value) {
-        values = values.associate(name, value);
+        LexicalScope place = find(name, this);
+        place.values = place.values.associate(name, value);
     }
 
     public SephObject get(String name) {
-        return (SephObject)values.valueAt(name);
+        SephObject result = (SephObject)values.valueAt(name);
+        if(null == result) {
+            result = parent.get(name);
+        }
+        return result;
     }
 }// LexicalScope

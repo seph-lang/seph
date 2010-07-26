@@ -25,30 +25,35 @@ public class MessageInterpreter {
         this.scope = new LexicalScope(this);
     }
 
-    private MessageInterpreter(final Runtime runtime, final SephObject ground, final LexicalScope scope) {
+    public MessageInterpreter(final Runtime runtime, final SephObject ground, final LexicalScope parent) {
         this.runtime = runtime;
         this.ground = ground;
-        this.scope = scope;
+        this.scope = new LexicalScope(this, parent);
     }
 
-    public MessageInterpreter withGround(SephObject ground) {
-        return new MessageInterpreter(this.runtime, ground, this.scope);
+    public LexicalScope newScope(SephObject ground) {
+        return new MessageInterpreter(this.runtime, ground, scope).scope;
     }
 
     public Object evaluate(Message msg) {
         SephObject receiver = ground;
+        SephObject lastReal = Runtime.NIL;
         Message currentMessage = msg;
 
         while(currentMessage != null) {
-            receiver = currentMessage.sendTo(scope, receiver, runtime);
-            currentMessage = currentMessage.next();
+            String name = currentMessage.name();
 
-            if(currentMessage != null && currentMessage.name().equals(".")) {
+            if(name.equals(".")) {
                 receiver = ground;
-                currentMessage = currentMessage.next();
+            } else {
+                SephObject tmp = currentMessage.sendTo(scope, receiver, runtime);
+                if(tmp != null) {
+                    lastReal = receiver = tmp;
+                }
             }
+            currentMessage = currentMessage.next();
         }
 
-        return receiver;
+        return lastReal;
     }
 }// MessageInterpreter
