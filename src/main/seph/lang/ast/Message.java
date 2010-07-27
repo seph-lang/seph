@@ -6,6 +6,7 @@ package seph.lang.ast;
 import seph.lang.Runtime;
 import seph.lang.SephObject;
 import seph.lang.LexicalScope;
+import seph.lang.SThread;
 import seph.lang.persistent.IPersistentList;
 
 /**
@@ -23,6 +24,6 @@ public interface Message {
     int line();
     int position();
 
-    SephObject sendTo(LexicalScope scope, SephObject receiver, Runtime runtime);
+    SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver);
 }// Message
 

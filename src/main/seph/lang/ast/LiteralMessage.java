@@ -6,6 +6,7 @@ package seph.lang.ast;
 import seph.lang.SephObject;
 import seph.lang.Runtime;
 import seph.lang.LexicalScope;
+import seph.lang.SThread;
 import seph.lang.persistent.IPersistentList;
 
 /**
@@ -81,7 +82,7 @@ public final class LiteralMessage implements Message, SephObject {
         return ret;
     }
 
-    public SephObject sendTo(LexicalScope scope, SephObject receiver, Runtime runtime) {
+    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver) {
         return literal;
     }
 
@@ -98,7 +99,7 @@ public final class LiteralMessage implements Message, SephObject {
         return true;
     }
 
-    public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// LiteralMessage

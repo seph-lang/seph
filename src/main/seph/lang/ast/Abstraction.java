@@ -7,6 +7,7 @@ import seph.lang.DefaultAbstraction;
 import seph.lang.SephObject;
 import seph.lang.Runtime;
 import seph.lang.LexicalScope;
+import seph.lang.SThread;
 import seph.lang.parser.Parser;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
@@ -20,7 +21,8 @@ public final class Abstraction extends NamedMessage {
         super(name, arguments, next, filename, line, position);
     }
 
-    public SephObject sendTo(LexicalScope scope, SephObject receiver, Runtime runtime) {
+    @Override
+    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver) {
         return DefaultAbstraction.createFrom(this, scope);
     }
 }// Abstraction

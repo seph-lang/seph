@@ -17,20 +17,20 @@ public class ControlDefaultBehavior implements SephObject {
     public final static ControlDefaultBehavior instance = new ControlDefaultBehavior();
 
     @SephMethod(name="if", evaluateArguments=false)
-    public final static SephObject _if(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
+    public final static SephObject _if(SThread thread, LexicalScope scope, IPersistentList arguments) {
         Message conditional = (Message)RT.first(arguments);
-        SephObject result = scope.evaluate(conditional);
+        SephObject result = scope.evaluate(thread, conditional);
         if(result.isTrue()) {
             ISeq seq = RT.next(arguments);
             if(null != seq) {
-                return scope.evaluate((Message)RT.first(seq));
+                return scope.evaluate(thread, (Message)RT.first(seq));
             } else {
                 return Runtime.NIL;
             }
         } else {
             ISeq seq = RT.next(RT.next(arguments));
             if(null != seq) {
-                return scope.evaluate((Message)RT.first(seq));
+                return scope.evaluate(thread, (Message)RT.first(seq));
             } else {
                 return Runtime.NIL;
             }
@@ -49,7 +49,7 @@ public class ControlDefaultBehavior implements SephObject {
         return true;
     }
 
-    public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// ControlDefaultBehavior

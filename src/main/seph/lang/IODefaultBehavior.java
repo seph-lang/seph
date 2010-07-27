@@ -14,8 +14,8 @@ public class IODefaultBehavior implements SephObject {
     public final static IODefaultBehavior instance = new IODefaultBehavior();
 
     @SephMethod
-    public final static SephObject println(SephObject receiver) {
-        System.out.println(((Text)NamedMessage.create("asText", null, null, null, -1, -1).sendTo(LexicalScope.ROOT, receiver, null)).text());
+    public final static SephObject println(SThread thread, SephObject receiver) {
+        System.out.println(((Text)NamedMessage.create("asText", null, null, null, -1, -1).sendTo(thread, LexicalScope.ROOT, receiver)).text());
         return Runtime.NIL;
     }
 
@@ -31,7 +31,7 @@ public class IODefaultBehavior implements SephObject {
         return true;
     }
 
-    public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// IODefaultBehavior

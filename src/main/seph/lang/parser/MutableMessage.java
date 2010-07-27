@@ -13,6 +13,7 @@ import seph.lang.ast.NamedMessage;
 import seph.lang.SephObject;
 import seph.lang.Runtime;
 import seph.lang.LexicalScope;
+import seph.lang.SThread;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.ISeq;
@@ -83,7 +84,7 @@ public class MutableMessage implements Message {
         throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 
-    public SephObject sendTo(LexicalScope scope, SephObject receiver, Runtime runtime) {
+    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver) {
         throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 

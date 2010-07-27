@@ -38,8 +38,8 @@ public class LexicalScope {
         return currentInterpreter.newScope(ground);
     }
 
-    public SephObject evaluate(Message message) {
-        return (SephObject)this.currentInterpreter.evaluate(message);
+    public SephObject evaluate(SThread thread, Message message) {
+        return (SephObject)this.currentInterpreter.evaluate(thread, message);
     }
 
     private IPersistentMap values = PersistentArrayMap.EMPTY;

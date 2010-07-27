@@ -28,7 +28,7 @@ public class SephGround implements SephObject {
         return true;
     }
 
-    public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// SephGround

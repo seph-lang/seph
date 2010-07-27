@@ -44,7 +44,8 @@ public class DefaultAbstraction extends SimpleSephObject {
         return new DefaultAbstraction(PersistentList.create(argNames), code, scope);
     }
 
-    public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
+    @Override
+    public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         LexicalScope methodScope = capture.newScopeWith(receiver);
 
         for(ISeq argNames = argumentNames.seq(), args = arguments.seq(); 
@@ -52,11 +53,11 @@ public class DefaultAbstraction extends SimpleSephObject {
             argNames = argNames.next(), args = args.next()) {
 
             String name = (String)argNames.first();
-            SephObject val = scope.evaluate((Message)args.first());
+            SephObject val = scope.evaluate(thread, (Message)args.first());
 
             methodScope.directlyAssign(name, val);
         }
 
-        return methodScope.evaluate(code);
+        return methodScope.evaluate(thread, code);
     }
 }// DefaultAbstraction

@@ -191,6 +191,8 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                             sb.append("args.arg" + positionalArity);
                             positionalArity++;
                         }
+                    } else if(tname.equals("seph.lang.SThread")) {
+                        sb.append("thread");
                     } else if(tname.equals("seph.lang.persistent.IPersistentMap")) {
                         sb.append("args.restKeywords");
                         hasRestKeywords = true;
@@ -205,7 +207,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                     throw new RuntimeException("Built in functions can't take more than five positional arguments. Use a rest argument instead (for " + md + ")");
                 }
 
-                out.println("            ArgumentResult args = parseAndEvaluateArguments(scope, arguments, "+positionalArity+", "+hasRestPositional+", " +hasRestKeywords+ ");");
+                out.println("            ArgumentResult args = parseAndEvaluateArguments(thread, scope, arguments, "+positionalArity+", "+hasRestPositional+", " +hasRestKeywords+ ");");
             }
 
             private void generateUnevaluatedArguments(MethodDeclaration md, StringBuilder sb) throws IOException {
@@ -219,6 +221,8 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                         sb.append("scope");
                     } else if(tname.equals("seph.lang.SephObject")) {
                         sb.append("receiver");
+                    } else if(tname.equals("seph.lang.SThread")) {
+                        sb.append("thread");
                     } else if(tname.equals("seph.lang.persistent.IPersistentList")) {
                         sb.append("arguments");
                     }
@@ -231,7 +235,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                 out.println("    public final static class " + name + "Impl extends SephMethodObject {");
                 out.println();
                 out.println("        public final static " + name + "Impl instance = new " + name + "Impl();");
-                out.println("        public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {");
+                out.println("        public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {");
 
                 SephMethod sm = md.getAnnotation(SephMethod.class);
 

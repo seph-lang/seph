@@ -6,6 +6,7 @@ package seph.lang.ast;
 import seph.lang.SephObject;
 import seph.lang.Runtime;
 import seph.lang.LexicalScope;
+import seph.lang.SThread;
 import seph.lang.parser.Parser;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
@@ -120,7 +121,7 @@ public class NamedMessage implements Message, SephObject {
         return ret;
     }
 
-    public SephObject sendTo(LexicalScope scope, SephObject receiver, Runtime runtime) {
+    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver) {
         SephObject value = scope.get(name);
 
         if(null == value) {
@@ -132,7 +133,7 @@ public class NamedMessage implements Message, SephObject {
         }
 
         if(value.isActivatable()) {
-            return value.activateWith(scope, receiver, arguments);
+            return value.activateWith(thread, scope, receiver, arguments);
         }
 
         return value;
@@ -150,7 +151,7 @@ public class NamedMessage implements Message, SephObject {
         return true;
     }
 
-    public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// NamedMessage

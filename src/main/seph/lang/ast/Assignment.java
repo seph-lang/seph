@@ -6,6 +6,7 @@ package seph.lang.ast;
 import seph.lang.SephObject;
 import seph.lang.Runtime;
 import seph.lang.LexicalScope;
+import seph.lang.SThread;
 import seph.lang.parser.Parser;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
@@ -17,22 +18,22 @@ import seph.lang.persistent.ISeq;
 public final class Assignment extends NamedMessage {
     private static enum ActualAssignment {
         EQ {
-            public SephObject assignOp(Message left, Message right, LexicalScope scope, Runtime runtime) {
-                SephObject value = scope.evaluate(right);
+            public SephObject assignOp(SThread thread, Message left, Message right, LexicalScope scope) {
+                SephObject value = scope.evaluate(thread, right);
                 scope.assign(left.name(), value);
                 return value;
             }
         },
         PLUS_EQ {
-            public SephObject assignOp(Message left, Message right, LexicalScope scope, Runtime runtime) {
-                SephObject leftValue = scope.evaluate(left);
-                SephObject value = NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position()).sendTo(scope, leftValue, runtime);
+            public SephObject assignOp(SThread thread, Message left, Message right, LexicalScope scope) {
+                SephObject leftValue = scope.evaluate(thread, left);
+                SephObject value = NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position()).sendTo(thread, scope, leftValue);
                 scope.assign(left.name(), value);
                 return value;
             }
         };
 
-        public abstract SephObject assignOp(Message left, Message right, LexicalScope scope, Runtime runtime);
+        public abstract SephObject assignOp(SThread thread, Message left, Message right, LexicalScope scope);
     }
 
     private ActualAssignment assgn;
@@ -49,9 +50,10 @@ public final class Assignment extends NamedMessage {
         }
     }
 
-    public SephObject sendTo(LexicalScope scope, SephObject receiver, Runtime runtime) {
+    @Override
+    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver) {
         Message left = (Message)arguments().seq().first();
         Message right = (Message)arguments().seq().next().first();
-        return assgn.assignOp(left, right, scope, runtime);
+        return assgn.assignOp(thread, left, right, scope);
     }
 }// Assignment

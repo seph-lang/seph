@@ -37,7 +37,7 @@ public abstract class SephMethodObject implements SephObject {
         return true;
     }
 
-    protected ArgumentResult parseAndEvaluateArguments(LexicalScope scope, IPersistentList arguments, int posArity, boolean restPos, boolean restKey) {
+    protected ArgumentResult parseAndEvaluateArguments(SThread thread, LexicalScope scope, IPersistentList arguments, int posArity, boolean restPos, boolean restKey) {
         List restp = restPos ? new ArrayList(arguments.count() - posArity) : (List)null;
         IPersistentMap restk = restKey ? PersistentArrayMap.EMPTY : (IPersistentMap)null;
         ISeq argsLeft = arguments.seq();
@@ -51,13 +51,13 @@ public abstract class SephMethodObject implements SephObject {
             if(restKey && (name = current.name()).endsWith(":")) {
                 name = name.substring(0, name.length()-1);
                 current = current.next();
-                SephObject part = scope.evaluate(current);
+                SephObject part = scope.evaluate(thread, current);
                 restk = restk.associate(name, part);
             } else {
                 if(collectingRestp) {
-                    restp.add(scope.evaluate(current));
+                    restp.add(scope.evaluate(thread, current));
                 } else {
-                    SephObject part = scope.evaluate(current);
+                    SephObject part = scope.evaluate(thread, current);
                     result.assign(currentArg, part);
                     currentArg++;
                     collectingRestp = restPos && currentArg > posArity;
