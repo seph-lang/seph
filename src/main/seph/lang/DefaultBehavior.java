@@ -8,11 +8,12 @@ import seph.lang.persistent.IPersistentList;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-@SephSingleton(parents="IODefaultBehavior")
+@SephSingleton(parents={"IODefaultBehavior", "ControlDefaultBehavior"})
 public class DefaultBehavior implements SephObject {
     public final static DefaultBehavior instance = new DefaultBehavior();
 
     public final SephObject parent1 = IODefaultBehavior.instance;
+    public final SephObject parent2 = ControlDefaultBehavior.instance;
 
 
     public SephObject get(String cellName) {
@@ -21,6 +22,10 @@ public class DefaultBehavior implements SephObject {
 
     public boolean isActivatable() {
         return false;
+    }
+
+    public boolean isTrue() {
+        return true;
     }
 
     public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {

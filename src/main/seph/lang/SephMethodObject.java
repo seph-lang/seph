@@ -33,6 +33,10 @@ public abstract class SephMethodObject implements SephObject {
         return meta.valueAt(activatable) == Runtime.TRUE;
     }
 
+    public boolean isTrue() {
+        return true;
+    }
+
     protected ArgumentResult parseAndEvaluateArguments(LexicalScope scope, IPersistentList arguments, int posArity, boolean restPos, boolean restKey) {
         List restp = restPos ? new ArrayList(arguments.count() - posArity) : (List)null;
         IPersistentMap restk = restKey ? PersistentArrayMap.EMPTY : (IPersistentMap)null;

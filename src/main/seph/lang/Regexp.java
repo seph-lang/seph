@@ -47,6 +47,10 @@ public class Regexp implements SephObject {
         return false;
     }
 
+    public boolean isTrue() {
+        return true;
+    }
+
     public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }

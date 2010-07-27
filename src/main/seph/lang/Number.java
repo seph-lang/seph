@@ -19,4 +19,27 @@ public class Number {
     public final static SephObject plus(SephObject receiver, SephObject addend) {
         return ((Numeric)receiver).add(addend);
     }
+
+    @SephMethod(name="-")
+    public final static SephObject minus(SephObject receiver, SephObject subtrahend) {
+        return ((Numeric)receiver).sub(subtrahend);
+    }
+
+    @SephMethod(name="*")
+    public final static SephObject times(SephObject receiver, SephObject multiplicand) {
+        return ((Numeric)receiver).mul(multiplicand);
+    }
+
+    @SephMethod(name="<")
+    public final static SephObject lt(SephObject receiver, SephObject other) {
+        switch(((Numeric)receiver).compare(other)) {
+        case -3:
+        case -2:
+            return Runtime.NIL;
+        case -1:
+            return Runtime.TRUE;
+        default:
+            return Runtime.FALSE;
+        }
+    }
 }// Number

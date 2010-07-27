@@ -23,6 +23,10 @@ public class Base implements SephObject {
         return false;
     }
 
+    public boolean isTrue() {
+        return true;
+    }
+
     public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
@@ -33,6 +37,15 @@ public class Base implements SephObject {
             return receiver;
         } else {
             return SephObjectFactory.spreadAndCreate(null, receiver, restKeywords);
+        }
+    }
+
+    @SephMethod(name="==")
+    public final static SephObject eq(SephObject receiver, SephObject other) {
+        if(receiver.equals(other)) {
+            return Runtime.TRUE;
+        } else {
+            return Runtime.FALSE;
         }
     }
 }// Base

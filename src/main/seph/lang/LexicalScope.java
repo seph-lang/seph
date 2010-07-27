@@ -52,9 +52,13 @@ public class LexicalScope {
         }
     }
 
+    public void directlyAssign(String name, SephObject value) {
+        values = values.associate(name, value);
+    }
+
     public void assign(String name, SephObject value) {
         LexicalScope place = find(name, this);
-        place.values = place.values.associate(name, value);
+        place.directlyAssign(name, value);
     }
 
     public SephObject get(String name) {

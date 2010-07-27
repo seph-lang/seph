@@ -12,4 +12,5 @@ public interface SephObject {
     SephObject get(String cellName);
     boolean isActivatable();
     SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments);
+    boolean isTrue();
 }// SephObject

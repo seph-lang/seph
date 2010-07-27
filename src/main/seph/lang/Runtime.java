@@ -26,9 +26,22 @@ public class Runtime {
                 return "true";
             }
         };
+    public final static SephObject FALSE = new SimpleSephObject() {
+            public String toString() {
+                return "false";
+            }
+
+            public boolean isTrue() {
+                return false;
+            }
+        };
     public final static SephObject NIL  = new SimpleSephObject() {
             public String toString() {
                 return "nil";
+            }
+
+            public boolean isTrue() {
+                return false;
             }
         };
 

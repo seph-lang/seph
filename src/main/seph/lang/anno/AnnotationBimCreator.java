@@ -167,19 +167,14 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                 }
             }
 
-            private void generateMethod(ClassDeclaration cd, String name, MethodDeclaration md) throws IOException {
+            private void generateRegularArgumentEvaluation(MethodDeclaration md, StringBuilder sb) throws IOException {
                 boolean hasRestKeywords = false;
                 boolean hasRestPositional = false;
                 int positionalArity = 0;
                 int givenPositional = 0;
                 boolean hasReceiver = false;
 
-                out.println("    public final static class " + name + "Impl extends SephMethodObject {");
-                out.println();
-                out.println("        public final static " + name + "Impl instance = new " + name + "Impl();");
-                out.println("        public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {");
                 String sep = "";
-                StringBuilder sb = new StringBuilder();
                 for(ParameterDeclaration pd : md.getParameters()) {
                     sb.append(sep);
                     String tname = pd.getType().toString();
@@ -208,6 +203,42 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                 }
 
                 out.println("            ArgumentResult args = parseAndEvaluateArguments(scope, arguments, "+positionalArity+", "+hasRestPositional+", " +hasRestKeywords+ ");");
+            }
+
+            private void generateUnevaluatedArguments(MethodDeclaration md, StringBuilder sb) throws IOException {
+                boolean hasReceiver = false;
+
+                String sep = "";
+                for(ParameterDeclaration pd : md.getParameters()) {
+                    sb.append(sep);
+                    String tname = pd.getType().toString();
+                    if(tname.equals("seph.lang.LexicalScope")) {
+                        sb.append("scope");
+                    } else if(tname.equals("seph.lang.SephObject")) {
+                        sb.append("receiver");
+                    } else if(tname.equals("seph.lang.persistent.IPersistentList")) {
+                        sb.append("arguments");
+                    }
+                    sep = ", ";
+                }
+
+            }
+
+            private void generateMethod(ClassDeclaration cd, String name, MethodDeclaration md) throws IOException {
+                out.println("    public final static class " + name + "Impl extends SephMethodObject {");
+                out.println();
+                out.println("        public final static " + name + "Impl instance = new " + name + "Impl();");
+                out.println("        public SephObject activateWith(LexicalScope scope, SephObject receiver, IPersistentList arguments) {");
+
+                SephMethod sm = md.getAnnotation(SephMethod.class);
+
+                StringBuilder sb = new StringBuilder();
+
+                if(sm.evaluateArguments()) {
+                    generateRegularArgumentEvaluation(md, sb);
+                } else {
+                    generateUnevaluatedArguments(md, sb);
+                }
 
                 out.println("            return " + cd.getQualifiedName() + "." + md.getSimpleName() + "(" + sb + ");");
                 out.println("        }");

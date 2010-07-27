@@ -8,4 +8,5 @@ package seph.lang;
  */
 public @interface SephMethod {
     String[] name() default {};
+    boolean evaluateArguments() default true;
 }// SephMethod
