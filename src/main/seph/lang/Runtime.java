@@ -25,6 +25,10 @@ public class Runtime {
             public String toString() {
                 return "true";
             }
+
+            public SephObject get(String cellName) {
+                return Something.instance.get(cellName);
+            }
         };
     public final static SephObject FALSE = new SimpleSephObject() {
             public String toString() {
@@ -34,6 +38,10 @@ public class Runtime {
             public boolean isTrue() {
                 return false;
             }
+
+            public SephObject get(String cellName) {
+                return Something.instance.get(cellName);
+            }
         };
     public final static SephObject NIL  = new SimpleSephObject() {
             public String toString() {
@@ -42,6 +50,10 @@ public class Runtime {
 
             public boolean isTrue() {
                 return false;
+            }
+
+            public SephObject get(String cellName) {
+                return Something.instance.get(cellName);
             }
         };
 

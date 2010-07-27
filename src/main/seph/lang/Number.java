@@ -10,11 +10,6 @@ import gnu.math.Numeric;
  */
 @SephKind(parents="Something")
 public class Number {
-    @SephMethod
-    public final static SephObject asText(SephObject receiver) {
-        return new Text(((Numeric)receiver).toString());
-    }
-
     @SephMethod(name="+")
     public final static SephObject plus(SephObject receiver, SephObject addend) {
         return ((Numeric)receiver).add(addend);
