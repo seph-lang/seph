@@ -12,6 +12,7 @@ import gnu.math.Numeric;
 public class Number {
     @SephMethod(name="+")
     public final static SephObject plus(SephObject receiver, SephObject addend) {
+        // new Exception().printStackTrace();
         return ((Numeric)receiver).add(addend);
     }
 

@@ -1912,11 +1912,6 @@ public class ParserTest {
     }
 
     @Test
-    public void parses_a_simple_number_preceded_by_a_plus() {
-        assertEquals(IntNum.make(42), parse("+42").literal());
-    }
-
-    @Test
     public void parses_a_simple_number_preceded_by_a_minus() {
         assertEquals(IntNum.make(-43), parse("-43").literal());
     }
@@ -1930,11 +1925,6 @@ public class ParserTest {
     public void parses_a_decimal_number() {
         assertEquals(DFloNum.make(0.123456789111), parse("0.123456789111").literal());
         assertEquals(DFloNum.make(42555.123456789111), parse("42555.123456789111").literal());
-    }
-
-    @Test
-    public void parses_a_decimal_number_with_a_plus_in_front_of_it() {
-        assertEquals(DFloNum.make(0.123456789111), parse("+0.123456789111").literal());
     }
 
     @Test

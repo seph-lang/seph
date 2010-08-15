@@ -530,13 +530,13 @@ public class Parser {
                     parseOperatorChars('%');
                 }
                 return true;
-            case '+':
             case '-':
                 if(isDigit(peek2())) {
                     read();
                     parseNumber(rr);
                     return true;
                 }
+            case '+':
             case '*':
             case '<':
             case '>':
@@ -1363,8 +1363,6 @@ public class Parser {
 
         if(indicator == '-') {
             sb.append((char)indicator);
-            indicator = read();
-        } else if(indicator == '+') {
             indicator = read();
         }
 

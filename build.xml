@@ -69,7 +69,7 @@
     <filter token="VERSION_RUNTIME" value="0.0.1"/>
     <filter token="VERSION_STRING" value="Seph 0 sephj 0.0.1"/>
 
-    <apt factory="seph.lang.anno.AnnotationBimCreator" destdir="${main.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" encoding="UTF-8">
+    <apt factory="seph.lang.anno.AnnotationBimCreator" destdir="${main.classes.dir}" debug="true" encoding="UTF-8">
       <classpath refid="build.classpath"/>
       <src path="${src.dir}"/>
       <src path="${src.gen.dir}"/>
