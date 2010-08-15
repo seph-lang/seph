@@ -45,6 +45,34 @@ public class MessageInterpreter {
                 receiver = ground;
             } else {
                 SephObject tmp = currentMessage.sendTo(thread, scope, receiver);
+
+                if(tmp != null) {
+                    receiver = lastReal = tmp;
+                }
+            }
+            currentMessage = currentMessage.next();
+        }
+
+        return lastReal;
+    }
+
+    public Object evaluateToplevel(SThread thread, Message msg) {
+        SephObject receiver = ground;
+        SephObject lastReal = Runtime.NIL;
+        Message currentMessage = msg;
+
+        while(currentMessage != null) {
+            String name = currentMessage.name();
+
+            if(name.equals(".")) {
+                receiver = ground;
+            } else {
+                SephObject tmp = currentMessage.sendTo(thread, scope, receiver);
+
+                while(tmp == SThread.TAIL_MARKER) {
+                    tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver);
+                }
+
                 if(tmp != null) {
                     receiver = lastReal = tmp;
                 }

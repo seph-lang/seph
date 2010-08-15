@@ -25,5 +25,6 @@ public interface Message {
     int position();
 
     SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver);
+    SephObject go(SThread thread, LexicalScope scope, SephObject receiver);
 }// Message
 

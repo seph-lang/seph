@@ -3,6 +3,8 @@
  */
 package seph.lang;
 
+import seph.lang.ast.Message;
+
 /**
  * Represents a running thread of Seph computation. This
  * might not correspond to any real threads.
@@ -10,10 +12,17 @@ package seph.lang;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class SThread {
-    public final static SephObject TAIL_MARKER = null;
+    public final static SephObject TAIL_MARKER = new SimpleSephObject() {
+            public String toString() {
+                return "TAIL_MARKER (should never escape, it's a bug if you see this)";
+            }
+        };
 
-    //    public SephObject receiver;
     public final Runtime runtime;
+
+    public Message next;
+    public LexicalScope nextScope;
+    public SephObject nextReceiver;
     
     public SThread(Runtime runtime) {
         this.runtime = runtime;

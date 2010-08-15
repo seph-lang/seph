@@ -46,4 +46,9 @@ public class Text implements SephObject {
     public final static SephObject asText(SephObject receiver) {
         return receiver;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        return other == this || (other instanceof Text && ((Text)other).text.equals(this.text));
+    }
 }// Text

@@ -71,7 +71,7 @@ public class Runtime {
 
     public Object evaluateStream(String name, Reader reader) throws ControlFlow, IOException {
         Message msg = (Message)new Parser(this, reader, name).parseFully().seq().first();
-        return new MessageInterpreter(Ground.instance).evaluate(new SThread(this), msg);
+        return new MessageInterpreter(Ground.instance).evaluateToplevel(new SThread(this), msg);
     }
 
     public Object evaluateFile(File f) throws ControlFlow, IOException {
@@ -80,5 +80,9 @@ public class Runtime {
 
     public Object evaluateFile(String filename) throws ControlFlow, IOException {
         return evaluateStream(filename, new InputStreamReader(new FileInputStream(new File(filename)), "UTF-8"));
+    }
+
+    public Object evaluateString(String string) throws ControlFlow, IOException {
+        return evaluateStream("<eval>", new StringReader(string));
     }
 }// Runtime

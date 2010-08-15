@@ -88,6 +88,10 @@ public class MutableMessage implements Message {
         throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
     }
 
+    public SephObject go(SThread thread, LexicalScope scope, SephObject receiver) {
+        throw new RuntimeException("ESCAPED MUTABLE MESSAGE");
+    }
+
     public String toString() {
         return "mutable<" + name + ">";
     }
