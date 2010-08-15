@@ -19,15 +19,15 @@ public final class Assignment extends NamedMessage {
     private static enum ActualAssignment {
         EQ {
             public SephObject assignOp(SThread thread, Message left, Message right, LexicalScope scope) {
-                SephObject value = scope.evaluate(thread, right);
+                SephObject value = scope.evaluateFully(thread, right);
                 scope.assign(left.name(), value);
                 return value;
             }
         },
         PLUS_EQ {
             public SephObject assignOp(SThread thread, Message left, Message right, LexicalScope scope) {
-                SephObject leftValue = scope.evaluate(thread, left);
-                SephObject value = NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position()).sendTo(thread, scope, leftValue);
+                SephObject leftValue = scope.evaluateFully(thread, left);
+                SephObject value = NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position()).go(thread, scope, leftValue);
                 scope.assign(left.name(), value);
                 return value;
             }

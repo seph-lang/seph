@@ -51,13 +51,13 @@ public abstract class SephMethodObject implements SephObject {
             if(restKey && (name = current.name()).endsWith(":")) {
                 name = name.substring(0, name.length()-1);
                 current = current.next();
-                SephObject part = scope.evaluate(thread, current);
+                SephObject part = scope.evaluateFully(thread, current);
                 restk = restk.associate(name, part);
             } else {
                 if(collectingRestp) {
-                    restp.add(scope.evaluate(thread, current));
+                    restp.add(scope.evaluateFully(thread, current));
                 } else {
-                    SephObject part = scope.evaluate(thread, current);
+                    SephObject part = scope.evaluateFully(thread, current);
                     result.assign(currentArg, part);
                     currentArg++;
                     collectingRestp = restPos && currentArg > posArity;

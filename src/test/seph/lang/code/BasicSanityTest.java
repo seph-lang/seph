@@ -3,7 +3,10 @@
  */
 package seph.lang.code;
 
+import java.io.*;
+
 import org.junit.Test;
+import org.junit.Ignore;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
@@ -79,11 +82,56 @@ public class BasicSanityTest {
         assertThat((IntNum)new seph.lang.Runtime().evaluateString("(42 + 5)"), is(equalTo(new IntNum(47))));
     }
 
-// x = 42 + 5
-// x println
+    @Test
+    public void assign_variable_to_value() throws Exception, ControlFlow {
+        assertThat((IntNum)new seph.lang.Runtime().evaluateString("x = 42 + 5\nx"), is(equalTo(new IntNum(47))));
+    }
 
-// y = x + x
-// y println
+    @Test
+    public void assign_several_variables_and_use_them() throws Exception, ControlFlow {
+        assertThat((IntNum)new seph.lang.Runtime().evaluateString("x = 42 + 5\ny = x + x\ny"), is(equalTo(new IntNum(94))));
+    }
+
+    private PrintStream oldout;
+    private ByteArrayOutputStream baos;
+
+    private void captureStandardOut() throws IOException {
+        oldout = System.out;
+        baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+    }
+
+    private String restoreStandardOut() throws IOException {
+        System.setOut(oldout);
+        return baos.toString("UTF-8");
+    }
+
+    @Test
+    public void printing_hello_world() throws Exception, ControlFlow {
+        captureStandardOut();
+        Object result = new seph.lang.Runtime().evaluateString("\"hello world\" println");
+        String stdout = restoreStandardOut();
+        assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
+        assertThat(stdout, is(equalTo("hello world\n")));
+    }
+
+    @Test
+    public void printing_another_hello_world() throws Exception, ControlFlow {
+        captureStandardOut();
+        Object result = new seph.lang.Runtime().evaluateString("\"hello again, world\" println");
+        String stdout = restoreStandardOut();
+        assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
+        assertThat(stdout, is(equalTo("hello again, world\n")));
+    }
+
+    @Test
+    public void printing_with_custom_asText() throws Exception, ControlFlow {
+        captureStandardOut();
+        Object result = new seph.lang.Runtime().evaluateString("Ground Something with(asText: \"this is cool\") println");
+        String stdout = restoreStandardOut();
+        assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
+        assertThat(stdout, is(equalTo("this is cool\n")));
+    }
 
 // foo = #("Hello World" println)
 // foo

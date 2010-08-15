@@ -56,7 +56,7 @@ public class MessageInterpreter {
         return lastReal;
     }
 
-    public Object evaluateToplevel(SThread thread, Message msg) {
+    public Object evaluateFully(SThread thread, Message msg) {
         SephObject receiver = ground;
         SephObject lastReal = Runtime.NIL;
         Message currentMessage = msg;

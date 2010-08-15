@@ -42,6 +42,10 @@ public class LexicalScope {
         return (SephObject)this.currentInterpreter.evaluate(thread, message);
     }
 
+    public SephObject evaluateFully(SThread thread, Message message) {
+        return (SephObject)this.currentInterpreter.evaluateFully(thread, message);
+    }
+
     private IPersistentMap values = PersistentArrayMap.EMPTY;
 
     public LexicalScope find(String name, LexicalScope def) {
