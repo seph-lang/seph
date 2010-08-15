@@ -37,7 +37,7 @@ public abstract class SephMethodObject implements SephObject {
         return true;
     }
 
-    protected ArgumentResult parseAndEvaluateArguments(SThread thread, LexicalScope scope, IPersistentList arguments, int posArity, boolean restPos, boolean restKey) {
+    public static ArgumentResult parseAndEvaluateArguments(SThread thread, LexicalScope scope, IPersistentList arguments, int posArity, boolean restPos, boolean restKey) {
         List restp = restPos ? new ArrayList(arguments.count() - posArity) : (List)null;
         IPersistentMap restk = restKey ? PersistentArrayMap.EMPTY : (IPersistentMap)null;
         ISeq argsLeft = arguments.seq();
@@ -77,7 +77,7 @@ public abstract class SephMethodObject implements SephObject {
         return result;
     }
 
-    protected static final class ArgumentResult {
+    public static final class ArgumentResult {
         public SephObject arg0;
         public SephObject arg1;
         public SephObject arg2;

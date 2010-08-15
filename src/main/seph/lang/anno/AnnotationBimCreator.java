@@ -110,17 +110,26 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                     out.println("/* THIS FILE IS GENERATED. DO NOT EDIT */");
                     out.println("package seph.lang.bim;");
                     out.println();
+                    out.println("import java.dyn.*;");
                     out.println("import seph.lang.*;");
                     out.println("import seph.lang.persistent.*;");
                     out.println();
                     out.println("public class " + cd.getSimpleName() + "Base {");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class);");
+                    out.println("    private static MethodHandle getActivate(String name) {");
+                    out.println("        try {");
+                    out.println("            return MethodHandles.lookup().findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE);");
+                    out.println("        } catch(Throwable e) {");
+                    out.println("            return null;");
+                    out.println("        }");
+                    out.println("    }");
                     out.println();
                     for(String parent : parents) {
                         out.println("    public final static SephObject parent_" + parent + " = " + parent + ".instance;");
                     }
                     out.println();
                     for(String cell : methods.keySet()) {
-                        out.println("    public final static SephObject cell_" + cell + " = " + cell + "Impl.instance;");
+                        out.println("    public final static SephObject cell_" + cell + " = new SephMethodHandleObject(getActivate(\""+cell+"\"));");
                     }
                     out.println();
                     for(String cell : fields.keySet()) {
@@ -207,7 +216,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                     throw new RuntimeException("Built in functions can't take more than five positional arguments. Use a rest argument instead (for " + md + ")");
                 }
 
-                out.println("            ArgumentResult args = parseAndEvaluateArguments(thread, scope, arguments, "+positionalArity+", "+hasRestPositional+", " +hasRestKeywords+ ");");
+                out.println("        SephMethodObject.ArgumentResult args = SephMethodObject.parseAndEvaluateArguments(thread, scope, arguments, "+positionalArity+", "+hasRestPositional+", " +hasRestKeywords+ ");");
             }
 
             private void generateUnevaluatedArguments(MethodDeclaration md, StringBuilder sb) throws IOException {
@@ -228,14 +237,10 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                     }
                     sep = ", ";
                 }
-
             }
 
             private void generateMethod(ClassDeclaration cd, String name, MethodDeclaration md) throws IOException {
-                out.println("    public final static class " + name + "Impl extends SephMethodObject {");
-                out.println();
-                out.println("        public final static " + name + "Impl instance = new " + name + "Impl();");
-                out.println("        public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {");
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {");
 
                 SephMethod sm = md.getAnnotation(SephMethod.class);
 
@@ -247,8 +252,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                     generateUnevaluatedArguments(md, sb);
                 }
 
-                out.println("            return " + cd.getQualifiedName() + "." + md.getSimpleName() + "(" + sb + ");");
-                out.println("        }");
+                out.println("        return " + cd.getQualifiedName() + "." + md.getSimpleName() + "(" + sb + ");");
                 out.println("    }");
                 out.println();
             }
