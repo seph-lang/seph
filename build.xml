@@ -104,6 +104,7 @@
       <jvmarg value="-XX:+UnlockExperimentalVMOptions"/>
       <jvmarg value="-XX:+EnableMethodHandles"/>
       <jvmarg value="-XX:+EnableInvokeDynamic"/>
+      <jvmarg value="-server"/>
       <classpath refid="test.coverage.classpath"/>
 
       <sysproperty key="file.encoding" value="UTF-8"/>
@@ -124,6 +125,7 @@
       <jvmarg value="-XX:+UnlockExperimentalVMOptions"/>
       <jvmarg value="-XX:+EnableMethodHandles"/>
       <jvmarg value="-XX:+EnableInvokeDynamic"/>
+      <jvmarg value="-server"/>
       <classpath refid="test.classpath"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
       <formatter type="brief" usefile="false" />
