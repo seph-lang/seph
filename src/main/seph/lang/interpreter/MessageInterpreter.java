@@ -41,16 +41,24 @@ public class MessageInterpreter {
         while(currentMessage != null) {
             String name = currentMessage.name();
 
+            Message next = currentMessage.next();
+            
             if(name.equals(".")) {
                 receiver = ground;
             } else {
                 SephObject tmp = currentMessage.sendTo(thread, scope, receiver);
 
+                if(next != null) {
+                    while(tmp == SThread.TAIL_MARKER && next != null) {
+                        tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver);
+                    }
+                }
+
                 if(tmp != null) {
                     receiver = lastReal = tmp;
                 }
             }
-            currentMessage = currentMessage.next();
+            currentMessage = next;
         }
 
         return lastReal;
