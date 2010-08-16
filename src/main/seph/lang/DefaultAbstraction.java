@@ -53,7 +53,7 @@ public class DefaultAbstraction extends SimpleSephObject {
             argNames = argNames.next(), args = args.next()) {
 
             String name = (String)argNames.first();
-            SephObject val = scope.evaluate(thread, (Message)args.first());
+            SephObject val = scope.evaluateFully(thread, (Message)args.first());
 
             methodScope.directlyAssign(name, val);
         }

@@ -19,7 +19,7 @@ public class ControlDefaultBehavior implements SephObject {
     @SephMethod(name="if", evaluateArguments=false)
     public final static SephObject _if(SThread thread, LexicalScope scope, IPersistentList arguments) {
         Message conditional = (Message)RT.first(arguments);
-        SephObject result = scope.evaluate(thread, conditional);
+        SephObject result = scope.evaluateFully(thread, conditional);
         if(result.isTrue()) {
             ISeq seq = RT.next(arguments);
             if(null != seq) {
