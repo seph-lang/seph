@@ -21,6 +21,8 @@ import seph.lang.interpreter.MessageInterpreter;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class Runtime {
+    public final static SephClassLoader LOADER = new SephClassLoader(Runtime.class.getClassLoader());
+
     public final static SephObject TRUE = new SimpleSephObject() {
             public String toString() {
                 return "true";

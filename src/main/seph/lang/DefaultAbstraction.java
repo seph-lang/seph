@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import seph.lang.ast.Abstraction;
 import seph.lang.ast.Message;
+import seph.lang.compiler.AbstractionCompiler;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.PersistentArrayMap;
@@ -30,9 +31,16 @@ public class DefaultAbstraction extends SimpleSephObject {
         this.capture = capture;
     }
 
-    public final static DefaultAbstraction createFrom(Abstraction message, LexicalScope scope) {
+    public final static SephObject createFrom(Abstraction message, LexicalScope scope) {
         List<String> argNames = new ArrayList<String>();
         ISeq seq = RT.seq(message.arguments());
+
+        if(RT.next(seq) == null && false) {
+            SephObject result = AbstractionCompiler.compile((Message)RT.first(seq), scope);
+            if(result != null) {
+                return result;
+            }
+        }
 
         if(seq != null) {
             for(;RT.next(seq) != null; seq = RT.next(seq)) {

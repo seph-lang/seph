@@ -20,25 +20,10 @@
     <pathelement path="${test.classes.dir}"/>
   </path>
 
-  <path id="test.coverage.classpath">
-    <fileset dir="${lib.build.dir}" includes="*.jar"/>
-    <fileset dir="${lib.release.dir}" includes="*.jar"/>
-    <pathelement path="${coverage.classes.dir}"/>
-    <pathelement path="${main.classes.dir}"/>
-    <pathelement path="${test.classes.dir}"/>
-  </path>
-
-  <taskdef resource="tasks.properties">
-    <classpath>
-      <fileset dir="${lib.build.dir}" includes="*.jar"/>
-    </classpath>
-  </taskdef>
-
   <target name="prepare" description="Creates the directories needed for building">
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${main.classes.dir}"/>
     <mkdir dir="${test.classes.dir}"/>
-    <mkdir dir="${coverage.dir}"/>
     <mkdir dir="${src.gen.dir}/seph/lang/bim"/>
   </target>
 
@@ -93,33 +78,6 @@
     </javac>
   </target>
 
-  <target name="coverage.instrument" depends="compile-tests" description="">
-    <cobertura-instrument todir="${coverage.classes.dir}">
-      <fileset dir="${main.classes.dir}"/>
-    </cobertura-instrument>
-  </target>
-
-  <target name="coverage" depends="coverage.instrument" description="Runs all ISpec tests using Cobertura and produces a report">
-    <junit fork="yes" dir="${basedir}" failureProperty="test.failed">
-      <jvmarg value="-XX:+UnlockExperimentalVMOptions"/>
-      <jvmarg value="-XX:+EnableMethodHandles"/>
-      <jvmarg value="-XX:+EnableInvokeDynamic"/>
-      <jvmarg value="-server"/>
-      <classpath refid="test.coverage.classpath"/>
-
-      <sysproperty key="file.encoding" value="UTF-8"/>
-      <formatter type="brief" usefile="false" />
-
-      <batchtest fork="yes">
-        <fileset dir="${src.test.dir}">
-          <include name="**/*Test*.java"/>
-        </fileset>
-      </batchtest>
-    </junit>
-
-    <cobertura-report srcdir="${src.dir}" destdir="${coverage.report.dir}"/>
-  </target>
-
   <target name="test" depends="compile-tests" description="Runs all Seph tests">
     <junit fork="yes" forkMode="once" haltonfailure="true" showoutput="true" timeout="1800000">
       <jvmarg value="-XX:+UnlockExperimentalVMOptions"/>
@@ -160,6 +118,7 @@
         <include name="**/*.properties"/>
       </fileset>
       <zipfileset src="${lib.release.dir}/jline-0.9.93.jar" includes="**/*"/>
+      <zipfileset src="${lib.release.dir}/asm-all-3.3.jar" includes="**/*"/>
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Main-Class" value="seph.lang.Main"/>
@@ -175,6 +134,7 @@
         <include name="**/*.properties"/>
       </fileset>
       <zipfileset src="${lib.release.dir}/jline-0.9.93.jar" includes="**/*"/>
+      <zipfileset src="${lib.release.dir}/asm-all-3.3.jar" includes="**/*"/>
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Main-Class" value="seph.lang.Main"/>

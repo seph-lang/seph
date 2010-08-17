@@ -11,6 +11,7 @@ import seph.lang.SThread;
 import seph.lang.ast.Message;
 import seph.lang.ast.LiteralMessage;
 import seph.lang.ast.NamedMessage;
+import seph.lang.ast.Terminator;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -43,7 +44,7 @@ public class MessageInterpreter {
 
             Message next = currentMessage.next();
             
-            if(name.equals(".")) {
+            if(currentMessage instanceof Terminator) {
                 receiver = ground;
             } else {
                 SephObject tmp = currentMessage.sendTo(thread, scope, receiver);
@@ -72,7 +73,7 @@ public class MessageInterpreter {
         while(currentMessage != null) {
             String name = currentMessage.name();
 
-            if(name.equals(".")) {
+            if(currentMessage instanceof Terminator) {
                 receiver = ground;
             } else {
                 SephObject tmp = currentMessage.sendTo(thread, scope, receiver);
