@@ -14,85 +14,94 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.*;
+import static seph.lang.compiler.CompilationHelpers.*;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class AbstractionCompiler {
+    private static class CompilationAborted extends RuntimeException {
+    }
+
     private static AtomicInteger compiledCount = new AtomicInteger(0);
 
-    public static SephObject compile(Message code, LexicalScope capture) {
-        int currentCompilation = compiledCount.getAndIncrement();
-        String className = "seph$gen$abstraction$" + currentCompilation;
-        Class<?> superClass = SimpleSephObject.class;
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        cw.visit(V1_7, ACC_PUBLIC, p(className), null, p(superClass), new String[0]);
-        cw.visitField(ACC_FINAL, "fullMsg", "Lseph/lang/ast/Message;", null, null);
-        cw.visitField(ACC_FINAL, "capture", "Lseph/lang/LexicalScope;", null, null);
-        cw.visitField(ACC_FINAL, "literal1", "Lseph/lang/SephObject;", null, null);
+    private static void abstractionFields(ClassWriter cw) {
+        cw.visitField(ACC_FINAL, "fullMsg", c(Message.class), null, null);
+        cw.visitField(ACC_FINAL, "capture", c(LexicalScope.class), null, null);
+        cw.visitField(ACC_FINAL, "literal1", c(SephObject.class), null, null);
+    }
 
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "(Lseph/lang/ast/Message;Lseph/lang/LexicalScope;)V", null, null);
+    private static void constructor(ClassWriter cw, String className, Class<?> superClass) {
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", sig(void.class, Message.class, LexicalScope.class), null, null);
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);
         mv.visitInsn(DUP);
-        mv.visitFieldInsn(GETSTATIC, p(PersistentArrayMap.class), "EMPTY", "Lseph/lang/persistent/PersistentArrayMap;");
-        mv.visitFieldInsn(GETSTATIC, p(SimpleSephObject.class), "activatable", "Lseph/lang/Symbol;");
-        mv.visitFieldInsn(GETSTATIC, p(seph.lang.Runtime.class), "TRUE", "Lseph/lang/SephObject;");
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(PersistentArrayMap.class), "associate", "(Ljava/lang/Object;Ljava/lang/Object;)Lseph/lang/persistent/IPersistentMap;");
-        mv.visitMethodInsn(INVOKESPECIAL, p(superClass), "<init>", "(Lseph/lang/persistent/IPersistentMap;)V");
+        mv.visitFieldInsn(GETSTATIC, p(PersistentArrayMap.class), "EMPTY", c(PersistentArrayMap.class));
+        mv.visitFieldInsn(GETSTATIC, p(SimpleSephObject.class), "activatable", c(Symbol.class));
+        mv.visitFieldInsn(GETSTATIC, p(seph.lang.Runtime.class), "TRUE", c(SephObject.class));
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(PersistentArrayMap.class), "associate", sig(IPersistentMap.class, Object.class, Object.class));
+        mv.visitMethodInsn(INVOKESPECIAL, p(superClass), "<init>", sig(void.class, IPersistentMap.class));
         mv.visitInsn(DUP);
         mv.visitVarInsn(ALOAD, 1);
-        mv.visitFieldInsn(PUTFIELD, p(className), "fullMsg", "Lseph/lang/ast/Message;");
+        mv.visitFieldInsn(PUTFIELD, p(className), "fullMsg", c(Message.class));
         mv.visitVarInsn(ALOAD, 0);
         mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKEINTERFACE, p(Message.class), "literal", "()Lseph/lang/SephObject;");
-        mv.visitFieldInsn(PUTFIELD, p(className), "literal1", "Lseph/lang/SephObject;");
+        mv.visitMethodInsn(INVOKEINTERFACE, p(Message.class), "literal", sig(SephObject.class));
+        mv.visitFieldInsn(PUTFIELD, p(className), "literal1", c(SephObject.class));
         mv.visitVarInsn(ALOAD, 2);
-        mv.visitFieldInsn(PUTFIELD, p(className), "capture", "Lseph/lang/LexicalScope;");
+        mv.visitFieldInsn(PUTFIELD, p(className), "capture", c(LexicalScope.class));
         mv.visitInsn(RETURN);
         mv.visitMaxs(3,2);
         mv.visitEnd();
+    }
 
-        mv = cw.visitMethod(ACC_PUBLIC, "activateWith", "(Lseph/lang/SThread;Lseph/lang/LexicalScope;Lseph/lang/SephObject;Lseph/lang/persistent/IPersistentList;)Lseph/lang/SephObject;", null, null);
+    private static void activateWithMethod(ClassWriter cw, String className, Message code) {
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "activateWith", sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), null, null);
         mv.visitCode();
         if(code.isLiteral() && code.next() == null) {
             mv.visitVarInsn(ALOAD, 0);
-            mv.visitFieldInsn(GETFIELD, className, "literal1", "Lseph/lang/SephObject;");
+            mv.visitFieldInsn(GETFIELD, className, "literal1", c(SephObject.class));
             mv.visitInsn(ARETURN);
         } else {
-            System.err.println("BAILING OUT ON COMPILE");
-            return null;
+            throw new CompilationAborted();
         }
 
         mv.visitMaxs(3,2);
         mv.visitEnd();
+    }
+
+
+    private static Class<?> abstractionClass(String className, Message code) {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        cw.visit(V1_7, ACC_PUBLIC, p(className), null, p(SimpleSephObject.class), new String[0]);
+
+        abstractionFields(cw);
+        constructor(cw, className, SimpleSephObject.class);
+        activateWithMethod(cw, className, code);
 
         cw.visitEnd();
 
-        byte[] b = cw.toByteArray();
-        
-        Class<?> c = seph.lang.Runtime.LOADER.defineClass(className, b);
+        return seph.lang.Runtime.LOADER.defineClass(className, cw.toByteArray());
+    }
 
+    private static SephObject instantiateAbstraction(Class<?> c, Message code, LexicalScope capture) {
         try {
             return (SephObject)c.getConstructor(Message.class, LexicalScope.class).newInstance(code, capture);
         } catch(Exception e) {
-            System.err.println("BAILING OUT ON COMPILE: " + e);
             e.printStackTrace();
-            return null;
+            throw new CompilationAborted();
         }
     }
 
-    private static void printMessage(String outp, MethodVisitor mv) {
-        mv.visitFieldInsn(GETSTATIC, p(System.class), "out", "Ljava/io/PrintStream;");
-        mv.visitLdcInsn(outp);
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(java.io.PrintStream.class), "println", "(Ljava/lang/String;)V");
-    }
+    public static SephObject compile(Message code, LexicalScope capture) {
+        try {
+            Class<?> c = abstractionClass("seph$gen$abstraction$" + compiledCount.getAndIncrement(), 
+                                       code);
+            return instantiateAbstraction(c, code, capture);
 
-    private static String p(String name) {
-        return name.replaceAll("\\.", "/");
-    }
-
-    private static String p(Class<?> type) {
-        return type.getName().replaceAll("\\.", "/");
+        } catch(CompilationAborted e) {
+            System.err.println("BAILING OUT ON COMPILE");
+            return null;
+        }
     }
 }// AbstractionCompiler

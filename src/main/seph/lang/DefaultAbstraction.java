@@ -35,7 +35,7 @@ public class DefaultAbstraction extends SimpleSephObject {
         List<String> argNames = new ArrayList<String>();
         ISeq seq = RT.seq(message.arguments());
 
-        if(RT.next(seq) == null && false) {
+        if(RT.next(seq) == null) {
             SephObject result = AbstractionCompiler.compile((Message)RT.first(seq), scope);
             if(result != null) {
                 return result;
