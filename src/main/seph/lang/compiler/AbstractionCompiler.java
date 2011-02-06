@@ -98,7 +98,6 @@ public class AbstractionCompiler {
             Class<?> c = abstractionClass("seph$gen$abstraction$" + compiledCount.getAndIncrement(), 
                                        code);
             return instantiateAbstraction(c, code, capture);
-
         } catch(CompilationAborted e) {
             System.err.println("BAILING OUT ON COMPILE");
             return null;

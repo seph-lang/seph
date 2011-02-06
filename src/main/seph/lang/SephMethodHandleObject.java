@@ -19,7 +19,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {
         try {
-            return this.handle.<SephObject>invokeExact(thread, scope, receiver, arguments);
+            return (SephObject)this.handle.invokeExact(thread, scope, receiver, arguments);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {

@@ -21,7 +21,7 @@ is the same as:
 
   value1 = 10 * 5
   value2 = 4 * 3
-  value 3= 12 * 3
+  value3 = 12 * 3
 
   Module with(
     foo: 42,
