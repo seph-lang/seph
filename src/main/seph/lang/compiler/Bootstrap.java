@@ -30,7 +30,7 @@ public class Bootstrap {
     }
 
     public static SephObject fallback(SephCallSite site, String name, SThread thread, LexicalScope scope, SephObject receiver) {
-        //        System.err.println("Calling method " + name + " on: " + receiver + " with lexical scope: " + scope);
+               // System.err.println("Calling method " + name + " on: " + receiver + " with lexical scope: " + scope);
         SephObject value = scope.get(name);
 
         if(null == value) {
