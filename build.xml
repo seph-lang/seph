@@ -118,7 +118,7 @@
         <include name="**/*.properties"/>
       </fileset>
       <zipfileset src="${lib.release.dir}/jline-0.9.93.jar" includes="**/*"/>
-      <zipfileset src="${lib.release.dir}/asm-all-3.3.jar" includes="**/*"/>
+      <zipfileset src="${lib.release.dir}/asm-all-4.0.jar" includes="**/*"/>
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Main-Class" value="seph.lang.Main"/>
@@ -134,7 +134,7 @@
         <include name="**/*.properties"/>
       </fileset>
       <zipfileset src="${lib.release.dir}/jline-0.9.93.jar" includes="**/*"/>
-      <zipfileset src="${lib.release.dir}/asm-all-3.3.jar" includes="**/*"/>
+      <zipfileset src="${lib.release.dir}/asm-all-4.0.jar" includes="**/*"/>
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Main-Class" value="seph.lang.Main"/>

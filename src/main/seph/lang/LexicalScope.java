@@ -3,10 +3,15 @@
  */
 package seph.lang;
 
+import java.util.Map;
+
 import seph.lang.ast.Message;
 import seph.lang.interpreter.MessageInterpreter;
 import seph.lang.persistent.IPersistentMap;
+import seph.lang.persistent.APersistentMap;
 import seph.lang.persistent.PersistentArrayMap;
+import seph.lang.persistent.RT;
+import seph.lang.persistent.ISeq;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -71,5 +76,23 @@ public class LexicalScope {
             result = parent.get(name);
         }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("{");
+        ISeq seq = RT.seq(values);
+        String sep = "";
+        for(;RT.next(seq) != null; seq = RT.next(seq)) {
+            Map.Entry me = (Map.Entry)RT.first(seq);
+            sb.append(me.getKey()).append(" => ").append(me.getValue()).append(sep);
+            sep = ", ";
+        }
+        sb.append("}");
+        if(parent != ROOT) {
+            sb.append("(").append(parent).append(")");
+        }
+
+        return sb.toString();
     }
 }// LexicalScope

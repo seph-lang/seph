@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import seph.lang.ast.Abstraction;
 import seph.lang.ast.Message;
 import seph.lang.compiler.AbstractionCompiler;
+import seph.lang.compiler.CompilationAborted;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.PersistentArrayMap;
@@ -35,11 +36,10 @@ public class DefaultAbstraction extends SimpleSephObject {
         List<String> argNames = new ArrayList<String>();
         ISeq seq = RT.seq(message.arguments());
 
-        if(RT.next(seq) == null) {
-            SephObject result = AbstractionCompiler.compile((Message)RT.first(seq), scope);
-            if(result != null) {
-                return result;
-            }
+        try {
+            return AbstractionCompiler.compile(seq, scope);
+        } catch(CompilationAborted e) {
+            System.err.println("BAILED OUT ON COMPILE (" + e.getMessage() + "): " + message);
         }
 
         if(seq != null) {

@@ -16,13 +16,12 @@ import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.*;
 import static seph.lang.compiler.CompilationHelpers.*;
 
+import java.dyn.MethodHandle;
+
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class AbstractionCompiler {
-    private static class CompilationAborted extends RuntimeException {
-    }
-
     private static AtomicInteger compiledCount = new AtomicInteger(0);
 
     private static void abstractionFields(ClassWriter cw) {
@@ -55,21 +54,60 @@ public class AbstractionCompiler {
         mv.visitEnd();
     }
 
-    private static void activateWithMethod(ClassWriter cw, String className, Message code) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "activateWith", sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), null, null);
-        mv.visitCode();
-        if(code.isLiteral() && code.next() == null) {
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitFieldInsn(GETFIELD, className, "literal1", c(SephObject.class));
-            mv.visitInsn(ARETURN);
-        } else {
-            throw new CompilationAborted();
+    private static void compileLiteral(MethodVisitor mv, String className, int literalCount) {
+        if(literalCount > 0) {
+            throw new CompilationAborted("No support for more than one literal");
         }
 
-        mv.visitMaxs(3,2);
+        mv.visitInsn(POP);
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, className, "literal" + (literalCount + 1), c(SephObject.class));
+    }
+
+    private static void activateWithMethod(ClassWriter cw, String className, Message code) {
+        int literalCount = 0;
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "activateWith", sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), null, null);
+        mv.visitCode();
+
+        Message current = code;
+
+        mv.visitVarInsn(ALOAD, 3);
+
+        while(current != null) {
+            if(current.isLiteral()) {
+                compileLiteral(mv, className, literalCount++);
+            } else if(current instanceof Terminator) {
+                if(current.next() != null && !(current.next() instanceof Terminator)) {
+                    mv.visitInsn(POP);
+                    mv.visitVarInsn(ALOAD, 3);
+                }
+            } else {
+                if(current.arguments().seq() == null) {
+                    mv.visitVarInsn(ALOAD, 1);
+                    mv.visitInsn(SWAP);
+                    mv.visitVarInsn(ALOAD, 0);
+                    mv.visitFieldInsn(GETFIELD, className, "capture", c(LexicalScope.class));
+                    mv.visitInsn(SWAP);
+                    compileInvocation(mv, current);
+                } else {
+                    throw new CompilationAborted("No support for method calls with arguments");
+                }
+            }
+            current = current.next();
+        }
+
+        mv.visitInsn(ARETURN);
+        mv.visitMaxs(0,0);
         mv.visitEnd();
     }
 
+    private final static Object[] EMPTY = new Object[0];
+
+    private final static org.objectweb.asm.MethodHandle basicSephBootstrap = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "basicSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
+
+    private static void compileInvocation(MethodVisitor mv, Message code) {
+        mv.visitInvokeDynamicInsn(code.name(), sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class), basicSephBootstrap, EMPTY);
+    }
 
     private static Class<?> abstractionClass(String className, Message code) {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -88,19 +126,22 @@ public class AbstractionCompiler {
         try {
             return (SephObject)c.getConstructor(Message.class, LexicalScope.class).newInstance(code, capture);
         } catch(Exception e) {
+            System.err.println(e);
             e.printStackTrace();
-            throw new CompilationAborted();
+            throw new CompilationAborted("An error was encountered during compilation");
         }
     }
 
     public static SephObject compile(Message code, LexicalScope capture) {
-        try {
-            Class<?> c = abstractionClass("seph$gen$abstraction$" + compiledCount.getAndIncrement(), 
-                                       code);
-            return instantiateAbstraction(c, code, capture);
-        } catch(CompilationAborted e) {
-            System.err.println("BAILING OUT ON COMPILE");
-            return null;
+        Class<?> c = abstractionClass("seph$gen$abstraction$" + compiledCount.getAndIncrement(), code);
+        return instantiateAbstraction(c, code, capture);
+    }
+
+    public static SephObject compile(ISeq argumentsAndCode, LexicalScope capture) {
+        if(RT.next(argumentsAndCode) == null) { // Only compile methods that take no arguments for now
+            return compile((Message)RT.first(argumentsAndCode), capture);
+        } else {
+            throw new CompilationAborted("No support for compiling abstractions with arguments");
         }
     }
 }// AbstractionCompiler
