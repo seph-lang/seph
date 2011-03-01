@@ -25,18 +25,57 @@ import java.dyn.MethodHandle;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class AbstractionCompiler {
-    private static AtomicInteger compiledCount = new AtomicInteger(0);
+    private final static Object[] EMPTY = new Object[0];
+    private final static org.objectweb.asm.MethodHandle basicSephBootstrap = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "basicSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
+    private final static AtomicInteger compiledCount = new AtomicInteger(0);
 
-    private static void abstractionFields(ClassWriter cw, Map<Message, LiteralEntry> literals) {
-        cw.visitField(ACC_FINAL, "fullMsg", c(Message.class), null, null);
-        cw.visitField(ACC_FINAL, "capture", c(LexicalScope.class), null, null);
-        for(Map.Entry<Message, LiteralEntry> me : literals.entrySet()) {
-            cw.visitField(ACC_FINAL, me.getValue().name, c(SephObject.class), null, null);
+    private final Message code;
+    private final LexicalScope capture;
+    private final Map<Message, LiteralEntry> literals = new HashMap<>();
+
+    private LiteralEntry[] literalsInOrder = new LiteralEntry[4];
+    private int literalsFill = 0;
+
+    private Class<?> abstractionClass;
+
+    private AbstractionCompiler(Message code, LexicalScope capture) {
+        this.code = code;
+        this.capture = capture;
+    }
+
+    private void generateAbstractionClass(String className) {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        cw.visit(V1_7, ACC_PUBLIC, p(className), null, p(SimpleSephObject.class), new String[0]);
+
+        activateWithMethod(cw, className);
+        abstractionFields(cw);
+        constructor(cw, className, SimpleSephObject.class);
+
+        cw.visitEnd();
+
+        abstractionClass = seph.lang.Runtime.LOADER.defineClass(className, cw.toByteArray());
+    }
+
+    private SephObject instantiateAbstraction() {
+        try {
+            return (SephObject)abstractionClass.getConstructor(getSignature()).newInstance(getArguments());
+        } catch(Exception e) {
+            System.err.println(e);
+            e.printStackTrace();
+            throw new CompilationAborted("An error was encountered during compilation");
         }
     }
 
-    private static void constructor(ClassWriter cw, String className, Class<?> superClass, Map<Message, LiteralEntry> literals, LiteralEntry[] literalsInOrder) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", sig(void.class, getSignature(literalsInOrder)), null, null);
+    private void abstractionFields(ClassWriter cw) {
+        cw.visitField(ACC_FINAL, "fullMsg", c(Message.class), null, null);
+        cw.visitField(ACC_FINAL, "capture", c(LexicalScope.class), null, null);
+        for(int i = 0; i<literalsFill; i++) {
+            cw.visitField(ACC_FINAL, literalsInOrder[i].name, c(SephObject.class), null, null);
+        }
+    }
+
+    private void constructor(ClassWriter cw, String className, Class<?> superClass) {
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", sig(void.class, getSignature()), null, null);
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);   // [recv]
         mv.visitInsn(DUP);           // [recv, recv]
@@ -49,7 +88,8 @@ public class AbstractionCompiler {
         mv.visitVarInsn(ALOAD, 1);     // [recv, code]
         mv.visitFieldInsn(PUTFIELD, p(className), "fullMsg", c(Message.class));    // []
 
-        for(LiteralEntry le : literalsInOrder) {
+        for(int i = 0; i<literalsFill; i++) {
+            LiteralEntry le = literalsInOrder[i];
             mv.visitVarInsn(ALOAD, 0);                  // [recv]
             mv.visitVarInsn(ALOAD, 3 + le.position);    // [recv, literal1]
             mv.visitFieldInsn(PUTFIELD, p(className), le.name, c(SephObject.class)); // []
@@ -63,20 +103,31 @@ public class AbstractionCompiler {
         mv.visitEnd();
     }
 
-    private static void compileLiteral(MethodVisitor mv, String className, Map<Message, LiteralEntry> literals, Message current) {
+    private void compileLiteral(MethodVisitor mv, String className, Message current) {
+        int position = literalsFill;
+        LiteralEntry le = new LiteralEntry("literal" + position, current, position);
+        if(position >= literalsInOrder.length) {
+            LiteralEntry[] newLiteralsInOrder = new LiteralEntry[literalsInOrder.length * 2];
+            System.arraycopy(literalsInOrder, 0, newLiteralsInOrder, 0, literalsInOrder.length);
+            literalsInOrder = newLiteralsInOrder;
+        }
+        literalsInOrder[position] = le;
+        literals.put(current, le);
+        literalsFill++;
+
         mv.visitInsn(POP);
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, className, literals.get(current).name, c(SephObject.class));
+        mv.visitFieldInsn(GETFIELD, className, le.name, c(SephObject.class));
     }
 
-    private static void compileTerminator(MethodVisitor mv, Message current) {
+    private void compileTerminator(MethodVisitor mv, Message current) {
         if(current.next() != null && !(current.next() instanceof Terminator)) {
             mv.visitInsn(POP);
             mv.visitVarInsn(ALOAD, 3);
         }
     }
 
-    private static void compileMessageSend(MethodVisitor mv, Message current, String className) {
+    private void compileMessageSend(MethodVisitor mv, Message current, String className) {
         if(current.arguments().seq() == null) {
             mv.visitVarInsn(ALOAD, 1);
             mv.visitInsn(SWAP);
@@ -89,7 +140,7 @@ public class AbstractionCompiler {
         }
     }
 
-    private static void activateWithMethod(ClassWriter cw, String className, Message code, Map<Message, LiteralEntry> literals) {
+    private void activateWithMethod(ClassWriter cw, String className) {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "activateWith", sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), null, null);
         mv.visitCode();
 
@@ -99,7 +150,7 @@ public class AbstractionCompiler {
 
         while(current != null) {
             if(current.isLiteral()) {
-                compileLiteral(mv, className, literals, current);
+                compileLiteral(mv, className, current);
             } else if(current instanceof Terminator) {
                 compileTerminator(mv, current);
             } else {
@@ -113,28 +164,11 @@ public class AbstractionCompiler {
         mv.visitEnd();
     }
 
-    private final static Object[] EMPTY = new Object[0];
-
-    private final static org.objectweb.asm.MethodHandle basicSephBootstrap = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "basicSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
-
-    private static void compileInvocation(MethodVisitor mv, Message code) {
+    private void compileInvocation(MethodVisitor mv, Message code) {
         mv.visitInvokeDynamicInsn(code.name(), sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class), basicSephBootstrap, EMPTY);
     }
 
-    private static Class<?> abstractionClass(String className, Message code, Map<Message, LiteralEntry> literals, LiteralEntry[] literalsInOrder) {
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        cw.visit(V1_7, ACC_PUBLIC, p(className), null, p(SimpleSephObject.class), new String[0]);
-
-        abstractionFields(cw, literals);
-        constructor(cw, className, SimpleSephObject.class, literals, literalsInOrder);
-        activateWithMethod(cw, className, code, literals);
-
-        cw.visitEnd();
-
-        return seph.lang.Runtime.LOADER.defineClass(className, cw.toByteArray());
-    }
-
-    private static Class[] getSignature(LiteralEntry[] literalsInOrder) {
+    private Class[] getSignature() {
         Class[] params = new Class[literalsInOrder.length + 2];
         Arrays.fill(params, SephObject.class);
         params[0] = Message.class;
@@ -142,23 +176,29 @@ public class AbstractionCompiler {
         return params;
     }
 
-    private static Object[] getArguments(Message code, LexicalScope capture, LiteralEntry[] literalsInOrder) {
+    private Object[] getArguments() {
         Object[] args = new Object[literalsInOrder.length + 2];
         args[0] = code;
         args[1] = capture;
-        for(int i = 0; i < literalsInOrder.length; i++) {
+        for(int i = 0; i < literalsFill; i++) {
             args[i+2] = literalsInOrder[i].code.literal();
         }
         return args;
     }
 
-    private static SephObject instantiateAbstraction(Class<?> c, Message code, LexicalScope capture, LiteralEntry[] literalsInOrder) {
-        try {
-            return (SephObject)c.getConstructor(getSignature(literalsInOrder)).newInstance(getArguments(code, capture, literalsInOrder));
-        } catch(Exception e) {
-            System.err.println(e);
-            e.printStackTrace();
-            throw new CompilationAborted("An error was encountered during compilation");
+
+
+    public static SephObject compile(Message code, LexicalScope capture) {
+        AbstractionCompiler c = new AbstractionCompiler(code, capture);
+        c.generateAbstractionClass("seph$gen$abstraction$" + compiledCount.getAndIncrement());
+        return c.instantiateAbstraction();
+    }
+
+    public static SephObject compile(ISeq argumentsAndCode, LexicalScope capture) {
+        if(RT.next(argumentsAndCode) == null) { // Only compile methods that take no arguments for now
+            return compile((Message)RT.first(argumentsAndCode), capture);
+        } else {
+            throw new CompilationAborted("No support for compiling abstractions with arguments");
         }
     }
 
@@ -170,41 +210,6 @@ public class AbstractionCompiler {
             this.name = name;
             this.code = code;
             this.position = position;
-        }
-    }
-
-    private static Map<Message, LiteralEntry> collectLiterals(Message code) {
-        Map<Message, LiteralEntry> literals = new HashMap<>();
-        int literalCount = 0;
-        Message current = code;
-        while(current != null) {
-            if(current.isLiteral()) {
-                literals.put(current, new LiteralEntry("literal" + literalCount, current, literalCount));
-                literalCount++;
-            }
-            current = current.next();
-        }
-
-        return literals;
-    }
-
-    public static SephObject compile(Message code, LexicalScope capture) {
-        Map<Message, LiteralEntry> literals = collectLiterals(code);
-        LiteralEntry[] literalsInOrder = new LiteralEntry[literals.size()];
-        for(Map.Entry<Message, LiteralEntry> me : literals.entrySet()) {
-            literalsInOrder[me.getValue().position] = me.getValue();
-        }
-
-
-        Class<?> c = abstractionClass("seph$gen$abstraction$" + compiledCount.getAndIncrement(), code, literals, literalsInOrder);
-        return instantiateAbstraction(c, code, capture, literalsInOrder);
-    }
-
-    public static SephObject compile(ISeq argumentsAndCode, LexicalScope capture) {
-        if(RT.next(argumentsAndCode) == null) { // Only compile methods that take no arguments for now
-            return compile((Message)RT.first(argumentsAndCode), capture);
-        } else {
-            throw new CompilationAborted("No support for compiling abstractions with arguments");
         }
     }
 }// AbstractionCompiler
