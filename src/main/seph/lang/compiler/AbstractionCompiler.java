@@ -3,9 +3,13 @@
  */
 package seph.lang.compiler;
 
+import java.lang.reflect.Field;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import seph.lang.*;
@@ -32,8 +36,7 @@ public class AbstractionCompiler {
     private final Message code;
     private final LexicalScope capture;
 
-    private LiteralEntry[] literals = new LiteralEntry[4];
-    private int literalsFill = 0;
+    private List<LiteralEntry> literals = new LinkedList<>();
 
     private Class<?> abstractionClass;
 
@@ -62,7 +65,29 @@ public class AbstractionCompiler {
 
     private SephObject instantiateAbstraction() {
         try {
-            return (SephObject)abstractionClass.getConstructor(getSignature()).newInstance(getArguments());
+            return (SephObject)abstractionClass.newInstance();
+        } catch(Exception e) {
+            System.err.println(e);
+            e.printStackTrace();
+            throw new CompilationAborted("An error was encountered during compilation");
+        }
+    }
+
+    private void setStaticValues() {
+        try {
+            Field f = abstractionClass.getDeclaredField("fullMsg");
+            f.setAccessible(true);
+            f.set(null, code);
+
+            f = abstractionClass.getDeclaredField("capture");
+            f.setAccessible(true);
+            f.set(null, capture);
+
+            for(LiteralEntry le : literals) {
+                f = abstractionClass.getDeclaredField(le.name);
+                f.setAccessible(true);
+                f.set(null, le.code.literal());
+            }
         } catch(Exception e) {
             System.err.println(e);
             e.printStackTrace();
@@ -71,12 +96,12 @@ public class AbstractionCompiler {
     }
 
     private void abstractionFields() {
-        cw.visitField(ACC_FINAL, "fullMsg", c(Message.class), null, null);
-        cw.visitField(ACC_FINAL, "capture", c(LexicalScope.class), null, null);
+        cw.visitField(ACC_PRIVATE + ACC_STATIC, "fullMsg", c(Message.class), null, null);
+        cw.visitField(ACC_PRIVATE + ACC_STATIC, "capture", c(LexicalScope.class), null, null);
     }
 
     private void constructor(Class<?> superClass) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", sig(void.class, getSignature()), null, null);
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", sig(void.class), null, null);
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);   // [recv]
         mv.visitInsn(DUP);           // [recv, recv]
@@ -85,41 +110,20 @@ public class AbstractionCompiler {
         mv.visitFieldInsn(GETSTATIC, p(seph.lang.Runtime.class), "TRUE", c(SephObject.class));             // [recv, recv, EMPTY, act, true]
         mv.visitMethodInsn(INVOKEVIRTUAL, p(PersistentArrayMap.class), "associate", sig(IPersistentMap.class, Object.class, Object.class)); // [recv, recv, map]
         mv.visitMethodInsn(INVOKESPECIAL, p(superClass), "<init>", sig(void.class, IPersistentMap.class));                                  // [recv]
-        mv.visitInsn(DUP);             // [recv, recv]
-        mv.visitVarInsn(ALOAD, 1);     // [recv, code]
-        mv.visitFieldInsn(PUTFIELD, p(className), "fullMsg", c(Message.class));    // []
-
-        for(int i = 0; i<literalsFill; i++) {
-            LiteralEntry le = literals[i];
-            mv.visitVarInsn(ALOAD, 0);                  // [recv]
-            mv.visitVarInsn(ALOAD, 3 + le.position);    // [recv, literal1]
-            mv.visitFieldInsn(PUTFIELD, p(className), le.name, c(SephObject.class)); // []
-        }
-
-        mv.visitVarInsn(ALOAD, 0);   // [recv]
-        mv.visitVarInsn(ALOAD, 2);   // [recv, scope]
-        mv.visitFieldInsn(PUTFIELD, p(className), "capture", c(LexicalScope.class));     // []
         mv.visitInsn(RETURN);        // []
         mv.visitMaxs(0,0);
         mv.visitEnd();
     }
 
     private void compileLiteral(Message current) {
-        int position = literalsFill;
+        int position = literals.size();
         LiteralEntry le = new LiteralEntry("literal" + position, current, position);
-        if(position >= literals.length) {
-            LiteralEntry[] newLiterals = new LiteralEntry[literals.length * 2];
-            System.arraycopy(literals, 0, newLiterals, 0, literals.length);
-            literals = newLiterals;
-        }
-        literals[position] = le;
-        literalsFill++;
-
-        cw.visitField(ACC_FINAL, le.name, c(SephObject.class), null, null);
+        literals.add(le);
+        
+        cw.visitField(ACC_PRIVATE + ACC_STATIC, le.name, c(SephObject.class), null, null);
 
         mv_act.visitInsn(POP);
-        mv_act.visitVarInsn(ALOAD, 0);
-        mv_act.visitFieldInsn(GETFIELD, className, le.name, c(SephObject.class));
+        mv_act.visitFieldInsn(GETSTATIC, className, le.name, c(SephObject.class));
     }
 
     private void compileTerminator(Message current) {
@@ -133,8 +137,7 @@ public class AbstractionCompiler {
         if(current.arguments().seq() == null) {
             mv_act.visitVarInsn(ALOAD, 1);
             mv_act.visitInsn(SWAP);
-            mv_act.visitVarInsn(ALOAD, 0);
-            mv_act.visitFieldInsn(GETFIELD, className, "capture", c(LexicalScope.class));
+            mv_act.visitFieldInsn(GETSTATIC, className, "capture", c(LexicalScope.class));
             mv_act.visitInsn(SWAP);
             compileInvocation(current);
         } else {
@@ -170,27 +173,10 @@ public class AbstractionCompiler {
         mv_act.visitInvokeDynamicInsn(code.name(), sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class), basicSephBootstrap, EMPTY);
     }
 
-    private Class[] getSignature() {
-        Class[] params = new Class[literals.length + 2];
-        Arrays.fill(params, SephObject.class);
-        params[0] = Message.class;
-        params[1] = LexicalScope.class;
-        return params;
-    }
-
-    private Object[] getArguments() {
-        Object[] args = new Object[literals.length + 2];
-        args[0] = code;
-        args[1] = capture;
-        for(int i = 0; i < literalsFill; i++) {
-            args[i+2] = literals[i].code.literal();
-        }
-        return args;
-    }
-
     public static SephObject compile(Message code, LexicalScope capture) {
         AbstractionCompiler c = new AbstractionCompiler(code, capture);
         c.generateAbstractionClass();
+        c.setStaticValues();
         return c.instantiateAbstraction();
     }
 
