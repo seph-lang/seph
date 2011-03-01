@@ -31,25 +31,29 @@ public class AbstractionCompiler {
 
     private final Message code;
     private final LexicalScope capture;
-    private final Map<Message, LiteralEntry> literals = new HashMap<>();
 
-    private LiteralEntry[] literalsInOrder = new LiteralEntry[4];
+    private LiteralEntry[] literals = new LiteralEntry[4];
     private int literalsFill = 0;
 
     private Class<?> abstractionClass;
 
+    private final ClassWriter cw;
+    private MethodVisitor mv_act;
+    private final String className;
+
     private AbstractionCompiler(Message code, LexicalScope capture) {
         this.code = code;
         this.capture = capture;
+        this.className = "seph$gen$abstraction$" + compiledCount.getAndIncrement();
+        this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
     }
 
-    private void generateAbstractionClass(String className) {
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+    private void generateAbstractionClass() {
         cw.visit(V1_7, ACC_PUBLIC, p(className), null, p(SimpleSephObject.class), new String[0]);
 
-        activateWithMethod(cw, className);
-        abstractionFields(cw);
-        constructor(cw, className, SimpleSephObject.class);
+        activateWithMethod();
+        abstractionFields();
+        constructor(SimpleSephObject.class);
 
         cw.visitEnd();
 
@@ -66,15 +70,12 @@ public class AbstractionCompiler {
         }
     }
 
-    private void abstractionFields(ClassWriter cw) {
+    private void abstractionFields() {
         cw.visitField(ACC_FINAL, "fullMsg", c(Message.class), null, null);
         cw.visitField(ACC_FINAL, "capture", c(LexicalScope.class), null, null);
-        for(int i = 0; i<literalsFill; i++) {
-            cw.visitField(ACC_FINAL, literalsInOrder[i].name, c(SephObject.class), null, null);
-        }
     }
 
-    private void constructor(ClassWriter cw, String className, Class<?> superClass) {
+    private void constructor(Class<?> superClass) {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", sig(void.class, getSignature()), null, null);
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);   // [recv]
@@ -89,7 +90,7 @@ public class AbstractionCompiler {
         mv.visitFieldInsn(PUTFIELD, p(className), "fullMsg", c(Message.class));    // []
 
         for(int i = 0; i<literalsFill; i++) {
-            LiteralEntry le = literalsInOrder[i];
+            LiteralEntry le = literals[i];
             mv.visitVarInsn(ALOAD, 0);                  // [recv]
             mv.visitVarInsn(ALOAD, 3 + le.position);    // [recv, literal1]
             mv.visitFieldInsn(PUTFIELD, p(className), le.name, c(SephObject.class)); // []
@@ -103,73 +104,74 @@ public class AbstractionCompiler {
         mv.visitEnd();
     }
 
-    private void compileLiteral(MethodVisitor mv, String className, Message current) {
+    private void compileLiteral(Message current) {
         int position = literalsFill;
         LiteralEntry le = new LiteralEntry("literal" + position, current, position);
-        if(position >= literalsInOrder.length) {
-            LiteralEntry[] newLiteralsInOrder = new LiteralEntry[literalsInOrder.length * 2];
-            System.arraycopy(literalsInOrder, 0, newLiteralsInOrder, 0, literalsInOrder.length);
-            literalsInOrder = newLiteralsInOrder;
+        if(position >= literals.length) {
+            LiteralEntry[] newLiterals = new LiteralEntry[literals.length * 2];
+            System.arraycopy(literals, 0, newLiterals, 0, literals.length);
+            literals = newLiterals;
         }
-        literalsInOrder[position] = le;
-        literals.put(current, le);
+        literals[position] = le;
         literalsFill++;
 
-        mv.visitInsn(POP);
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, className, le.name, c(SephObject.class));
+        cw.visitField(ACC_FINAL, le.name, c(SephObject.class), null, null);
+
+        mv_act.visitInsn(POP);
+        mv_act.visitVarInsn(ALOAD, 0);
+        mv_act.visitFieldInsn(GETFIELD, className, le.name, c(SephObject.class));
     }
 
-    private void compileTerminator(MethodVisitor mv, Message current) {
+    private void compileTerminator(Message current) {
         if(current.next() != null && !(current.next() instanceof Terminator)) {
-            mv.visitInsn(POP);
-            mv.visitVarInsn(ALOAD, 3);
+            mv_act.visitInsn(POP);
+            mv_act.visitVarInsn(ALOAD, 3);
         }
     }
 
-    private void compileMessageSend(MethodVisitor mv, Message current, String className) {
+    private void compileMessageSend(Message current) {
         if(current.arguments().seq() == null) {
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitInsn(SWAP);
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitFieldInsn(GETFIELD, className, "capture", c(LexicalScope.class));
-            mv.visitInsn(SWAP);
-            compileInvocation(mv, current);
+            mv_act.visitVarInsn(ALOAD, 1);
+            mv_act.visitInsn(SWAP);
+            mv_act.visitVarInsn(ALOAD, 0);
+            mv_act.visitFieldInsn(GETFIELD, className, "capture", c(LexicalScope.class));
+            mv_act.visitInsn(SWAP);
+            compileInvocation(current);
         } else {
             throw new CompilationAborted("No support for method calls with arguments");
         }
     }
 
-    private void activateWithMethod(ClassWriter cw, String className) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "activateWith", sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), null, null);
-        mv.visitCode();
+    private void activateWithMethod() {
+        mv_act = cw.visitMethod(ACC_PUBLIC, "activateWith", sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), null, null);
+        mv_act.visitCode();
 
         Message current = code;
 
-        mv.visitVarInsn(ALOAD, 3);
+        mv_act.visitVarInsn(ALOAD, 3);
 
         while(current != null) {
             if(current.isLiteral()) {
-                compileLiteral(mv, className, current);
+                compileLiteral(current);
             } else if(current instanceof Terminator) {
-                compileTerminator(mv, current);
+                compileTerminator(current);
             } else {
-                compileMessageSend(mv, current, className);
+                compileMessageSend(current);
             }
             current = current.next();
         }
 
-        mv.visitInsn(ARETURN);
-        mv.visitMaxs(0,0);
-        mv.visitEnd();
+        mv_act.visitInsn(ARETURN);
+        mv_act.visitMaxs(0,0);
+        mv_act.visitEnd();
     }
 
-    private void compileInvocation(MethodVisitor mv, Message code) {
-        mv.visitInvokeDynamicInsn(code.name(), sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class), basicSephBootstrap, EMPTY);
+    private void compileInvocation(Message code) {
+        mv_act.visitInvokeDynamicInsn(code.name(), sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class), basicSephBootstrap, EMPTY);
     }
 
     private Class[] getSignature() {
-        Class[] params = new Class[literalsInOrder.length + 2];
+        Class[] params = new Class[literals.length + 2];
         Arrays.fill(params, SephObject.class);
         params[0] = Message.class;
         params[1] = LexicalScope.class;
@@ -177,20 +179,18 @@ public class AbstractionCompiler {
     }
 
     private Object[] getArguments() {
-        Object[] args = new Object[literalsInOrder.length + 2];
+        Object[] args = new Object[literals.length + 2];
         args[0] = code;
         args[1] = capture;
         for(int i = 0; i < literalsFill; i++) {
-            args[i+2] = literalsInOrder[i].code.literal();
+            args[i+2] = literals[i].code.literal();
         }
         return args;
     }
 
-
-
     public static SephObject compile(Message code, LexicalScope capture) {
         AbstractionCompiler c = new AbstractionCompiler(code, capture);
-        c.generateAbstractionClass("seph$gen$abstraction$" + compiledCount.getAndIncrement());
+        c.generateAbstractionClass();
         return c.instantiateAbstraction();
     }
 
