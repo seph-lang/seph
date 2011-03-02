@@ -20,9 +20,40 @@ public class CompilationHelpers {
     }
 
     public static String c(Class<?> type) {
+        if(type.isArray()) {
+            type = type.getComponentType();
+            if(type.isPrimitive()) {
+                if(type == Byte.TYPE) {
+                    return "[B";
+                } else if (type == Boolean.TYPE) {
+                    return "[Z";
+                } else if (type == Short.TYPE) {
+                    return "[S";
+                } else if (type == Character.TYPE) {
+                    return "[C";
+                } else if (type == Integer.TYPE) {
+                    return "[I";
+                } else if (type == Float.TYPE) {
+                    return "[F";
+                } else if (type == Double.TYPE) {
+                    return "[D";
+                } else if (type == Long.TYPE) {
+                    return "[J";
+                } else {
+                    throw new RuntimeException("Unrecognized type in compiler: " + type.getName());
+                }
+            } else {
+                return "[" + c(type);
+            }
+        }
         if(type == void.class) {
             return "V";
+        } else if(type == boolean.class) {
+            return "Z";
+        } else if(type == int.class) {
+            return "I";
         }
+
         if(type.isPrimitive()) {
             throw new RuntimeException("Can't handle " + type + " in c yet. Please update me");
         }

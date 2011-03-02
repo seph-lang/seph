@@ -7,6 +7,7 @@ import seph.lang.SephObject;
 import seph.lang.SThread;
 import seph.lang.LexicalScope;
 
+import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 
 import java.dyn.CallSite;
@@ -29,8 +30,8 @@ public class Bootstrap {
         return site;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SThread thread, LexicalScope scope, SephObject receiver) {
-               // System.err.println("Calling method " + name + " on: " + receiver + " with lexical scope: " + scope);
+    public static SephObject fallback(SephCallSite site, String name, SThread thread, LexicalScope scope, SephObject receiver, IPersistentList args) {
+        // System.err.println("Calling method " + name + " on: " + receiver + " with lexical scope: " + scope + " with");
         SephObject value = scope.get(name);
 
         if(null == value) {
@@ -42,15 +43,25 @@ public class Bootstrap {
         }
 
         if(value.isActivatable()) {
-            return value.activateWith(thread, scope, receiver, PersistentList.EMPTY);
+            return value.activateWith(thread, scope, receiver, args);
         }
 
         return value;
     }
 
-    private static MethodHandle findStatic(Class target, String name, MethodType type) {
+    public static MethodHandle findStatic(Class target, String name, MethodType type) {
         try {
             return MethodHandles.lookup().findStatic(target, name, type);
+        } catch(NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch(IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static MethodHandle findVirtual(Class target, String name, MethodType type) {
+        try {
+            return MethodHandles.lookup().findVirtual(target, name, type);
         } catch(NoSuchMethodException e) {
             throw new RuntimeException(e);
         } catch(IllegalAccessException e) {

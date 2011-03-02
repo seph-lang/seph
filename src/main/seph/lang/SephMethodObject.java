@@ -15,6 +15,8 @@ import seph.lang.persistent.ISeq;
 import seph.lang.ast.Message;
 import static seph.lang.SimpleSephObject.activatable;
 
+import java.dyn.MethodHandle;
+
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
@@ -45,25 +47,44 @@ public abstract class SephMethodObject implements SephObject {
         String name;
         boolean collectingRestp = restPos && currentArg > posArity;
         ArgumentResult result = new ArgumentResult();
-
-        while(argsLeft != null) {
-            Message current = (Message)argsLeft.first();
-            if(restKey && (name = current.name()).endsWith(":")) {
-                name = name.substring(0, name.length()-1);
-                current = current.next();
-                SephObject part = scope.evaluateFully(thread, current);
-                restk = restk.associate(name, part);
-            } else {
-                if(collectingRestp) {
-                    restp.add(scope.evaluateFully(thread, current));
+        
+        try {
+            while(argsLeft != null) {
+                Object o = argsLeft.first();
+                Message current;
+                MethodHandle toEvaluate = null;
+                if(o instanceof MethodHandle) {
+                    toEvaluate = (MethodHandle)o;
+                    current = (Message)((SephObject)toEvaluate.invokeExact((SThread)null, (LexicalScope)null, false));
                 } else {
-                    SephObject part = scope.evaluateFully(thread, current);
-                    result.assign(currentArg, part);
-                    currentArg++;
-                    collectingRestp = restPos && currentArg > posArity;
+                    current = (Message)o;
                 }
+
+                if(restKey && (name = current.name()).endsWith(":")) {
+                    name = name.substring(0, name.length()-1);
+                    current = current.next();
+                    SephObject part = scope.evaluateFully(thread, current);
+                    restk = restk.associate(name, part);
+                } else {
+                    SephObject part = null;
+                    if(toEvaluate == null) {
+                        part = scope.evaluateFully(thread, current);
+                    } else {
+                        part = (SephObject)toEvaluate.invokeExact(thread, scope, true);
+                    }
+
+                    if(collectingRestp) {
+                        restp.add(part);
+                    } else {
+                        result.assign(currentArg, part);
+                        currentArg++;
+                        collectingRestp = restPos && currentArg > posArity;
+                    }
+                }
+                argsLeft = argsLeft.next();
             }
-            argsLeft = argsLeft.next();
+        } catch(Throwable e) {
+            e.printStackTrace();
         }
 
         if(restPos) {
