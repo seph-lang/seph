@@ -1,0 +1,9 @@
+
+Current compilation is missing several pieces:
+- Invoking things with arguments cannot handle keyword arguments (less important right now)
+- Abstractions can't be compiled if they take arguments
+- Abstractions are currently not compiled to be tail recursive...
+- Possibly have a few shortcircuited things like if, + etc. Make that use a SwitchPoint that invalidates if something with that name is redefined
+     specifically inline things like "nil", "true", "false", etc
+- Make some specialized activateWith methods with different arity, taking MethodHandle, SephObject and possibly Message
+- Actually make a simple pic implementation

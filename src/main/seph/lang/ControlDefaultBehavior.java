@@ -18,7 +18,7 @@ import java.dyn.MethodHandle;
 public class ControlDefaultBehavior implements SephObject {
     public final static ControlDefaultBehavior instance = new ControlDefaultBehavior();
 
-    private static SephObject evaluateArgument(Object possibleArgument, LexicalScope scope, SThread thread) {
+    public static SephObject evaluateArgument(Object possibleArgument, LexicalScope scope, SThread thread) {
         if(possibleArgument instanceof Message) {
             return scope.evaluateFully(thread, (Message)possibleArgument);
         } else {

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import seph.lang.*;
@@ -225,14 +226,14 @@ public class AbstractionCompiler {
         }
     }
 
-    private void compileArgument(MethodVisitor act_mv, Message argument, int currentMessageIndex, int argIndex, int stackIndex) {
+    private void compileArgument(MethodVisitor act_mv, Message argument, int currentMessageIndex, int argIndex, int stackIndex, List<ArgumentEntry> currentArguments) {
         //               printThisClass = true;
         final String codeName   = "code_arg_" + currentMessageIndex + "_" + argIndex;
         final String handleName = "handle_arg_" + currentMessageIndex + "_" + argIndex;
         final String methodName = "argument_" + currentMessageIndex + "_" + argIndex;
-        arguments.add(new ArgumentEntry(codeName, handleName, methodName, argument));
-        
-
+        ArgumentEntry ae = new ArgumentEntry(codeName, handleName, methodName, argument);
+        arguments.add(ae);
+        currentArguments.add(ae);
         
         cw.visitField(ACC_PRIVATE + ACC_STATIC, codeName,   c(SephObject.class), null, null);
         cw.visitField(ACC_PRIVATE + ACC_STATIC, handleName, c(MethodHandle.class), null, null);
@@ -281,29 +282,30 @@ public class AbstractionCompiler {
 
         mv.visitMaxs(0,0);
         mv.visitEnd();
-
-        
-        act_mv.visitFieldInsn(GETSTATIC, className, handleName, c(MethodHandle.class));  // [mh]
-        act_mv.visitInsn(ICONST_2);   // [mh, 2]
-        act_mv.visitInsn(ICONST_1);   // [mh, 2, 1]
-        act_mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");   // [mh, 2, [null]]
-        act_mv.visitInsn(DUP);                                 // [mh, 2, [null], [null]]
-        act_mv.visitInsn(ICONST_0);                            // [mh, 2, [null], [null], 0]
-        act_mv.visitVarInsn(ALOAD, RECEIVER + stackIndex);     // [mh, 2, [null], [null], 0, recv]
-        act_mv.visitInsn(AASTORE);                             // [mh, 2, [recv]]
-        act_mv.visitMethodInsn(INVOKESTATIC, p(MethodHandles.class), "insertArguments", sig(MethodHandle.class, MethodHandle.class, int.class, Object[].class));
     }
 
     private void compileArguments(MethodVisitor mv, IPersistentList arguments, int index) {
         int num = 0;
         mv.visitFieldInsn(GETSTATIC, p(PersistentList.class), "EMPTY", "Lseph/lang/persistent/PersistentList$EmptyList;");
-        final int currentMessageIndex = messageIndex;
+        final int currentMessageIndex = messageIndex++;
+        final LinkedList<ArgumentEntry> currentArguments = new LinkedList<>();
         for(ISeq seq = arguments.seq(); seq != null; seq = seq.next()) {
-            compileArgument(mv, (Message)seq.first(), currentMessageIndex, num++, index);
+            compileArgument(mv, (Message)seq.first(), currentMessageIndex, num++, index, currentArguments);
+        }
+        for(final Iterator<ArgumentEntry> iter = currentArguments.descendingIterator(); iter.hasNext();) {
+            ArgumentEntry ae = iter.next();
+
+            mv.visitFieldInsn(GETSTATIC, className, ae.handleName, c(MethodHandle.class));  // [mh]
+            mv.visitInsn(ICONST_2);   // [mh, 2]
+            mv.visitInsn(ICONST_1);   // [mh, 2, 1]
+            mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");   // [mh, 2, [null]]
+            mv.visitInsn(DUP);                                 // [mh, 2, [null], [null]]
+            mv.visitInsn(ICONST_0);                            // [mh, 2, [null], [null], 0]
+            mv.visitVarInsn(ALOAD, RECEIVER + index);     // [mh, 2, [null], [null], 0, recv]
+            mv.visitInsn(AASTORE);                             // [mh, 2, [recv]]
+            mv.visitMethodInsn(INVOKESTATIC, p(MethodHandles.class), "insertArguments", sig(MethodHandle.class, MethodHandle.class, int.class, Object[].class));
             mv.visitMethodInsn(INVOKEINTERFACE, p(IPersistentCollection.class), "cons", sig(IPersistentCollection.class, Object.class));
         }
-            
-        messageIndex++;
     }
 
     private final static int THREAD          = 1;

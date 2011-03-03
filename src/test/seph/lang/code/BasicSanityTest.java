@@ -272,5 +272,69 @@ public class BasicSanityTest {
                                                "fp = f\n" +
                                                "fp\n");
     }
+
+    @Test
+    public void evaluate_simple_if_statement_in_interpreter() throws Exception, ControlFlow {
+        seph.lang.compiler.AbstractionCompiler.DO_COMPILE = false;
+        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
+                                                                  "f = #(if(false, 42, 55))\n" +
+                                                                  "f\n"), is(equalTo(IntNum.valueOf("55"))));
+
+        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
+                                                                  "f = #(if(true, 42, 55))\n" +
+                                                                  "f\n"), is(equalTo(IntNum.valueOf("42"))));
+    }
+
+    @Test
+    public void evaluate_simple_if_statement_in_compiler() throws Exception, ControlFlow {
+        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
+                                                                  "f = #(if(false, 42, 55))\n" +
+                                                                  "f\n"), is(equalTo(IntNum.valueOf("55"))));
+
+        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
+                                                                  "f = #(if(true, 42, 55))\n" +
+                                                                  "f\n"), is(equalTo(IntNum.valueOf("42"))));
+    }
+
+
+    @Test
+    public void evaluate_if_statement_with_expression_in_conditional_in_interpreter() throws Exception, ControlFlow {
+        seph.lang.compiler.AbstractionCompiler.DO_COMPILE = false;
+        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
+                                                                  "f = #(if(1 == 0, 42, 55))\n" +
+                                                                  "f\n"), is(equalTo(IntNum.valueOf("55"))));
+
+        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
+                                                                  "f = #(if(1 == 1, 42, 55))\n" +
+                                                                  "f\n"), is(equalTo(IntNum.valueOf("42"))));
+    }
+
+    @Test
+    public void evaluate_if_statement_with_expression_in_conditional_in_compiler() throws Exception, ControlFlow {
+        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
+                                                                  "f = #(if(1 == 0, 42, 55))\n" +
+                                                                  "f\n"), is(equalTo(IntNum.valueOf("55"))));
+
+        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
+                                                                  "f = #(if(1 == 1, 42, 55))\n" +
+                                                                  "f\n"), is(equalTo(IntNum.valueOf("42"))));
+    }
+
+    @Test
+    public void arguments_to_other_methods_in_interpreter() throws Exception, ControlFlow {
+        seph.lang.compiler.AbstractionCompiler.DO_COMPILE = false;
+        captureStandardOut();
+        new seph.lang.Runtime().evaluateString("f = #(x, y, x asText println\ny asText println)\nf(42, 55)\nff = #(f(42, 55))\nff\n");
+        String stdout = restoreStandardOut();
+        assertThat(stdout, is(equalTo("42\n55\n42\n55\n")));
+    }
+
+    @Test
+    public void arguments_to_other_methods_in_compiler() throws Exception, ControlFlow {
+        captureStandardOut();
+        new seph.lang.Runtime().evaluateString("f = #(x, y, x asText println\ny asText println)\nf(42, 55)\nff = #(f(42, 55))\nff\n");
+        String stdout = restoreStandardOut();
+        assertThat(stdout, is(equalTo("42\n55\n42\n55\n")));
+    }
 }// RuntimeTest
 
