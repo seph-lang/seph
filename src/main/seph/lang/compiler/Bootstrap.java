@@ -30,7 +30,31 @@ public class Bootstrap {
         return site;
     }
 
+    public static CallSite noReceiverSephBootstrap(MethodHandles.Lookup lookup, String name, MethodType type) {
+        //        System.err.println("lookup: " + lookup + ", name: " + name + ", type: " + type);
+        SephCallSite site = new SephCallSite(type);
+        MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
+        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "noReceiverFallback", fallbackType), 0, site, name);
+        site.setTarget(fallback);
+        return site;
+    }
+
     public static SephObject fallback(SephCallSite site, String name, SThread thread, LexicalScope scope, SephObject receiver, IPersistentList args) {
+        // System.err.println("Calling method " + name + " on: " + receiver + " with lexical scope: " + scope + " with");
+        SephObject value = value = receiver.get(name);
+
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+
+        if(value.isActivatable()) {
+            return value.activateWith(thread, scope, receiver, args);
+        }
+
+        return value;
+    }
+
+    public static SephObject noReceiverFallback(SephCallSite site, String name, SThread thread, LexicalScope scope, SephObject receiver, IPersistentList args) {
         // System.err.println("Calling method " + name + " on: " + receiver + " with lexical scope: " + scope + " with");
         SephObject value = scope.get(name);
 

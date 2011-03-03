@@ -9,6 +9,8 @@ import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.RT;
 import seph.lang.persistent.ISeq;
 
+import java.dyn.MethodHandle;
+
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
@@ -16,21 +18,35 @@ import seph.lang.persistent.ISeq;
 public class ControlDefaultBehavior implements SephObject {
     public final static ControlDefaultBehavior instance = new ControlDefaultBehavior();
 
+    private static SephObject evaluateArgument(Object possibleArgument, LexicalScope scope, SThread thread) {
+        if(possibleArgument instanceof Message) {
+            return scope.evaluateFully(thread, (Message)possibleArgument);
+        } else {
+            try {
+                MethodHandle mh = (MethodHandle)possibleArgument;
+                return (SephObject)mh.invokeExact(thread, scope, true);
+            } catch(Throwable e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }
+
     @SephMethod(name="if", evaluateArguments=false)
     public final static SephObject _if(SThread thread, LexicalScope scope, IPersistentList arguments) {
-        Message conditional = (Message)RT.first(arguments);
-        SephObject result = scope.evaluateFully(thread, conditional);
+        SephObject result = evaluateArgument(RT.first(arguments), scope, thread);
+
         if(result.isTrue()) {
             ISeq seq = RT.next(arguments);
             if(null != seq) {
-                return scope.evaluate(thread, (Message)RT.first(seq));
+                return evaluateArgument(RT.first(seq), scope, thread);
             } else {
                 return Runtime.NIL;
             }
         } else {
             ISeq seq = RT.next(RT.next(arguments));
             if(null != seq) {
-                return scope.evaluate(thread, (Message)RT.first(seq));
+                return evaluateArgument(RT.first(seq), scope, thread);
             } else {
                 return Runtime.NIL;
             }

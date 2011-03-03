@@ -38,6 +38,7 @@ public class MessageInterpreter {
         SephObject receiver = ground;
         SephObject lastReal = Runtime.NIL;
         Message currentMessage = msg;
+        boolean first = true;
 
         while(currentMessage != null) {
             String name = currentMessage.name();
@@ -46,12 +47,13 @@ public class MessageInterpreter {
             
             if(currentMessage instanceof Terminator) {
                 receiver = ground;
+                first = true;
             } else {
-                SephObject tmp = currentMessage.sendTo(thread, scope, receiver);
-
+                SephObject tmp = currentMessage.sendTo(thread, scope, receiver, first);
+                first = false;
                 if(next != null) {
-                    while(tmp == SThread.TAIL_MARKER && next != null) {
-                        tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver);
+                    while(tmp == SThread.TAIL_MARKER) {
+                        tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver, thread.first);
                     }
                 }
 
@@ -69,17 +71,19 @@ public class MessageInterpreter {
         SephObject receiver = ground;
         SephObject lastReal = Runtime.NIL;
         Message currentMessage = msg;
+        boolean first = true;
 
         while(currentMessage != null) {
             String name = currentMessage.name();
 
             if(currentMessage instanceof Terminator) {
                 receiver = ground;
+                first = true;
             } else {
-                SephObject tmp = currentMessage.sendTo(thread, scope, receiver);
-
+                SephObject tmp = currentMessage.sendTo(thread, scope, receiver, first);
+                first = false;
                 while(tmp == SThread.TAIL_MARKER) {
-                    tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver);
+                    tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver, thread.first);
                 }
 
                 if(tmp != null) {

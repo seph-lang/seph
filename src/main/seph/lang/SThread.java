@@ -23,7 +23,8 @@ public class SThread {
     public Message next;
     public LexicalScope nextScope;
     public SephObject nextReceiver;
-    
+    public boolean first;
+
     public SThread(Runtime runtime) {
         this.runtime = runtime;
     }

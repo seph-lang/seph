@@ -27,7 +27,7 @@ public final class Assignment extends NamedMessage {
         PLUS_EQ {
             public SephObject assignOp(SThread thread, Message left, Message right, LexicalScope scope) {
                 SephObject leftValue = scope.evaluateFully(thread, left);
-                SephObject value = NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position()).go(thread, scope, leftValue);
+                SephObject value = NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position()).go(thread, scope, leftValue, false);
                 scope.assign(left.name(), value);
                 return value;
             }
@@ -51,7 +51,7 @@ public final class Assignment extends NamedMessage {
     }
 
     @Override
-    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver) {
+    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver, boolean first) {
         Message left = (Message)arguments().seq().first();
         Message right = (Message)arguments().seq().next().first();
         return assgn.assignOp(thread, left, right, scope);

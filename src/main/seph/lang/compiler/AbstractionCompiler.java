@@ -32,8 +32,12 @@ import java.dyn.MethodType;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class AbstractionCompiler {
+    public static boolean DO_COMPILE    = true;
+    public static boolean PRINT_COMPILE = false;
+
     private final static Object[] EMPTY = new Object[0];
-    private final static org.objectweb.asm.MethodHandle basicSephBootstrap = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "basicSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
+    private final static org.objectweb.asm.MethodHandle basicSephBootstrap      = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "basicSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
+    private final static org.objectweb.asm.MethodHandle noReceiverSephBootstrap = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "noReceiverSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
     private final static AtomicInteger compiledCount = new AtomicInteger(0);
 
     private final Message code;
@@ -69,7 +73,7 @@ public class AbstractionCompiler {
 
         final byte[] classBytes = cw.toByteArray();
 
-        if(printThisClass) {
+        if(printThisClass || PRINT_COMPILE) {
             new ClassReader(classBytes).accept(new org.objectweb.asm.util.TraceClassVisitor(new java.io.PrintWriter(System.err)), 0);
             //            throw new CompilationAborted("No support for method calls with arguments");
         }
@@ -142,6 +146,10 @@ public class AbstractionCompiler {
     }
 
     public static SephObject compile(Message code, LexicalScope capture) {
+        if(!DO_COMPILE) {
+            throw new CompilationAborted("Compilation disabled...");
+        }
+
         AbstractionCompiler c = new AbstractionCompiler(code, capture);
         c.generateAbstractionClass();
         c.setStaticValues();
@@ -180,6 +188,18 @@ public class AbstractionCompiler {
             this.argumentCode = argumentCode;
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -235,17 +255,24 @@ public class AbstractionCompiler {
 
         mv.visitVarInsn(ALOAD, RECEIVER - 1);
 
+        boolean first = true;
+
         while(current != null) {
             if(current.isLiteral()) {
                 compileLiteral(mv, current);
+                first = false;
             } else if(current instanceof Terminator) {
                 compileTerminator(mv, current, -1);
+                first = true;
             } else if(current instanceof Abstraction) {
+                first = false;
                 throw new CompilationAborted("No support for compiling abstractions in abstractions");
             } else if(current instanceof Assignment) {
+                first = false;
                 throw new CompilationAborted("No support for compiling assignment");
             } else {
-                compileMessageSend(mv, current, -1);
+                compileMessageSend(mv, current, -1, first);
+                first = false;
             }
             current = current.next();
         }
@@ -285,19 +312,25 @@ public class AbstractionCompiler {
     private final static int ARGUMENTS       = 4;
     private final static int SHOULD_EVALUATE = 4;
 
-    private void compileMessageSend(MethodVisitor mv, Message current, int index) {
+    private void compileMessageSend(MethodVisitor mv, Message current, int index, boolean first) {
         mv.visitVarInsn(ALOAD, THREAD + index);
         mv.visitInsn(SWAP);
         mv.visitFieldInsn(GETSTATIC, className, "capture", c(LexicalScope.class));
         mv.visitInsn(SWAP);
             
         compileArguments(mv, current.arguments(), index);
-        mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), basicSephBootstrap, EMPTY);
+        if(first) {
+            mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), noReceiverSephBootstrap, EMPTY);
+        } else {
+            mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), basicSephBootstrap, EMPTY);
+        }
     }
 
     private void activateWithMethod() {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "activateWith", sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), null, null);
         mv.visitCode();
+
+        boolean first = true;
 
         Message current = code;
 
@@ -306,14 +339,19 @@ public class AbstractionCompiler {
         while(current != null) {
             if(current.isLiteral()) {
                 compileLiteral(mv, current);
+                first = false;
             } else if(current instanceof Terminator) {
                 compileTerminator(mv, current, 0);
+                first = true;
             } else if(current instanceof Abstraction) {
+                first = false;
                 throw new CompilationAborted("No support for compiling abstractions in abstractions");
             } else if(current instanceof Assignment) {
+                first = false;
                 throw new CompilationAborted("No support for compiling assignment");
             } else {
-                compileMessageSend(mv, current, 0);
+                compileMessageSend(mv, current, 0, first);
+                first = false;
             }
             current = current.next();
         }

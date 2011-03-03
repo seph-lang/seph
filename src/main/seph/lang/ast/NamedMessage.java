@@ -121,19 +121,24 @@ public class NamedMessage implements Message, SephObject {
         return ret;
     }
 
-    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver) {
+    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver, boolean first) {
         if(next == null) {
             thread.next = this;
             thread.nextScope = scope;
             thread.nextReceiver = receiver;
+            thread.first = first;
             return SThread.TAIL_MARKER;
         }
 
-        return go(thread, scope, receiver);
+        return go(thread, scope, receiver, first);
     }
 
-    public SephObject go(SThread thread, LexicalScope scope, SephObject receiver) {
-        SephObject value = scope.get(name);
+    public SephObject go(SThread thread, LexicalScope scope, SephObject receiver, boolean first) {
+        SephObject value = null;
+        
+        if(first) {
+            value = scope.get(name);
+        }
 
         if(null == value) {
             value = receiver.get(name);

@@ -7,6 +7,7 @@ import java.io.*;
 
 import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.After;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
@@ -17,6 +18,12 @@ import gnu.math.*;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class BasicSanityTest {
+    @After
+    public void resetCompilerSettings() {
+        seph.lang.compiler.AbstractionCompiler.DO_COMPILE = true;
+        seph.lang.compiler.AbstractionCompiler.PRINT_COMPILE = false;
+    }
+
     @Test
     public void evaluate_text() throws Exception, ControlFlow {
         assertThat((Text)new seph.lang.Runtime().evaluateString("\"hello world\""), is(equalTo(new Text("hello world"))));
@@ -200,8 +207,9 @@ public class BasicSanityTest {
                                                                   "f(421)\n"), is(equalTo(IntNum.valueOf("496709438418428047101555454724916745085465336888090097405467818180922261398842295425806822589714833795213495222240007671066490851554749892134937936656282994637909051947398340526149934808106330096692953599944767716258342891428727319048480424750506254845534889774433360425470710774683290442555783815659955875264427528929575675931563437214692758482302503124210528001023359804355899661904496934663897310150700949162282909151225143677669059060838583122439585977518160297232827264016830876225940821782638126030221442411154489855932639983840488927885300335833913419474049335611983897922046477193331977853760794988593293683296748209719217136728920867862297531494704044484830900817732903201945049906982980655481012268737891556187874734833673235166827039350174863501581347262465477415340389373595437779322143694446268466299687403520000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"))));
     }
 
-    @Test
+    @Test @Ignore
     public void recursive_odd_and_even_that_should_blow_the_stack() throws Exception, ControlFlow {
+        seph.lang.compiler.AbstractionCompiler.DO_COMPILE = false;
         captureStandardOut();
         Object result = new seph.lang.Runtime().evaluateString("odd? = #(n,\n" +
                                                                "  if(n == 0,\n" +
@@ -216,9 +224,9 @@ public class BasicSanityTest {
                                                                "odd?(10) println\n" +
                                                                "even?(10) println\n" +
                                                                "\n" +
-                                                               "odd?(1010) println\n" +
+                                                                   "odd?(1010) println\n" +
                                                                "even?(1010) println\n" +
-                                                               "\n" +
+                                                                   "\n" +
                                                                "odd?(1011) println\n" +
                                                                "even?(1011) println\n" +
                                                                "\n" +
@@ -240,6 +248,29 @@ public class BasicSanityTest {
                                                                   "    fib(n - 1) + fib(n - 2)))\n" +
                                                                   "\n" +
                                                                   "fib(10)\n"), is(equalTo(IntNum.valueOf("55"))));
+    }
+
+    @Test(expected=RuntimeException.class)
+    public void should_not_lookup_on_local_scope_when_explicit_receiver_is_used_in_interpreter() throws Exception, ControlFlow {
+        seph.lang.compiler.AbstractionCompiler.DO_COMPILE = false;
+        new seph.lang.Runtime().evaluateString(
+                                               "f = #(\n" +
+                                               "  x = 42\n" +
+                                               "  blargiman = 15\n" +
+                                               "  #(x blargiman))\n" +
+                                               "fp = f\n" +
+                                               "fp\n");
+    }
+
+    @Test(expected=RuntimeException.class)
+    public void should_not_lookup_on_local_scope_when_explicit_receiver_is_used_in_compiler() throws Exception, ControlFlow {
+        new seph.lang.Runtime().evaluateString(
+                                               "f = #(\n" +
+                                               "  x = 42\n" +
+                                               "  blargiman = 15\n" +
+                                               "  #(x blargiman))\n" +
+                                               "fp = f\n" +
+                                               "fp\n");
     }
 }// RuntimeTest
 

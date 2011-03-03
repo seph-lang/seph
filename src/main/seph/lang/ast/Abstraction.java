@@ -22,7 +22,7 @@ public final class Abstraction extends NamedMessage {
     }
 
     @Override
-    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver) {
+    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver, boolean first) {
         return DefaultAbstraction.createFrom(this, scope);
     }
 }// Abstraction
