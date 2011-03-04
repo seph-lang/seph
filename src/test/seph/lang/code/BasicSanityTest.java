@@ -18,6 +18,8 @@ import gnu.math.*;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class BasicSanityTest {
+    private final static String n = System.getProperty("line.separator");
+
     @After
     public void resetCompilerSettings() {
         seph.lang.compiler.AbstractionCompiler.DO_COMPILE = true;
@@ -119,7 +121,7 @@ public class BasicSanityTest {
         Object result = new seph.lang.Runtime().evaluateString("\"hello world\" println");
         String stdout = restoreStandardOut();
         assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
-        assertThat(stdout, is(equalTo("hello world\n")));
+        assertThat(stdout, is(equalTo("hello world"+n+"")));
     }
 
     @Test
@@ -128,7 +130,7 @@ public class BasicSanityTest {
         Object result = new seph.lang.Runtime().evaluateString("\"hello again, world\" println");
         String stdout = restoreStandardOut();
         assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
-        assertThat(stdout, is(equalTo("hello again, world\n")));
+        assertThat(stdout, is(equalTo("hello again, world"+n+"")));
     }
 
     @Test
@@ -137,7 +139,7 @@ public class BasicSanityTest {
         Object result = new seph.lang.Runtime().evaluateString("Ground Something with(asText: \"this is cool\") println");
         String stdout = restoreStandardOut();
         assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
-        assertThat(stdout, is(equalTo("this is cool\n")));
+        assertThat(stdout, is(equalTo("this is cool"+n+"")));
     }
 
     @Test
@@ -146,7 +148,7 @@ public class BasicSanityTest {
         Object result = new seph.lang.Runtime().evaluateString("foo = #(\"Hello World\" println)\nfoo");
         String stdout = restoreStandardOut();
         assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
-        assertThat(stdout, is(equalTo("Hello World\n")));
+        assertThat(stdout, is(equalTo("Hello World"+n+"")));
     }
 
     @Test
@@ -155,7 +157,7 @@ public class BasicSanityTest {
         Object result = new seph.lang.Runtime().evaluateString("x = 42 + 5\ny = x + x\nbarius = Something with(\n  bax: y + y + y, \n  mux: #(bax println))\nbarius mux\nbarius mux\nbarius mux\nbarius mux\nbarius2 = barius with(bax: 60)\nbarius mux\nbarius2 mux");
         String stdout = restoreStandardOut();
         assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
-        assertThat(stdout, is(equalTo("282\n282\n282\n282\n282\n60\n")));
+        assertThat(stdout, is(equalTo("282"+n+"282"+n+"282"+n+"282"+n+"282"+n+"60"+n+"")));
     }
 
     @Test
@@ -164,7 +166,7 @@ public class BasicSanityTest {
         Object result = new seph.lang.Runtime().evaluateString("fux = #(\n  inside = \"my very special value\"\n  #(inside println))\nfaxo = fux\nfaxo\nfaxo\nfaxo\n");
         String stdout = restoreStandardOut();
         assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
-        assertThat(stdout, is(equalTo("my very special value\nmy very special value\nmy very special value\n")));
+        assertThat(stdout, is(equalTo("my very special value"+n+"my very special value"+n+"my very special value"+n+"")));
     }
 
     @Test
@@ -173,7 +175,7 @@ public class BasicSanityTest {
         Object result = new seph.lang.Runtime().evaluateString("accumulator = #(\n  n = 0\n  #(\n    y = n\n    n = n + 1\n    y\n  )\n)\nf1 = accumulator\nf2 = accumulator\nf1 println\nf1 println\nf1 println\nf2 println\nf2 println");
         String stdout = restoreStandardOut();
         assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
-        assertThat(stdout, is(equalTo("0\n1\n2\n0\n1\n")));
+        assertThat(stdout, is(equalTo("0"+n+"1"+n+"2"+n+"0"+n+"1"+n+"")));
     }
 
     @Test
@@ -182,7 +184,7 @@ public class BasicSanityTest {
         Object result = new seph.lang.Runtime().evaluateString("argus = #(x, x println)\nargus(42)\nargus(55)");
         String stdout = restoreStandardOut();
         assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
-        assertThat(stdout, is(equalTo("42\n55\n")));
+        assertThat(stdout, is(equalTo("42"+n+"55"+n+"")));
     }
 
     @Test
@@ -191,7 +193,7 @@ public class BasicSanityTest {
         Object result = new seph.lang.Runtime().evaluateString("acc = #(n, #(x, n += x))\nf3 = acc(10)\nf4 = acc(25)\nf3(2) println\nf3(1) println\nf3(1) println\nf4(1) println\nf3(1) println\nf4(1) println");
         String stdout = restoreStandardOut();
         assertThat(result, is(equalTo((Object)seph.lang.Runtime.NIL)));
-        assertThat(stdout, is(equalTo("12\n13\n14\n26\n15\n27\n")));
+        assertThat(stdout, is(equalTo("12"+n+"13"+n+"14"+n+"26"+n+"15"+n+"27"+n+"")));
     }
 
     @Test
@@ -235,7 +237,7 @@ public class BasicSanityTest {
                                                                "odd?(10101) println\n" +
                                                                "even?(10101) println\n");
         String stdout = restoreStandardOut();
-        assertThat(stdout, is(equalTo("false\ntrue\nfalse\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue\nfalse\n")));
+        assertThat(stdout, is(equalTo("false"+n+"true"+n+"false"+n+"true"+n+"true"+n+"false"+n+"false"+n+"true"+n+"true"+n+"false"+n+"")));
     }
 
     @Test
@@ -325,7 +327,7 @@ public class BasicSanityTest {
         captureStandardOut();
         new seph.lang.Runtime().evaluateString("f = #(x, y, x asText println\ny asText println)\nf(42, 55)\nff = #(f(42, 55))\nff\n");
         String stdout = restoreStandardOut();
-        assertThat(stdout, is(equalTo("42\n55\n42\n55\n")));
+        assertThat(stdout, is(equalTo("42"+n+"55"+n+"42"+n+"55"+n+"")));
     }
 
     @Test
@@ -333,7 +335,7 @@ public class BasicSanityTest {
         captureStandardOut();
         new seph.lang.Runtime().evaluateString("f = #(x, y, x asText println\ny asText println)\nf(42, 55)\nff = #(f(42, 55))\nff\n");
         String stdout = restoreStandardOut();
-        assertThat(stdout, is(equalTo("42\n55\n42\n55\n")));
+        assertThat(stdout, is(equalTo("42"+n+"55"+n+"42"+n+"55"+n+"")));
     }
 
     @Test
