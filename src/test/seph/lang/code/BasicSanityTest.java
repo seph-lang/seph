@@ -335,5 +335,12 @@ public class BasicSanityTest {
         String stdout = restoreStandardOut();
         assertThat(stdout, is(equalTo("42\n55\n42\n55\n")));
     }
+
+    @Test
+    public void nil_evaluates_as_false() throws Exception, ControlFlow {
+        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
+                                                                  "f = #(if(nil, 42, 55))\n" +
+                                                                  "f\n"), is(equalTo(IntNum.valueOf("55"))));
+    }
 }// RuntimeTest
 

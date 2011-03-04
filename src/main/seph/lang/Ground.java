@@ -39,6 +39,9 @@ public class Ground implements SephObject {
     @SephCell(name="false")
     public final static SephObject Runtime_false = null;
 
+    @SephCell(name="nil")
+    public final static SephObject Runtime_nil = null;
+
     @SephMethod
     public final static SephObject asText(SephObject receiver) {
         return new Text(receiver.toString());
