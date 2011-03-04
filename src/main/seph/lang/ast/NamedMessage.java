@@ -149,7 +149,7 @@ public class NamedMessage implements Message, SephObject {
         }
 
         if(value.isActivatable()) {
-            return value.activateWith(thread, scope, receiver, arguments);
+            return value.activateWith(receiver, thread, scope, arguments);
         }
 
         return value;
@@ -167,7 +167,7 @@ public class NamedMessage implements Message, SephObject {
         return true;
     }
 
-    public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// NamedMessage

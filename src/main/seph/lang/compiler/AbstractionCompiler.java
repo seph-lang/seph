@@ -92,7 +92,7 @@ public class AbstractionCompiler {
         }
     }
 
-    private final static MethodType ARGUMENT_METHOD_TYPE = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, boolean.class);
+    private final static MethodType ARGUMENT_METHOD_TYPE = MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class);
     private void setStaticValues() {
         try {
             Field f = abstractionClass.getDeclaredField("fullMsg");
@@ -238,7 +238,7 @@ public class AbstractionCompiler {
         cw.visitField(ACC_PRIVATE + ACC_STATIC, codeName,   c(SephObject.class), null, null);
         cw.visitField(ACC_PRIVATE + ACC_STATIC, handleName, c(MethodHandle.class), null, null);
 
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, methodName, sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, boolean.class), null, null);
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, methodName, sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class), null, null);
         mv.visitCode();
 
         mv.visitVarInsn(ILOAD, SHOULD_EVALUATE - 1);
@@ -296,40 +296,32 @@ public class AbstractionCompiler {
             ArgumentEntry ae = iter.next();
 
             mv.visitFieldInsn(GETSTATIC, className, ae.handleName, c(MethodHandle.class));  // [mh]
-            mv.visitInsn(ICONST_2);   // [mh, 2]
-            mv.visitInsn(ICONST_1);   // [mh, 2, 1]
-            mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");   // [mh, 2, [null]]
-            mv.visitInsn(DUP);                                 // [mh, 2, [null], [null]]
-            mv.visitInsn(ICONST_0);                            // [mh, 2, [null], [null], 0]
             mv.visitVarInsn(ALOAD, RECEIVER + index);     // [mh, 2, [null], [null], 0, recv]
-            mv.visitInsn(AASTORE);                             // [mh, 2, [recv]]
-            mv.visitMethodInsn(INVOKESTATIC, p(MethodHandles.class), "insertArguments", sig(MethodHandle.class, MethodHandle.class, int.class, Object[].class));
+            mv.visitMethodInsn(INVOKEVIRTUAL, p(MethodHandle.class), "bindTo", sig(MethodHandle.class, Object.class));
             mv.visitMethodInsn(INVOKEINTERFACE, p(IPersistentCollection.class), "cons", sig(IPersistentCollection.class, Object.class));
         }
     }
 
-    private final static int THREAD          = 1;
-    private final static int SCOPE           = 2;
-    private final static int RECEIVER        = 3;
+    private final static int RECEIVER        = 1;
+    private final static int THREAD          = 2;
+    private final static int SCOPE           = 3;
     private final static int ARGUMENTS       = 4;
     private final static int SHOULD_EVALUATE = 4;
 
     private void compileMessageSend(MethodVisitor mv, Message current, int index, boolean first) {
         mv.visitVarInsn(ALOAD, THREAD + index);
-        mv.visitInsn(SWAP);
         mv.visitFieldInsn(GETSTATIC, className, "capture", c(LexicalScope.class));
-        mv.visitInsn(SWAP);
             
         compileArguments(mv, current.arguments(), index);
         if(first) {
-            mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), noReceiverSephBootstrap, EMPTY);
+            mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), noReceiverSephBootstrap, EMPTY);
         } else {
-            mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), basicSephBootstrap, EMPTY);
+            mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), basicSephBootstrap, EMPTY);
         }
     }
 
     private void activateWithMethod() {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "activateWith", sig(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class), null, null);
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "activateWith", sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), null, null);
         mv.visitCode();
 
         boolean first = true;

@@ -11,6 +11,6 @@ import seph.lang.persistent.IPersistentList;
 public interface SephObject {
     SephObject get(String cellName);
     boolean isActivatable();
-    SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments);
+    SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments);
     boolean isTrue();
 }// SephObject

@@ -65,7 +65,7 @@ public class ControlDefaultBehavior implements SephObject {
         return true;
     }
 
-    public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// ControlDefaultBehavior

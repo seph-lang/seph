@@ -53,7 +53,7 @@ public class DefaultAbstraction extends SimpleSephObject {
     }
 
     @Override
-    public SephObject activateWith(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments) {
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments) {
         LexicalScope methodScope = capture.newScopeWith(receiver);
 
         for(ISeq argNames = argumentNames.seq(), args = arguments.seq(); 

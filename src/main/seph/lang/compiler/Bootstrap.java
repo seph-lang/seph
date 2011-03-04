@@ -39,7 +39,7 @@ public class Bootstrap {
         return site;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SThread thread, LexicalScope scope, SephObject receiver, IPersistentList args) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
         // System.err.println("Calling method " + name + " on: " + receiver + " with lexical scope: " + scope + " with");
         SephObject value = value = receiver.get(name);
 
@@ -48,13 +48,13 @@ public class Bootstrap {
         }
 
         if(value.isActivatable()) {
-            return value.activateWith(thread, scope, receiver, args);
+            return value.activateWith(receiver, thread, scope, args);
         }
 
         return value;
     }
 
-    public static SephObject noReceiverFallback(SephCallSite site, String name, SThread thread, LexicalScope scope, SephObject receiver, IPersistentList args) {
+    public static SephObject noReceiverFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
         // System.err.println("Calling method " + name + " on: " + receiver + " with lexical scope: " + scope + " with");
         SephObject value = scope.get(name);
 
@@ -67,7 +67,7 @@ public class Bootstrap {
         }
 
         if(value.isActivatable()) {
-            return value.activateWith(thread, scope, receiver, args);
+            return value.activateWith(receiver, thread, scope, args);
         }
 
         return value;
