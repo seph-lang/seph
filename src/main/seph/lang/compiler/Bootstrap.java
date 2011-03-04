@@ -27,7 +27,7 @@ public class Bootstrap {
         //        System.err.println("lookup: " + lookup + ", name: " + name + ", type: " + type);
         SephCallSite site = new SephCallSite(type);
         MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
-        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "fallback", fallbackType), 0, site, name);
+        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "fallback", fallbackType), 0, site, decode(name));
         site.setTarget(fallback);
         return site;
     }
@@ -36,7 +36,7 @@ public class Bootstrap {
         //        System.err.println("lookup: " + lookup + ", name: " + name + ", type: " + type);
         SephCallSite site = new SephCallSite(type);
         MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
-        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "noReceiverFallback", fallbackType), 0, site, name);
+        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "noReceiverFallback", fallbackType), 0, site, decode(name));
         site.setTarget(fallback);
         return site;
     }
@@ -46,7 +46,7 @@ public class Bootstrap {
 
         SephCallSite site = new SephCallSite(type);
         MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
-        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "tailCallFallback", fallbackType), 0, site, name);
+        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "tailCallFallback", fallbackType), 0, site, decode(name));
         site.setTarget(fallback);
         return site;
     }
@@ -56,7 +56,7 @@ public class Bootstrap {
 
         SephCallSite site = new SephCallSite(type);
         MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
-        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "noReceiverTailCallFallback", fallbackType), 0, site, name);
+        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "noReceiverTailCallFallback", fallbackType), 0, site, decode(name));
         site.setTarget(fallback);
         return site;
     }

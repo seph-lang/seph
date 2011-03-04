@@ -76,4 +76,14 @@ public class CompilationHelpers {
         mv.visitLdcInsn(outp);
         mv.visitMethodInsn(INVOKEVIRTUAL, p(PrintStream.class), "println", sig(void.class, String.class));
     }
+
+
+
+    public static String encode(String name) {
+        return StringNames.toBytecodeName(name);
+    }
+
+    public static String decode(String name) {
+        return StringNames.toSourceName(name);
+    }
 }// CompilationHelpers

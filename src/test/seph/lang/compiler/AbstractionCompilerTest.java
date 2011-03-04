@@ -43,9 +43,9 @@ public class AbstractionCompilerTest {
     @Test
     public void ensure_generated_argument_method_can_return_the_argument_code_unevaluated() throws Exception, ControlFlow {
         Message code = parse("foobar(x y z, bar foo 42)");
-        SephObject so = AbstractionCompiler.compile(code, LexicalScope.ROOT);
-        Method m = so.getClass().getMethod("argument_0_0", SephObject.class, SThread.class, LexicalScope.class, boolean.class);
-        Message result = (Message)m.invoke(null, null, null, null, false);
+        SephObject so = AbstractionCompiler.compile(code, new java.util.ArrayList<String>(), LexicalScope.ROOT);
+        Method m = so.getClass().getMethod("argument_0_0", LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class);
+        Message result = (Message)m.invoke(null, null, null, null, null, false, false);
         
         assertEquals("x", result.name());
         assertEquals(PersistentList.EMPTY, result.arguments());
@@ -55,8 +55,8 @@ public class AbstractionCompilerTest {
         assertEquals(PersistentList.EMPTY, result.next().next().arguments());
         assertNull(result.next().next().next());
 
-        m = so.getClass().getMethod("argument_0_1", SephObject.class, SThread.class, LexicalScope.class, boolean.class);
-        result = (Message)m.invoke(null, null, null, null, false);
+        m = so.getClass().getMethod("argument_0_1", LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class);
+        result = (Message)m.invoke(null, null, null, null, null, false, false);
 
         assertEquals("bar", result.name());
         assertEquals(PersistentList.EMPTY, result.arguments());

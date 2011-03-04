@@ -67,7 +67,7 @@ public abstract class SephMethodObject implements SephObject, TailCallable {
                 MethodHandle toEvaluate = null;
                 if(o instanceof MethodHandle) {
                     toEvaluate = (MethodHandle)o;
-                    current = (Message)((SephObject)toEvaluate.invokeExact((SThread)null, (LexicalScope)null, false));
+                    current = (Message)((SephObject)toEvaluate.invokeExact((SThread)null, (LexicalScope)null, false, true));
                 } else {
                     current = (Message)o;
                 }
@@ -82,7 +82,7 @@ public abstract class SephMethodObject implements SephObject, TailCallable {
                     if(toEvaluate == null) {
                         part = scope.evaluateFully(thread, current);
                     } else {
-                        part = (SephObject)toEvaluate.invokeExact(thread, scope, true);
+                        part = (SephObject)toEvaluate.invokeExact(thread, scope, true, true);
                     }
 
                     if(collectingRestp) {

@@ -33,7 +33,6 @@ public class DefaultAbstraction extends SimpleSephObject {
     }
 
     public final static SephObject createFrom(Abstraction message, LexicalScope scope) {
-        List<String> argNames = new ArrayList<String>();
         ISeq seq = RT.seq(message.arguments());
 
         try {
@@ -42,6 +41,7 @@ public class DefaultAbstraction extends SimpleSephObject {
             // System.err.println("BAILED OUT ON COMPILE (" + e.getMessage() + "): " + message);
         }
 
+        List<String> argNames = new ArrayList<String>();
         if(seq != null) {
             for(;RT.next(seq) != null; seq = RT.next(seq)) {
                 argNames.add(((Message)RT.first(seq)).name());

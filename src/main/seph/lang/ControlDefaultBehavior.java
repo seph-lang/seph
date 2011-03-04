@@ -28,7 +28,7 @@ public class ControlDefaultBehavior implements SephObject {
         } else {
             try {
                 MethodHandle mh = (MethodHandle)possibleArgument;
-                return (SephObject)mh.invokeExact(thread, scope, true);
+                return (SephObject)mh.invokeExact(thread, scope, true, fully);
             } catch(Throwable e) {
                 e.printStackTrace();
                 return null;

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,13 +54,15 @@ public class AbstractionCompiler {
 
     private final ClassWriter cw;
     private final String className;
+    private final List<String> argNames;
 
     private int messageIndex = 0;
 
     private boolean printThisClass = false;
 
-    private AbstractionCompiler(Message code, LexicalScope capture) {
+    private AbstractionCompiler(Message code, List<String> argNames, LexicalScope capture) {
         this.code = code;
+        this.argNames = argNames;
         this.capture = capture;
         this.className = "seph$gen$abstraction$" + compiledCount.getAndIncrement();
         this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -78,10 +81,21 @@ public class AbstractionCompiler {
 
         if(printThisClass || PRINT_COMPILE) {
             new ClassReader(classBytes).accept(new org.objectweb.asm.util.TraceClassVisitor(new java.io.PrintWriter(System.err)), 0);
+            // try {
+            //     java.io.FileOutputStream ff = new java.io.FileOutputStream(className + ".class");
+            //     ff.write(classBytes);
+            //     ff.close();
+            // } catch(Exception e) {
+            // }
             //            throw new CompilationAborted("No support for method calls with arguments");
         }
 
-        abstractionClass = seph.lang.Runtime.LOADER.defineClass(className, classBytes);
+        try {
+            abstractionClass = seph.lang.Runtime.LOADER.defineClass(className, classBytes);
+        } catch(Throwable e) {
+            new ClassReader(classBytes).accept(new org.objectweb.asm.util.TraceClassVisitor(new java.io.PrintWriter(System.err)), 0);
+            throw new RuntimeException(e);
+        }
     }
 
     private SephObject instantiateAbstraction() {
@@ -94,7 +108,7 @@ public class AbstractionCompiler {
         }
     }
 
-    private final static MethodType ARGUMENT_METHOD_TYPE = MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class);
+    private final static MethodType ARGUMENT_METHOD_TYPE = MethodType.methodType(SephObject.class, LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class);
     private void setStaticValues() {
         try {
             Field f = abstractionClass.getDeclaredField("fullMsg");
@@ -148,23 +162,25 @@ public class AbstractionCompiler {
         mv.visitEnd();
     }
 
-    public static SephObject compile(Message code, LexicalScope capture) {
+    public static SephObject compile(Message code, List<String> argNames, LexicalScope capture) {
         if(!DO_COMPILE) {
             throw new CompilationAborted("Compilation disabled...");
         }
 
-        AbstractionCompiler c = new AbstractionCompiler(code, capture);
+        AbstractionCompiler c = new AbstractionCompiler(code, argNames, capture);
         c.generateAbstractionClass();
         c.setStaticValues();
         return c.instantiateAbstraction();
     }
 
     public static SephObject compile(ISeq argumentsAndCode, LexicalScope capture) {
-        if(RT.next(argumentsAndCode) == null) { // Only compile methods that take no arguments for now
-            return compile((Message)RT.first(argumentsAndCode), capture);
-        } else {
-            throw new CompilationAborted("No support for compiling abstractions with arguments");
+        final List<String> argNames = new ArrayList<>();
+        if(argumentsAndCode != null) {
+            for(;RT.next(argumentsAndCode) != null; argumentsAndCode = RT.next(argumentsAndCode)) {
+                argNames.add(((Message)RT.first(argumentsAndCode)).name());
+            }
         }
+        return compile((Message)RT.first(argumentsAndCode), argNames, capture);
     }
 
     private static class LiteralEntry {
@@ -221,14 +237,14 @@ public class AbstractionCompiler {
         mv.visitFieldInsn(GETSTATIC, className, le.name, c(SephObject.class));
     }
 
-    private void compileTerminator(MethodVisitor mv, Message current, int index) {
+    private void compileTerminator(MethodVisitor mv, Message current) {
         if(current.next() != null && !(current.next() instanceof Terminator)) {
             mv.visitInsn(POP);
-            mv.visitVarInsn(ALOAD, RECEIVER + index);
+            mv.visitVarInsn(ALOAD, RECEIVER);
         }
     }
 
-    private void compileArgument(MethodVisitor act_mv, Message argument, int currentMessageIndex, int argIndex, int stackIndex, List<ArgumentEntry> currentArguments) {
+    private void compileArgument(MethodVisitor act_mv, Message argument, int currentMessageIndex, int argIndex, List<ArgumentEntry> currentArguments) {
         //               printThisClass = true;
         final String codeName   = "code_arg_" + currentMessageIndex + "_" + argIndex;
         final String handleName = "handle_arg_" + currentMessageIndex + "_" + argIndex;
@@ -240,10 +256,10 @@ public class AbstractionCompiler {
         cw.visitField(ACC_PRIVATE + ACC_STATIC, codeName,   c(SephObject.class), null, null);
         cw.visitField(ACC_PRIVATE + ACC_STATIC, handleName, c(MethodHandle.class), null, null);
 
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, methodName, sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class), null, null);
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, methodName, sig(SephObject.class, LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class), null, null);
         mv.visitCode();
 
-        mv.visitVarInsn(ILOAD, SHOULD_EVALUATE - 1);
+        mv.visitVarInsn(ILOAD, SHOULD_EVALUATE);
         mv.visitInsn(ICONST_0);
         Label els = new Label();
         mv.visitJumpInsn(IF_ICMPNE, els);
@@ -255,8 +271,9 @@ public class AbstractionCompiler {
 
 
         Message current = argument;
+        Message last = findLast(current);
 
-        mv.visitVarInsn(ALOAD, RECEIVER - 1);
+        mv.visitVarInsn(ALOAD, RECEIVER);
 
         boolean first = true;
 
@@ -265,7 +282,7 @@ public class AbstractionCompiler {
                 compileLiteral(mv, current);
                 first = false;
             } else if(current instanceof Terminator) {
-                compileTerminator(mv, current, -1);
+                compileTerminator(mv, current);
                 first = true;
             } else if(current instanceof Abstraction) {
                 first = false;
@@ -274,7 +291,7 @@ public class AbstractionCompiler {
                 first = false;
                 throw new CompilationAborted("No support for compiling assignment");
             } else {
-                compileMessageSend(mv, current, -1, first, null);
+                compileMessageSend(mv, current, false, first, last);
                 first = false;
             }
             current = current.next();
@@ -286,31 +303,42 @@ public class AbstractionCompiler {
         mv.visitEnd();
     }
 
-    private void compileArguments(MethodVisitor mv, IPersistentList arguments, int index) {
+    private void compileArguments(MethodVisitor mv, IPersistentList arguments, boolean activateWith) {
         int num = 0;
         mv.visitFieldInsn(GETSTATIC, p(PersistentList.class), "EMPTY", "Lseph/lang/persistent/PersistentList$EmptyList;");
         final int currentMessageIndex = messageIndex++;
         final LinkedList<ArgumentEntry> currentArguments = new LinkedList<>();
         for(ISeq seq = arguments.seq(); seq != null; seq = seq.next()) {
-            compileArgument(mv, (Message)seq.first(), currentMessageIndex, num++, index, currentArguments);
+            compileArgument(mv, (Message)seq.first(), currentMessageIndex, num++, currentArguments);
         }
         for(final Iterator<ArgumentEntry> iter = currentArguments.descendingIterator(); iter.hasNext();) {
             ArgumentEntry ae = iter.next();
 
             mv.visitFieldInsn(GETSTATIC, className, ae.handleName, c(MethodHandle.class));  // [mh]
-            mv.visitVarInsn(ALOAD, RECEIVER + index);     // [mh, 2, [null], [null], 0, recv]
+
+            if(activateWith) {
+                mv.visitVarInsn(ALOAD, METHOD_SCOPE); 
+            } else {
+                mv.visitVarInsn(ALOAD, METHOD_SCOPE_ARG); 
+            }
+
+            mv.visitMethodInsn(INVOKEVIRTUAL, p(MethodHandle.class), "bindTo", sig(MethodHandle.class, Object.class));
+            mv.visitVarInsn(ALOAD, RECEIVER);     // [mh, 2, [null], [null], 0, recv]
             mv.visitMethodInsn(INVOKEVIRTUAL, p(MethodHandle.class), "bindTo", sig(MethodHandle.class, Object.class));
             mv.visitMethodInsn(INVOKEINTERFACE, p(IPersistentCollection.class), "cons", sig(IPersistentCollection.class, Object.class));
         }
     }
 
-    private final static int RECEIVER        = 1;
-    private final static int THREAD          = 2;
-    private final static int SCOPE           = 3;
-    private final static int ARGUMENTS       = 4;
-    private final static int SHOULD_EVALUATE = 4;
+    private final static int METHOD_SCOPE_ARG       = 0;
+    private final static int RECEIVER               = 1;
+    private final static int THREAD                 = 2;
+    private final static int SCOPE                  = 3;
+    private final static int ARGUMENTS              = 4;
+    private final static int SHOULD_EVALUATE        = 4;
+    private final static int METHOD_SCOPE           = 5;
+    private final static int SHOULD_EVALUATE_FULLY  = 5;
 
-    private void pumpTailCall(MethodVisitor mv, int index) {
+    private void pumpTailCall(MethodVisitor mv) {
         Label done = new Label();
         Label loop = new Label();
         mv.visitLabel(loop);
@@ -322,7 +350,7 @@ public class AbstractionCompiler {
             mv.visitJumpInsn(IF_ACMPNE, done);
         }
         mv.visitInsn(POP);
-        mv.visitVarInsn(ALOAD, THREAD + index);
+        mv.visitVarInsn(ALOAD, THREAD);
         mv.visitInsn(DUP);
         mv.visitFieldInsn(GETFIELD, p(SThread.class), "nextTail", c(TailCallable.class));
         mv.visitInsn(SWAP);
@@ -331,23 +359,44 @@ public class AbstractionCompiler {
         mv.visitLabel(done);
     }
 
-    private void compileMessageSend(MethodVisitor mv, Message current, int index, boolean first, Message last) {
-        mv.visitVarInsn(ALOAD, THREAD + index);
-        mv.visitFieldInsn(GETSTATIC, className, "capture", c(LexicalScope.class));
+    private void compileMessageSend(MethodVisitor mv, Message current, boolean activateWith, boolean first, Message last) {
+        mv.visitVarInsn(ALOAD, THREAD);
+
+        if(activateWith) {
+            mv.visitVarInsn(ALOAD, METHOD_SCOPE); 
+        } else {
+            mv.visitVarInsn(ALOAD, METHOD_SCOPE_ARG); 
+        }
             
-        compileArguments(mv, current.arguments(), index);
+        compileArguments(mv, current.arguments(), activateWith);
         if(first) {
             if(current == last) {
-                mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), noReceiverTailCallSephBootstrap, EMPTY);
+                mv.visitInvokeDynamicInsn(encode(current.name()), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), noReceiverTailCallSephBootstrap, EMPTY);
+                if(!activateWith) {
+                    Label noPump = new Label();
+                    mv.visitVarInsn(ILOAD, SHOULD_EVALUATE_FULLY);
+                    mv.visitInsn(ICONST_0);
+                    mv.visitJumpInsn(IF_ICMPEQ, noPump);
+                    pumpTailCall(mv);
+                    mv.visitLabel(noPump);
+                }
             } else {
-                mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), noReceiverSephBootstrap, EMPTY);
-                pumpTailCall(mv, index);
+                mv.visitInvokeDynamicInsn(encode(current.name()), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), noReceiverSephBootstrap, EMPTY);
+                pumpTailCall(mv);
             }
         } else if(current == last) {
-            mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), tailCallSephBootstrap, EMPTY);
+            mv.visitInvokeDynamicInsn(encode(current.name()), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), tailCallSephBootstrap, EMPTY);
+            if(!activateWith) {
+                Label noPump = new Label();
+                mv.visitVarInsn(ILOAD, SHOULD_EVALUATE_FULLY);
+                mv.visitInsn(ICONST_0);
+                mv.visitJumpInsn(IF_ICMPEQ, noPump);
+                pumpTailCall(mv);
+                mv.visitLabel(noPump);
+            }
         } else {
-            mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), basicSephBootstrap, EMPTY);
-            pumpTailCall(mv, index);
+            mv.visitInvokeDynamicInsn(encode(current.name()), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), basicSephBootstrap, EMPTY);
+            pumpTailCall(mv);
         }
     }
 
@@ -367,6 +416,30 @@ public class AbstractionCompiler {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "activateWith", sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), null, null);
         mv.visitCode();
 
+        mv.visitFieldInsn(GETSTATIC, className, "capture", c(LexicalScope.class));
+        mv.visitVarInsn(ALOAD, RECEIVER);
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(LexicalScope.class), "newScopeWith", sig(LexicalScope.class, SephObject.class));
+        mv.visitVarInsn(ASTORE, METHOD_SCOPE);
+
+        mv.visitVarInsn(ALOAD, ARGUMENTS);                                             // [args]
+        mv.visitMethodInsn(INVOKEINTERFACE, p(Seqable.class), "seq", sig(ISeq.class));   // [argsSeq]
+
+        for(String arg : argNames) {
+            mv.visitInsn(DUP);           // [argsSeq, argsSeq]
+            mv.visitVarInsn(ALOAD, METHOD_SCOPE); // [argsSeq, argsSeq, mscope]
+            mv.visitInsn(SWAP);           // [argsSeq, mscope, argsSeq]
+            mv.visitMethodInsn(INVOKEINTERFACE, p(ISeq.class), "first", sig(Object.class));   // [argsSeq, mscope, arg1]
+            mv.visitVarInsn(ALOAD, SCOPE);                                                  // [argsSeq, mscope, arg1, scope]
+            mv.visitVarInsn(ALOAD, THREAD);                                                 // [argsSeq, mscope, arg1, scope, thread]
+            mv.visitInsn(ICONST_1);                                                         // [argsSeq, mscope, arg1, scope, thread, true]
+            mv.visitMethodInsn(INVOKESTATIC, p(ControlDefaultBehavior.class), "evaluateArgument", sig(SephObject.class, Object.class, LexicalScope.class, SThread.class, boolean.class)); // [argsSeq, mscope, arg]
+            mv.visitLdcInsn(arg); // [argsSeq, mscope, arg, name]
+            mv.visitInsn(SWAP);   // [argsSeq, mscope, name, arg]
+            mv.visitMethodInsn(INVOKEVIRTUAL, p(LexicalScope.class), "directlyAssign", sig(void.class, String.class, SephObject.class));   // [argsSeq]
+            mv.visitMethodInsn(INVOKEINTERFACE, p(ISeq.class), "next", sig(ISeq.class));   // [argsSeqNext]
+        }
+        mv.visitInsn(POP);
+
         boolean first = true;
 
         Message current = code;
@@ -378,7 +451,7 @@ public class AbstractionCompiler {
                 compileLiteral(mv, current);
                 first = false;
             } else if(current instanceof Terminator) {
-                compileTerminator(mv, current, 0);
+                compileTerminator(mv, current);
                 first = true;
             } else if(current instanceof Abstraction) {
                 first = false;
@@ -387,7 +460,7 @@ public class AbstractionCompiler {
                 first = false;
                 throw new CompilationAborted("No support for compiling assignment");
             } else {
-                compileMessageSend(mv, current, 0, first, last);
+                compileMessageSend(mv, current, true, first, last);
                 first = false;
             }
             current = current.next();
