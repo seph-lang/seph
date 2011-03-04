@@ -20,7 +20,7 @@ import java.dyn.MethodHandle;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public abstract class SephMethodObject implements SephObject {
+public abstract class SephMethodObject implements SephObject, TailCallable {
     final IPersistentMap meta;
 
     public SephMethodObject() {
@@ -37,6 +37,18 @@ public abstract class SephMethodObject implements SephObject {
 
     public boolean isTrue() {
         return true;
+    }
+
+    @Override
+    public SephObject goTail(SThread thread) {
+        SephObject receiver = thread.nextReceiver;
+        LexicalScope scope = thread.nextScope;
+        IPersistentList arguments = thread.arguments;
+        thread.nextReceiver = null;
+        thread.nextScope = null;
+        thread.arguments = null;
+        thread.nextTail = null;
+        return activateWith(receiver, thread, scope, arguments);
     }
 
     public static ArgumentResult parseAndEvaluateArguments(SThread thread, LexicalScope scope, IPersistentList arguments, int posArity, boolean restPos, boolean restKey) {

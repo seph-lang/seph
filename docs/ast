@@ -1,9 +1,0 @@
-
-Similar to Ioke:
-
-Message interface
- class NamedMessage (name, arguments, next)
- class LiteralMessage (literal, next)
-
-
-Probably represent these in the same way at the Seph side

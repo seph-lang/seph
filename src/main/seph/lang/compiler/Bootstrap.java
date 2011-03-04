@@ -6,11 +6,13 @@ package seph.lang.compiler;
 import seph.lang.SephObject;
 import seph.lang.SThread;
 import seph.lang.LexicalScope;
+import seph.lang.TailCallable;
 
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 
 import java.dyn.CallSite;
+import java.dyn.ConstantCallSite;
 import java.dyn.MethodHandle;
 import java.dyn.MethodHandles;
 import java.dyn.MethodType;
@@ -39,9 +41,29 @@ public class Bootstrap {
         return site;
     }
 
+    public static CallSite tailCallSephBootstrap(MethodHandles.Lookup lookup, String name, MethodType type) {
+        //        System.err.println("lookup: " + lookup + ", name: " + name + ", type: " + type);
+
+        SephCallSite site = new SephCallSite(type);
+        MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
+        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "tailCallFallback", fallbackType), 0, site, name);
+        site.setTarget(fallback);
+        return site;
+    }
+
+    public static CallSite noReceiverTailCallSephBootstrap(MethodHandles.Lookup lookup, String name, MethodType type) {
+        //        System.err.println("lookup: " + lookup + ", name: " + name + ", type: " + type);
+
+        SephCallSite site = new SephCallSite(type);
+        MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
+        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "noReceiverTailCallFallback", fallbackType), 0, site, name);
+        site.setTarget(fallback);
+        return site;
+    }
+
     public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
         // System.err.println("Calling method " + name + " on: " + receiver + " with lexical scope: " + scope + " with");
-        SephObject value = value = receiver.get(name);
+        SephObject value = receiver.get(name);
 
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
@@ -70,6 +92,57 @@ public class Bootstrap {
             return value.activateWith(receiver, thread, scope, args);
         }
 
+        return value;
+    }
+
+    public static SephObject tailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
+        // System.err.println("Calling method " + name + " on: " + receiver + " with lexical scope: " + scope + " with");
+        SephObject value = receiver.get(name);
+
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+
+        if(value.isActivatable()) {
+            if(value instanceof TailCallable) {
+                thread.nextTail     = (TailCallable)value;
+                thread.nextReceiver = receiver;
+                thread.nextScope    = scope;
+                thread.arguments    = args;
+                return SThread.TAIL_MARKER;
+            } else {
+                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
+                return value.activateWith(receiver, thread, scope, args);
+            }
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverTailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
+        // System.err.println("Calling method " + name + " on: " + receiver + " with lexical scope: " + scope + " with");
+
+        SephObject value = scope.get(name);
+
+        if(null == value) {
+            value = receiver.get(name);
+        }
+
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+
+        if(value.isActivatable()) {
+            if(value instanceof TailCallable) {
+                thread.nextTail     = (TailCallable)value;
+                thread.nextReceiver = receiver;
+                thread.nextScope    = scope;
+                thread.arguments    = args;
+                return SThread.TAIL_MARKER;
+            } else {
+                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
+                return value.activateWith(receiver, thread, scope, args);
+            }
+        }
         return value;
     }
 

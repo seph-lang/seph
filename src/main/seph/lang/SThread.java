@@ -4,6 +4,7 @@
 package seph.lang;
 
 import seph.lang.ast.Message;
+import seph.lang.persistent.IPersistentList;
 
 /**
  * Represents a running thread of Seph computation. This
@@ -21,9 +22,12 @@ public class SThread {
     public final Runtime runtime;
 
     public Message next;
+    public boolean first;
+
+    public TailCallable nextTail;
     public LexicalScope nextScope;
     public SephObject nextReceiver;
-    public boolean first;
+    public IPersistentList arguments;
 
     public SThread(Runtime runtime) {
         this.runtime = runtime;

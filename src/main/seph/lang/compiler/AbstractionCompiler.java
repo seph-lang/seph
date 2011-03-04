@@ -39,6 +39,8 @@ public class AbstractionCompiler {
     private final static Object[] EMPTY = new Object[0];
     private final static org.objectweb.asm.MethodHandle basicSephBootstrap      = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "basicSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
     private final static org.objectweb.asm.MethodHandle noReceiverSephBootstrap = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "noReceiverSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
+    private final static org.objectweb.asm.MethodHandle tailCallSephBootstrap   = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "tailCallSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
+    private final static org.objectweb.asm.MethodHandle noReceiverTailCallSephBootstrap   = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "noReceiverTailCallSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
     private final static AtomicInteger compiledCount = new AtomicInteger(0);
 
     private final Message code;
@@ -272,7 +274,7 @@ public class AbstractionCompiler {
                 first = false;
                 throw new CompilationAborted("No support for compiling assignment");
             } else {
-                compileMessageSend(mv, current, -1, first);
+                compileMessageSend(mv, current, -1, first, null);
                 first = false;
             }
             current = current.next();
@@ -308,16 +310,57 @@ public class AbstractionCompiler {
     private final static int ARGUMENTS       = 4;
     private final static int SHOULD_EVALUATE = 4;
 
-    private void compileMessageSend(MethodVisitor mv, Message current, int index, boolean first) {
+    private void pumpTailCall(MethodVisitor mv, int index) {
+        Label done = new Label();
+        Label loop = new Label();
+        mv.visitLabel(loop);
+        mv.visitInsn(DUP);
+        if (SThread.TAIL_MARKER == null) {
+            mv.visitJumpInsn(IFNONNULL, done);
+        } else {
+            mv.visitFieldInsn(GETSTATIC, p(SThread.class), "TAIL_MARKER", c(SephObject.class));
+            mv.visitJumpInsn(IF_ACMPNE, done);
+        }
+        mv.visitInsn(POP);
+        mv.visitVarInsn(ALOAD, THREAD + index);
+        mv.visitInsn(DUP);
+        mv.visitFieldInsn(GETFIELD, p(SThread.class), "nextTail", c(TailCallable.class));
+        mv.visitInsn(SWAP);
+        mv.visitMethodInsn(INVOKEINTERFACE, p(TailCallable.class), "goTail", sig(SephObject.class, SThread.class));
+        mv.visitJumpInsn(GOTO, loop);
+        mv.visitLabel(done);
+    }
+
+    private void compileMessageSend(MethodVisitor mv, Message current, int index, boolean first, Message last) {
         mv.visitVarInsn(ALOAD, THREAD + index);
         mv.visitFieldInsn(GETSTATIC, className, "capture", c(LexicalScope.class));
             
         compileArguments(mv, current.arguments(), index);
         if(first) {
-            mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), noReceiverSephBootstrap, EMPTY);
+            if(current == last) {
+                mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), noReceiverTailCallSephBootstrap, EMPTY);
+            } else {
+                mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), noReceiverSephBootstrap, EMPTY);
+                pumpTailCall(mv, index);
+            }
+        } else if(current == last) {
+            mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), tailCallSephBootstrap, EMPTY);
         } else {
             mv.visitInvokeDynamicInsn(current.name(), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), basicSephBootstrap, EMPTY);
+            pumpTailCall(mv, index);
         }
+    }
+
+    private Message findLast(Message code) {
+        Message current = code;
+        Message lastReal = null;
+        while(current != null) {
+            if(!(current instanceof Terminator)) {
+                lastReal = current;
+            }
+            current = current.next();
+        }
+        return lastReal;
     }
 
     private void activateWithMethod() {
@@ -327,7 +370,7 @@ public class AbstractionCompiler {
         boolean first = true;
 
         Message current = code;
-
+        Message last = findLast(current);
         mv.visitVarInsn(ALOAD, RECEIVER);
 
         while(current != null) {
@@ -344,7 +387,7 @@ public class AbstractionCompiler {
                 first = false;
                 throw new CompilationAborted("No support for compiling assignment");
             } else {
-                compileMessageSend(mv, current, 0, first);
+                compileMessageSend(mv, current, 0, first, last);
                 first = false;
             }
             current = current.next();

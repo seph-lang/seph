@@ -1,12 +1,10 @@
 
 Current compilation is missing several pieces:
 - Abstractions are currently not compiled to be tail recursive...
-- Invoking things with arguments cannot handle keyword arguments (important for the "with" method)
-- Abstractions can't be compiled if they take arguments
+
+- Make some specialized activateWith methods with different arity, taking MethodHandle, SephObject and possibly Message
 - Possibly have a few shortcircuited things like if, + etc. Make that use a SwitchPoint that invalidates if something with that name is redefined
      specifically inline things like "nil", "true", "false", etc
-- Make some specialized activateWith methods with different arity, taking MethodHandle, SephObject and possibly Message
+- Invoking things with arguments cannot handle keyword arguments (important for the "with" method)
+- Abstractions can't be compiled if they take arguments
 - Actually make a simple pic implementation
-
-
-- Rearrange so receiver comes before SThread and LexicalScope

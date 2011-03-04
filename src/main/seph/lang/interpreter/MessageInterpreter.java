@@ -54,6 +54,11 @@ public class MessageInterpreter {
                 if(next != null) {
                     while(tmp == SThread.TAIL_MARKER) {
                         tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver, thread.first);
+                        if(thread.nextTail != null) {
+                            tmp = thread.nextTail.goTail(thread);
+                        } else {
+                            tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver, thread.first);
+                        }
                     }
                 }
 
@@ -83,7 +88,11 @@ public class MessageInterpreter {
                 SephObject tmp = currentMessage.sendTo(thread, scope, receiver, first);
                 first = false;
                 while(tmp == SThread.TAIL_MARKER) {
-                    tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver, thread.first);
+                    if(thread.nextTail != null) {
+                        tmp = thread.nextTail.goTail(thread);
+                    } else {
+                        tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver, thread.first);
+                    }
                 }
 
                 if(tmp != null) {
