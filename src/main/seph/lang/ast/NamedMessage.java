@@ -11,8 +11,11 @@ import seph.lang.parser.Parser;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.ISeq;
+import seph.lang.compiler.Bootstrap;
 
 import java.dyn.MethodHandle;
+import java.dyn.MethodHandles;
+import java.dyn.MethodType;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -123,12 +126,11 @@ public class NamedMessage implements Message, SephObject {
         return ret;
     }
 
+    private static MethodHandle GO = Bootstrap.findVirtual(NamedMessage.class, "go", MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, boolean.class));
+
     public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver, boolean first) {
         if(next == null) {
-            thread.next = this;
-            thread.nextScope = scope;
-            thread.nextReceiver = receiver;
-            thread.first = first;
+            thread.tail = MethodHandles.insertArguments(GO, 0, this, thread, scope, receiver, first);
             return SThread.TAIL_MARKER;
         }
 

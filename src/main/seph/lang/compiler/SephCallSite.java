@@ -44,7 +44,7 @@ public class SephCallSite extends MutableCallSite {
         }
     }
 
-    void installActivatableEntry(SephObject receiver, LexicalScope scope, TailCallable value, int args) {
+    void installActivatableEntry(SephObject receiver, LexicalScope scope, MethodHandle value, int args) {
         if(newEntry()) {
             MethodHandle currentEntry = getTarget();
             //            setTarget(MethodHandles.guardWithTest(eq(receiver, scope, args), tailInvokeActivateWith(value, args), currentEntry));
@@ -113,7 +113,7 @@ public class SephCallSite extends MutableCallSite {
         return null;
     }
 
-    private MethodHandle tailInvokeActivateWith(TailCallable value, int args) {
+    private MethodHandle tailInvokeActivateWith(MethodHandle value, int args) {
         return null;
     }
 

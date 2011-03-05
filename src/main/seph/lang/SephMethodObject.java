@@ -23,7 +23,7 @@ import java.dyn.MethodType;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public abstract class SephMethodObject implements SephObject, TailCallable {
+public abstract class SephMethodObject implements SephObject {
     final IPersistentMap meta;
 
     public SephMethodObject() {
@@ -40,43 +40,6 @@ public abstract class SephMethodObject implements SephObject, TailCallable {
 
     public boolean isTrue() {
         return true;
-    }
-
-    @Override
-    public SephObject goTail(SThread thread) {
-        SephObject receiver = thread.nextReceiver;
-        LexicalScope scope = thread.nextScope;
-
-        if(thread.nextArity > -1) {
-            int arity = thread.nextArity;
-            MethodHandle arg0 = thread.arg0;
-            MethodHandle arg1 = thread.arg1;
-            MethodHandle arg2 = thread.arg2;
-            MethodHandle arg3 = thread.arg3;
-            MethodHandle arg4 = thread.arg4;
-            thread.clean();
-            switch(arity) {
-            case 0:
-                return activateWith(receiver, thread, scope);
-            case 1: 
-                return activateWith(receiver, thread, scope, arg0);
-            case 2:
-                return activateWith(receiver, thread, scope, arg0, arg1);
-            case 3:
-                return activateWith(receiver, thread, scope, arg0, arg1, arg2);
-            case 4:
-                return activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3);
-            case 5:
-                return activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
-            default:
-                // Can't happen
-                throw new RuntimeException("Should never happen");
-            }
-        } else {
-            IPersistentList arguments = thread.arguments;
-            thread.clean();
-            return activateWith(receiver, thread, scope, arguments);
-        }
     }
 
     public static ArgumentResult parseAndEvaluateArguments(SThread thread, LexicalScope scope, IPersistentList arguments, int posArity, boolean restPos, boolean restKey) {

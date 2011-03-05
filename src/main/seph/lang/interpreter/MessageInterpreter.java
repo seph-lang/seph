@@ -13,6 +13,8 @@ import seph.lang.ast.LiteralMessage;
 import seph.lang.ast.NamedMessage;
 import seph.lang.ast.Terminator;
 
+import java.dyn.MethodHandle;
+
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
@@ -40,33 +42,34 @@ public class MessageInterpreter {
         Message currentMessage = msg;
         boolean first = true;
 
-        while(currentMessage != null) {
-            String name = currentMessage.name();
+        try {
+            while(currentMessage != null) {
+                String name = currentMessage.name();
 
-            Message next = currentMessage.next();
+                Message next = currentMessage.next();
             
-            if(currentMessage instanceof Terminator) {
-                receiver = ground;
-                first = true;
-            } else {
-                SephObject tmp = currentMessage.sendTo(thread, scope, receiver, first);
-                first = false;
-                if(next != null) {
-                    while(tmp == SThread.TAIL_MARKER) {
-                        tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver, thread.first);
-                        if(thread.nextTail != null) {
-                            tmp = thread.nextTail.goTail(thread);
-                        } else {
-                            tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver, thread.first);
+                if(currentMessage instanceof Terminator) {
+                    receiver = ground;
+                    first = true;
+                } else {
+                    SephObject tmp = currentMessage.sendTo(thread, scope, receiver, first);
+                    first = false;
+                    if(next != null) {
+                        while(tmp == SThread.TAIL_MARKER) {
+                            MethodHandle tail = thread.tail;
+                            thread.tail = null;
+                            tmp = (SephObject)tail.invokeExact();
                         }
                     }
-                }
 
-                if(tmp != null) {
-                    receiver = lastReal = tmp;
+                    if(tmp != null) {
+                        receiver = lastReal = tmp;
+                    }
                 }
+                currentMessage = next;
             }
-            currentMessage = next;
+        } catch(Throwable e) {
+            throw new RuntimeException(e);
         }
 
         return lastReal;
@@ -78,30 +81,32 @@ public class MessageInterpreter {
         Message currentMessage = msg;
         boolean first = true;
 
-        while(currentMessage != null) {
-            String name = currentMessage.name();
+        try {
+            while(currentMessage != null) {
+                String name = currentMessage.name();
 
-            if(currentMessage instanceof Terminator) {
-                receiver = ground;
-                first = true;
-            } else {
-                SephObject tmp = currentMessage.sendTo(thread, scope, receiver, first);
-                first = false;
-                while(tmp == SThread.TAIL_MARKER) {
-                    if(thread.nextTail != null) {
-                        tmp = thread.nextTail.goTail(thread);
-                    } else {
-                        tmp = thread.next.go(thread, thread.nextScope, thread.nextReceiver, thread.first);
+                if(currentMessage instanceof Terminator) {
+                    receiver = ground;
+                    first = true;
+                } else {
+                    SephObject tmp = currentMessage.sendTo(thread, scope, receiver, first);
+                    first = false;
+                    while(tmp == SThread.TAIL_MARKER) {
+                        MethodHandle tail = thread.tail;
+                        thread.tail = null;
+                        tmp = (SephObject)tail.invokeExact();
+                    }
+
+                    if(tmp != null) {
+                        receiver = lastReal = tmp;
                     }
                 }
-
-                if(tmp != null) {
-                    receiver = lastReal = tmp;
-                }
+                currentMessage = currentMessage.next();
             }
-            currentMessage = currentMessage.next();
+        } catch(Throwable e) {
+            throw new RuntimeException(e);
         }
-
+        
         return lastReal;
     }
 }// MessageInterpreter

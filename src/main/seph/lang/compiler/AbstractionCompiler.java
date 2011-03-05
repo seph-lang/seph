@@ -373,9 +373,11 @@ public class AbstractionCompiler {
         mv.visitInsn(POP);
         mv.visitVarInsn(ALOAD, THREAD);
         mv.visitInsn(DUP);
-        mv.visitFieldInsn(GETFIELD, p(SThread.class), "nextTail", c(TailCallable.class));
+        mv.visitFieldInsn(GETFIELD, p(SThread.class), "tail", c(MethodHandle.class));
         mv.visitInsn(SWAP);
-        mv.visitMethodInsn(INVOKEINTERFACE, p(TailCallable.class), "goTail", sig(SephObject.class, SThread.class));
+        mv.visitInsn(ACONST_NULL);
+        mv.visitFieldInsn(PUTFIELD, p(SThread.class), "tail", c(MethodHandle.class));
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(MethodHandle.class), "invokeExact", sig(SephObject.class));
         mv.visitJumpInsn(GOTO, loop);
         mv.visitLabel(done);
     }

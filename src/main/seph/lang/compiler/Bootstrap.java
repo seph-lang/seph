@@ -6,7 +6,6 @@ package seph.lang.compiler;
 import seph.lang.SephObject;
 import seph.lang.SThread;
 import seph.lang.LexicalScope;
-import seph.lang.TailCallable;
 
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
@@ -266,23 +265,24 @@ public class Bootstrap {
         return value;
     }
 
+    public final static MethodHandle ACTIVATE_WITH_ARGS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class));
+    public final static MethodHandle ACTIVATE_WITH_ARG0 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class));
+    public final static MethodHandle ACTIVATE_WITH_ARG1 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class));
+    public final static MethodHandle ACTIVATE_WITH_ARG2 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class));
+    public final static MethodHandle ACTIVATE_WITH_ARG3 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
+    public final static MethodHandle ACTIVATE_WITH_ARG4 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
+    public final static MethodHandle ACTIVATE_WITH_ARG5 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
+    
     public static SephObject tailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, null, (TailCallable)value, -1);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.arguments    = args;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, args);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARGS, 0, value, receiver, thread, scope, args);
+            site.installActivatableEntry(receiver, null, h, -1);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, null, value, -1);
         }
@@ -295,17 +295,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, null, (TailCallable)value, 0);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 0;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG0, 0, value, receiver, thread, scope);
+            site.installActivatableEntry(receiver, null, h, 0);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, null, value, 0);
         }
@@ -318,18 +311,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, null, (TailCallable)value, 1);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 1;
-                thread.arg0         = arg0;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, arg0);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG1, 0, value, receiver, thread, scope, arg0);
+            site.installActivatableEntry(receiver, null, h, 1);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, null, value, 1);
         }
@@ -342,19 +327,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, null, (TailCallable)value, 2);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 2;
-                thread.arg0         = arg0;
-                thread.arg1         = arg1;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, arg0, arg1);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG2, 0, value, receiver, thread, scope, arg0, arg1);
+            site.installActivatableEntry(receiver, null, h, 2);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, null, value, 2);
         }
@@ -367,20 +343,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, null, (TailCallable)value, 3);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 3;
-                thread.arg0         = arg0;
-                thread.arg1         = arg1;
-                thread.arg2         = arg2;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, arg0, arg1, arg2);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG3, 0, value, receiver, thread, scope, arg0, arg1, arg2);
+            site.installActivatableEntry(receiver, null, h, 3);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, null, value, 3);
         }
@@ -393,21 +359,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, null, (TailCallable)value, 4);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 4;
-                thread.arg0         = arg0;
-                thread.arg1         = arg1;
-                thread.arg2         = arg2;
-                thread.arg3         = arg3;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG4, 0, value, receiver, thread, scope, arg0, arg1, arg2, arg3);
+            site.installActivatableEntry(receiver, null, h, 4);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, null, value, 4);
         }
@@ -420,22 +375,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, null, (TailCallable)value, 5);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 5;
-                thread.arg0         = arg0;
-                thread.arg1         = arg1;
-                thread.arg2         = arg2;
-                thread.arg3         = arg3;
-                thread.arg4         = arg4;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG4, 0, value, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
+            site.installActivatableEntry(receiver, null, h, 5);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, null, value, 5);
         }
@@ -452,17 +395,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, scope, (TailCallable)value, -1);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.arguments    = args;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, args);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARGS, 0, value, receiver, thread, scope, args);
+            site.installActivatableEntry(receiver, scope, h, -1);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, scope, value, -1);
         }
@@ -478,17 +414,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, scope, (TailCallable)value, 0);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 0;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG0, 0, value, receiver, thread, scope);
+            site.installActivatableEntry(receiver, scope, h, 0);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, scope, value, 0);
         }
@@ -504,18 +433,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, scope, (TailCallable)value, 1);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 1;
-                thread.arg0         = arg0;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, arg0);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG1, 0, value, receiver, thread, scope, arg0);
+            site.installActivatableEntry(receiver, scope, h, 1);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, scope, value, 1);
         }
@@ -531,19 +452,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, scope, (TailCallable)value, 2);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 2;
-                thread.arg0         = arg0;
-                thread.arg1         = arg1;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, arg0, arg1);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG2, 0, value, receiver, thread, scope, arg0, arg1);
+            site.installActivatableEntry(receiver, scope, h, 2);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, scope, value, 2);
         }
@@ -559,20 +471,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, scope, (TailCallable)value, 3);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 3;
-                thread.arg0         = arg0;
-                thread.arg1         = arg1;
-                thread.arg2         = arg2;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, arg0, arg1, arg2);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG3, 0, value, receiver, thread, scope, arg0, arg1, arg2);
+            site.installActivatableEntry(receiver, scope, h, 3);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, scope, value, 3);
         }
@@ -588,21 +490,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, scope, (TailCallable)value, 4);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 4;
-                thread.arg0         = arg0;
-                thread.arg1         = arg1;
-                thread.arg2         = arg2;
-                thread.arg3         = arg3;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG4, 0, value, receiver, thread, scope, arg0, arg1, arg2, arg3);
+            site.installActivatableEntry(receiver, scope, h, 4);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, scope, value, 4);
         }
@@ -618,22 +509,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, scope, (TailCallable)value, 5);
-            if(value instanceof TailCallable) {
-                thread.nextTail     = (TailCallable)value;
-                thread.nextReceiver = receiver;
-                thread.nextScope    = scope;
-                thread.nextArity    = 5;
-                thread.arg0         = arg0;
-                thread.arg1         = arg1;
-                thread.arg2         = arg2;
-                thread.arg3         = arg3;
-                thread.arg4         = arg4;
-                return SThread.TAIL_MARKER;
-            } else {
-                System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
-                return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
-            }
+            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG5, 0, value, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
+            site.installActivatableEntry(receiver, scope, h, 5);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
         } else {
             site.installConstantEntry(receiver, scope, value, 5);
         }
