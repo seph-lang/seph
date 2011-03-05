@@ -25,10 +25,19 @@ public class LexicalScope {
             public SephObject get(String name) {
                 return null;
             }
+            
+            public int version() {
+                return 13;
+            }
         };
     
     private final MessageInterpreter currentInterpreter;
     private final LexicalScope parent;
+    private int version = 1;
+
+    public int version() {
+        return version + 3 * parent.version();
+    }
 
     public LexicalScope(MessageInterpreter currentInterpreter) {
         this(currentInterpreter, ROOT);
@@ -62,6 +71,7 @@ public class LexicalScope {
     }
 
     public void directlyAssign(String name, SephObject value) {
+        version++;
         values = values.associate(name, value);
     }
 

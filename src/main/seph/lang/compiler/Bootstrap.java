@@ -54,7 +54,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, value, -1);
             return value.activateWith(receiver, thread, scope, args);
+        } else {
+            site.installConstantEntry(receiver, null, value, -1);
         }
         return value;
     }
@@ -65,7 +68,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, value, 0);
             return value.activateWith(receiver, thread, scope);
+        } else {
+            site.installConstantEntry(receiver, null, value, 0);
         }
         return value;
     }
@@ -76,7 +82,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, value, 1);
             return value.activateWith(receiver, thread, scope, arg0);
+        } else {
+            site.installConstantEntry(receiver, null, value, 1);
         }
         return value;
     }
@@ -87,7 +96,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, value, 2);
             return value.activateWith(receiver, thread, scope, arg0, arg1);
+        } else {
+            site.installConstantEntry(receiver, null, value, 2);
         }
         return value;
     }
@@ -98,7 +110,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, value, 3);
             return value.activateWith(receiver, thread, scope, arg0, arg1, arg2);
+        } else {
+            site.installConstantEntry(receiver, null, value, 3);
         }
         return value;
     }
@@ -109,8 +124,12 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, value, 4);
             return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3);
+        } else {
+            site.installConstantEntry(receiver, null, value, 4);
         }
+
         return value;
     }
 
@@ -120,7 +139,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, value, 5);
             return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
+        } else {
+            site.installConstantEntry(receiver, null, value, 5);
         }
         return value;
     }
@@ -134,7 +156,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, value, -1);
             return value.activateWith(receiver, thread, scope, args);
+        } else {
+            site.installConstantEntry(receiver, scope, value, -1);
         }
         return value;
     }
@@ -148,7 +173,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, value, 0);
             return value.activateWith(receiver, thread, scope);
+        } else {
+            site.installConstantEntry(receiver, scope, value, 0);
         }
         return value;
     }
@@ -162,7 +190,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, value, 1);
             return value.activateWith(receiver, thread, scope, arg0);
+        } else {
+            site.installConstantEntry(receiver, scope, value, 1);
         }
         return value;
     }
@@ -176,7 +207,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, value, 2);
             return value.activateWith(receiver, thread, scope, arg0, arg1);
+        } else {
+            site.installConstantEntry(receiver, scope, value, 2);
         }
         return value;
     }
@@ -190,7 +224,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, value, 3);
             return value.activateWith(receiver, thread, scope, arg0, arg1, arg2);
+        } else {
+            site.installConstantEntry(receiver, scope, value, 3);
         }
         return value;
     }
@@ -204,7 +241,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, value, 4);
             return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3);
+        } else {
+            site.installConstantEntry(receiver, scope, value, 4);
         }
         return value;
     }
@@ -218,7 +258,10 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, value, 5);
             return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
+        } else {
+            site.installConstantEntry(receiver, scope, value, 5);
         }
         return value;
     }
@@ -229,6 +272,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, (TailCallable)value, -1);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -239,6 +283,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, args);
             }
+        } else {
+            site.installConstantEntry(receiver, null, value, -1);
         }
         return value;
     }
@@ -249,6 +295,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, (TailCallable)value, 0);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -259,6 +306,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope);
             }
+        } else {
+            site.installConstantEntry(receiver, null, value, 0);
         }
         return value;
     }
@@ -269,6 +318,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, (TailCallable)value, 1);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -280,6 +330,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, arg0);
             }
+        } else {
+            site.installConstantEntry(receiver, null, value, 1);
         }
         return value;
     }
@@ -290,6 +342,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, (TailCallable)value, 2);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -302,6 +355,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, arg0, arg1);
             }
+        } else {
+            site.installConstantEntry(receiver, null, value, 2);
         }
         return value;
     }
@@ -312,6 +367,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, (TailCallable)value, 3);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -325,6 +381,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, arg0, arg1, arg2);
             }
+        } else {
+            site.installConstantEntry(receiver, null, value, 3);
         }
         return value;
     }
@@ -335,6 +393,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, (TailCallable)value, 4);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -349,6 +408,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3);
             }
+        } else {
+            site.installConstantEntry(receiver, null, value, 4);
         }
         return value;
     }
@@ -359,6 +420,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, null, (TailCallable)value, 5);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -374,6 +436,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
             }
+        } else {
+            site.installConstantEntry(receiver, null, value, 5);
         }
         return value;
     }
@@ -388,6 +452,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, (TailCallable)value, -1);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -398,6 +463,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, args);
             }
+        } else {
+            site.installConstantEntry(receiver, scope, value, -1);
         }
         return value;
     }
@@ -411,6 +478,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, (TailCallable)value, 0);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -421,6 +489,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope);
             }
+        } else {
+            site.installConstantEntry(receiver, scope, value, 0);
         }
         return value;
     }
@@ -434,6 +504,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, (TailCallable)value, 1);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -445,6 +516,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, arg0);
             }
+        } else {
+            site.installConstantEntry(receiver, scope, value, 1);
         }
         return value;
     }
@@ -458,6 +531,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, (TailCallable)value, 2);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -470,6 +544,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, arg0, arg1);
             }
+        } else {
+            site.installConstantEntry(receiver, scope, value, 2);
         }
         return value;
     }
@@ -483,6 +559,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, (TailCallable)value, 3);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -496,6 +573,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, arg0, arg1, arg2);
             }
+        } else {
+            site.installConstantEntry(receiver, scope, value, 3);
         }
         return value;
     }
@@ -509,6 +588,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, (TailCallable)value, 4);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -523,6 +603,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3);
             }
+        } else {
+            site.installConstantEntry(receiver, scope, value, 4);
         }
         return value;
     }
@@ -536,6 +618,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
+            site.installActivatableEntry(receiver, scope, (TailCallable)value, 5);
             if(value instanceof TailCallable) {
                 thread.nextTail     = (TailCallable)value;
                 thread.nextReceiver = receiver;
@@ -551,6 +634,8 @@ public class Bootstrap {
                 System.err.println("OOPS. tail call on value that isn't tail callable: " + name);
                 return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
             }
+        } else {
+            site.installConstantEntry(receiver, scope, value, 5);
         }
         return value;
     }
