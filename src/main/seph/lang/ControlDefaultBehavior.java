@@ -37,20 +37,18 @@ public class ControlDefaultBehavior implements SephObject {
     }
 
     @SephMethod(name="if", evaluateArguments=false)
-    public final static SephObject _if(SThread thread, LexicalScope scope, IPersistentList arguments) {
-        SephObject result = evaluateArgument(RT.first(arguments), scope, thread, true);
+    public final static SephObject _if(SThread thread, LexicalScope scope, MethodHandle condition, MethodHandle then, MethodHandle _else) {
+        SephObject result = evaluateArgument(condition, scope, thread, true);
 
         if(result.isTrue()) {
-            ISeq seq = RT.next(arguments);
-            if(null != seq) {
-                return evaluateArgument(RT.first(seq), scope, thread, false);
+            if(null != then) {
+                return evaluateArgument(then, scope, thread, false);
             } else {
                 return Runtime.NIL;
             }
         } else {
-            ISeq seq = RT.next(RT.next(arguments));
-            if(null != seq) {
-                return evaluateArgument(RT.first(seq), scope, thread, false);
+            if(null != _else) {
+                return evaluateArgument(_else, scope, thread, false);
             } else {
                 return Runtime.NIL;
             }
@@ -70,6 +68,50 @@ public class ControlDefaultBehavior implements SephObject {
     }
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3, SephObject arg4) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 }// ControlDefaultBehavior

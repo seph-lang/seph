@@ -14,8 +14,11 @@ import seph.lang.persistent.ISeq;
 
 import seph.lang.ast.Message;
 import static seph.lang.SimpleSephObject.activatable;
+import seph.lang.compiler.Bootstrap;
 
 import java.dyn.MethodHandle;
+import java.dyn.MethodHandles;
+import java.dyn.MethodType;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -110,12 +113,54 @@ public abstract class SephMethodObject implements SephObject, TailCallable {
         return result;
     }
 
+    public static SephObject evaluateMessage(Message msg, SThread thread, LexicalScope scope, boolean evalMessage, boolean ignored) {
+        if(evalMessage) {
+            return scope.evaluateFully(thread, msg);
+        } else {
+            return (SephObject)msg;
+        }
+    }
+
+    public static MethodHandle evaluateMH = Bootstrap.findStatic(SephMethodObject.class, "evaluateMessage", MethodType.methodType(SephObject.class, Message.class, SThread.class, LexicalScope.class, boolean.class, boolean.class));
+
+    public static ArgumentResult parseAndEvaluateArgumentsUneval(SThread thread, LexicalScope scope, IPersistentList arguments, int posArity) {
+        ISeq argsLeft = arguments.seq();
+        int currentArg = 0;
+        String name;
+        ArgumentResult result = new ArgumentResult();
+        
+        try {
+            while(argsLeft != null) {
+                Object o = argsLeft.first();
+                MethodHandle xx = null;
+                if(o instanceof MethodHandle) {
+                    xx = (MethodHandle)o;
+                } else {
+                    xx = evaluateMH.bindTo((Message)o);
+                }
+
+                result.assign(currentArg, xx);
+                currentArg++;
+                argsLeft = argsLeft.next();
+            }
+        } catch(Throwable e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
     public static final class ArgumentResult {
         public SephObject arg0;
         public SephObject arg1;
         public SephObject arg2;
         public SephObject arg3;
         public SephObject arg4;
+        public MethodHandle argMH0;
+        public MethodHandle argMH1;
+        public MethodHandle argMH2;
+        public MethodHandle argMH3;
+        public MethodHandle argMH4;
         public IPersistentList restPositional;
         public IPersistentMap restKeywords;
 
@@ -135,6 +180,26 @@ public abstract class SephMethodObject implements SephObject, TailCallable {
                 break;
             case 4:
                 arg4 = part;
+                break;
+            }
+        }
+
+        public final void assign(int index, MethodHandle part) {
+            switch(index) {
+            case 0:
+                argMH0 = part;
+                break;
+            case 1:
+                argMH1 = part;
+                break;
+            case 2:
+                argMH2 = part;
+                break;
+            case 3:
+                argMH3 = part;
+                break;
+            case 4:
+                argMH4 = part;
                 break;
             }
         }
