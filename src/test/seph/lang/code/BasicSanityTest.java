@@ -229,11 +229,11 @@ public class BasicSanityTest {
                                                                "odd?(1011) println\n" +
                                                                "even?(1011) println\n" +
                                                                "\n" +
-                                                               "odd?(101010) println\n" +
-                                                               "even?(101010) println\n" +
+                                                               "odd?(10100) println\n" +
+                                                               "even?(10100) println\n" +
                                                                "\n" +
-                                                               "odd?(101011) println\n" +
-                                                               "even?(101011) println\n");
+                                                               "odd?(10101) println\n" +
+                                                               "even?(10101) println\n");
         String stdout = restoreStandardOut();
         assertThat(stdout, is(equalTo("false\ntrue\nfalse\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue\nfalse\n")));
     }
