@@ -60,6 +60,10 @@ public class ControlDefaultBehavior implements SephObject {
         return seph.lang.bim.ControlDefaultBehaviorBase.get(cellName);
     }
 
+    public Object identity() {
+        return seph.lang.bim.ControlDefaultBehaviorBase.IDENTITY;
+    }
+
     public boolean isActivatable() {
         return false;
     }

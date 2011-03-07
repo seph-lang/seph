@@ -19,6 +19,10 @@ public class Symbol implements SephObject {
         return null;
     }
 
+    public Object identity() {
+        return this;
+    }
+
     public boolean isActivatable() {
         return false;
     }

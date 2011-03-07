@@ -34,6 +34,10 @@ public abstract class SephMethodObject implements SephObject {
         return null;
     }
 
+    public Object identity() {
+        return this;
+    }
+
     public boolean isActivatable() {
         return meta.valueAt(activatable) == Runtime.TRUE;
     }

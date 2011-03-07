@@ -53,6 +53,10 @@ public class Ground implements SephObject {
         return seph.lang.bim.GroundBase.get(cellName);
     }
 
+    public Object identity() {
+        return seph.lang.bim.GroundBase.IDENTITY;
+    }
+
     public boolean isActivatable() {
         return false;
     }

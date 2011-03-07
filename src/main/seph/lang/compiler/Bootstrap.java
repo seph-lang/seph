@@ -279,8 +279,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARGS, 0, value, receiver, thread, scope, args);
+            MethodHandle h = ACTIVATE_WITH_ARGS.bindTo(value);
             site.installActivatableEntry(receiver, null, h, -1);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -295,8 +296,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG0, 0, value, receiver, thread, scope);
+            MethodHandle h = ACTIVATE_WITH_ARG0.bindTo(value);
             site.installActivatableEntry(receiver, null, h, 0);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -311,8 +313,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG1, 0, value, receiver, thread, scope, arg0);
+            MethodHandle h = ACTIVATE_WITH_ARG1.bindTo(value);
             site.installActivatableEntry(receiver, null, h, 1);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -327,8 +330,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG2, 0, value, receiver, thread, scope, arg0, arg1);
+            MethodHandle h = ACTIVATE_WITH_ARG2.bindTo(value);
             site.installActivatableEntry(receiver, null, h, 2);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -343,8 +347,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG3, 0, value, receiver, thread, scope, arg0, arg1, arg2);
+            MethodHandle h = ACTIVATE_WITH_ARG3.bindTo(value);
             site.installActivatableEntry(receiver, null, h, 3);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -359,8 +364,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG4, 0, value, receiver, thread, scope, arg0, arg1, arg2, arg3);
+            MethodHandle h = ACTIVATE_WITH_ARG4.bindTo(value);
             site.installActivatableEntry(receiver, null, h, 4);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -375,8 +381,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG4, 0, value, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
+            MethodHandle h = ACTIVATE_WITH_ARG5.bindTo(value);
             site.installActivatableEntry(receiver, null, h, 5);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -395,8 +402,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARGS, 0, value, receiver, thread, scope, args);
+            MethodHandle h = ACTIVATE_WITH_ARGS.bindTo(value);
             site.installActivatableEntry(receiver, scope, h, -1);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -414,8 +422,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG0, 0, value, receiver, thread, scope);
+            MethodHandle h = ACTIVATE_WITH_ARG0.bindTo(value);
             site.installActivatableEntry(receiver, scope, h, 0);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -433,8 +442,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG1, 0, value, receiver, thread, scope, arg0);
+            MethodHandle h = ACTIVATE_WITH_ARG1.bindTo(value);
             site.installActivatableEntry(receiver, scope, h, 1);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -452,8 +462,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG2, 0, value, receiver, thread, scope, arg0, arg1);
+            MethodHandle h = ACTIVATE_WITH_ARG2.bindTo(value);
             site.installActivatableEntry(receiver, scope, h, 2);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -471,8 +482,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG3, 0, value, receiver, thread, scope, arg0, arg1, arg2);
+            MethodHandle h = ACTIVATE_WITH_ARG3.bindTo(value);
             site.installActivatableEntry(receiver, scope, h, 3);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -490,8 +502,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG4, 0, value, receiver, thread, scope, arg0, arg1, arg2, arg3);
+            MethodHandle h = ACTIVATE_WITH_ARG4.bindTo(value);
             site.installActivatableEntry(receiver, scope, h, 4);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {
@@ -509,8 +522,9 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = MethodHandles.insertArguments(ACTIVATE_WITH_ARG5, 0, value, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
+            MethodHandle h = ACTIVATE_WITH_ARG5.bindTo(value);
             site.installActivatableEntry(receiver, scope, h, 5);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
             thread.tail = h;
             return SThread.TAIL_MARKER;
         } else {

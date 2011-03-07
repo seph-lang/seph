@@ -25,6 +25,10 @@ public class IODefaultBehavior implements SephObject {
         return seph.lang.bim.IODefaultBehaviorBase.get(cellName);
     }
 
+    public Object identity() {
+        return seph.lang.bim.IODefaultBehaviorBase.IDENTITY;
+    }
+
     public boolean isActivatable() {
         return false;
     }

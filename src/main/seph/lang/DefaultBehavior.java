@@ -22,6 +22,10 @@ public class DefaultBehavior implements SephObject {
         return seph.lang.bim.DefaultBehaviorBase.get(cellName);
     }
 
+    public Object identity() {
+        return seph.lang.bim.DefaultBehaviorBase.IDENTITY;
+    }
+
     public boolean isActivatable() {
         return false;
     }

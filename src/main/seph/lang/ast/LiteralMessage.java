@@ -151,4 +151,8 @@ public final class LiteralMessage implements Message, SephObject {
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4) {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
+
+    public Object identity() {
+        return this;
+    }
 }// LiteralMessage

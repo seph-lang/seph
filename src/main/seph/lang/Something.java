@@ -20,6 +20,10 @@ public class Something implements SephObject {
         return seph.lang.bim.SomethingBase.get(cellName);
     }
 
+    public Object identity() {
+        return seph.lang.bim.SomethingBase.IDENTITY;
+    }
+
     public boolean isActivatable() {
         return false;
     }

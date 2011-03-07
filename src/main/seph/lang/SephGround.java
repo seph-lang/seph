@@ -22,6 +22,10 @@ public class SephGround implements SephObject {
         return seph.lang.bim.SephGroundBase.get(cellName);
     }
 
+    public Object identity() {
+        return seph.lang.bim.SephGroundBase.IDENTITY;
+    }
+
     public boolean isActivatable() {
         return false;
     }

@@ -170,7 +170,8 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                         out.println("    public final static SephObject cell_" + cell + " = " + cell + ".instance;");
                     }
                     out.println();
-
+                    out.println("    public final static Object IDENTITY = new Object();");
+                    out.println();
                     out.println("    public static SephObject get(String name) {");
                     out.println("        name = name.intern();");
                     for(Map.Entry<String,MethodDeclaration> entry : methods.entrySet()) {

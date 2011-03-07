@@ -21,6 +21,10 @@ public class Base implements SephObject {
         return seph.lang.bim.BaseBase.get(cellName);
     }
 
+    public Object identity() {
+        return seph.lang.bim.BaseBase.IDENTITY;
+    }
+
     public boolean isActivatable() {
         return false;
     }

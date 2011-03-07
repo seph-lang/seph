@@ -32,6 +32,10 @@ public class Text implements SephObject {
         return seph.lang.bim.TextBase.get(cellName);
     }
 
+    public Object identity() {
+        return seph.lang.bim.TextBase.IDENTITY;
+    }
+
     public boolean isActivatable() {
         return false;
     }

@@ -14,6 +14,10 @@ public abstract class Numeric extends java.lang.Number implements SephObject
         return seph.lang.bim.NumberBase.get(cellName);
     }
 
+    public Object identity() {
+        return seph.lang.bim.NumberBase.IDENTITY;
+    }
+
     public boolean isActivatable() {
         return false;
     }
