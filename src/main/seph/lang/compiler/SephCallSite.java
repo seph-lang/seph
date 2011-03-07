@@ -41,7 +41,7 @@ public class SephCallSite extends MutableCallSite {
     void installActivatableEntry(SephObject receiver, LexicalScope scope, SephObject value, int args) {
         if(newEntry()) {
             MethodHandle currentEntry = getTarget();
-            //            setTarget(MethodHandles.guardWithTest(eq(receiver, scope, args), invokeActivateWith(value, args), currentEntry));
+            setTarget(MethodHandles.guardWithTest(eq(receiver, scope, args), invokeActivateWith(value, args), currentEntry));
         }
     }
 
@@ -109,7 +109,7 @@ public class SephCallSite extends MutableCallSite {
     }
 
     private MethodHandle invokeActivateWith(SephObject value, int args) {
-        return null;
+        return activateWithMH(args).bindTo(value);
     }
 
     public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
@@ -171,6 +171,27 @@ public class SephCallSite extends MutableCallSite {
             return INSTALL_METHOD_HANDLE_ARG4;
         case 5:
             return INSTALL_METHOD_HANDLE_ARG5;
+        default:
+            return null;
+        }
+    }
+
+    private static MethodHandle activateWithMH(int num) {
+        switch(num) {
+        case -1:
+            return Bootstrap.ACTIVATE_WITH_ARGS;
+        case 0:
+            return Bootstrap.ACTIVATE_WITH_ARG0;
+        case 1:
+            return Bootstrap.ACTIVATE_WITH_ARG1;
+        case 2:
+            return Bootstrap.ACTIVATE_WITH_ARG2;
+        case 3:
+            return Bootstrap.ACTIVATE_WITH_ARG3;
+        case 4:
+            return Bootstrap.ACTIVATE_WITH_ARG4;
+        case 5:
+            return Bootstrap.ACTIVATE_WITH_ARG5;
         default:
             return null;
         }

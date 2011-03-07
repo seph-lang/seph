@@ -1,6 +1,5 @@
 
 Current compilation is missing several pieces:
-- Actually make a simple pic implementation
 - Make toplevel also use the compiler
 - Possibly have a few shortcircuited things like if, + etc. Make that use a SwitchPoint that invalidates if something with that name is redefined
      specifically inline things like "nil", "true", "false", etc
