@@ -69,13 +69,7 @@ for j in "$SEPH_HOME"/lib/seph*.jar; do
     fi
 done
 
-#for j in "$SEPH_HOME"/lib/release/*.jar; do
-#    if [ "$SEPH_CP" ]; then
-#        SEPH_CP="$SEPH_CP$CP_DELIMETER$j"
-#        else
-#        SEPH_CP="$j"
-#    fi
-#done
+SEPH_CP="$SEPH_CP$CP_DELIMITER$SEPH_HOME/lib/release/meth.jar"
 
 if $cygwin; then
     SEPH_CP=`cygpath -p -w "$SEPH_CP"`

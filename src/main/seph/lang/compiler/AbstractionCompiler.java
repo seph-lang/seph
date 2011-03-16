@@ -425,6 +425,8 @@ public class AbstractionCompiler {
             possibleIntrinsic = "_intrinsic_false";
         } else if(current.name().equals("nil")) {
             possibleIntrinsic = "_intrinsic_nil";
+        // } else if(current.name().equals("if")) {
+        //     possibleIntrinsic = "_intrinsic_if";
         }
 
 

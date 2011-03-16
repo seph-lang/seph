@@ -31,6 +31,8 @@ public class Bootstrap {
     }
 
     public final static MethodType NO_ARGS_SIGNATURE = MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class);
+    public final static MethodType INITIAL_SETUP_TYPE = MethodType.methodType(SephObject.class, SephCallSite.class, MethodHandle.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class);
+    public final static MethodType ARGS_3_SIGNATURE = MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
 
     private static MethodHandle dropAllArgumentTypes(MethodHandle mh, MethodType type) {
         if(type.equals(NO_ARGS_SIGNATURE)) {
@@ -42,13 +44,21 @@ public class Bootstrap {
         return MethodHandles.dropArguments(mh, 2, newParams);
     }
 
+    public final static MethodHandle INTRINSIC_TRUE_MH = findStatic(Bootstrap.class, "intrinsic_true", NO_ARGS_SIGNATURE);
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_TRUE_MH = findStatic(Bootstrap.class, "initialSetup_intrinsic_true", INITIAL_SETUP_TYPE);
+
+    public final static MethodHandle INTRINSIC_FALSE_MH = findStatic(Bootstrap.class, "intrinsic_false", NO_ARGS_SIGNATURE);
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_FALSE_MH = findStatic(Bootstrap.class, "initialSetup_intrinsic_false", INITIAL_SETUP_TYPE);
+
+    public final static MethodHandle INTRINSIC_NIL_MH = findStatic(Bootstrap.class, "intrinsic_nil", NO_ARGS_SIGNATURE);
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_NIL_MH = findStatic(Bootstrap.class, "initialSetup_intrinsic_nil", INITIAL_SETUP_TYPE);
+
     private static CallSite bootstrap_intrinsic_true(MethodHandles.Lookup lookup, String name, MethodType type, String bootstrapType) {
         SephCallSite site = new SephCallSite(type);
         MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
         MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, bootstrapType, fallbackType), 0, site, decode(name));
-        MethodHandle intrinsicMH = dropAllArgumentTypes(findStatic(Bootstrap.class, "intrinsic_true", NO_ARGS_SIGNATURE), type);
-        MethodType initialSetupType = NO_ARGS_SIGNATURE.insertParameterTypes(0, SephCallSite.class, MethodHandle.class, MethodHandle.class);
-        MethodHandle initialSetup = dropAllArgumentTypes(MethodHandles.insertArguments(findStatic(Bootstrap.class, "initialSetup_intrinsic_true", initialSetupType), 0, site, intrinsicMH, fallback), type);
+        MethodHandle intrinsicMH = dropAllArgumentTypes(INTRINSIC_TRUE_MH, type);
+        MethodHandle initialSetup = dropAllArgumentTypes(MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_TRUE_MH, 0, site, intrinsicMH, fallback), type);
         site.setTarget(initialSetup);
         return site;
     }
@@ -57,9 +67,8 @@ public class Bootstrap {
         SephCallSite site = new SephCallSite(type);
         MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
         MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, bootstrapType, fallbackType), 0, site, decode(name));
-        MethodHandle intrinsicMH = dropAllArgumentTypes(findStatic(Bootstrap.class, "intrinsic_false", NO_ARGS_SIGNATURE), type);
-        MethodType initialSetupType = NO_ARGS_SIGNATURE.insertParameterTypes(0, SephCallSite.class, MethodHandle.class, MethodHandle.class);
-        MethodHandle initialSetup = dropAllArgumentTypes(MethodHandles.insertArguments(findStatic(Bootstrap.class, "initialSetup_intrinsic_false", initialSetupType), 0, site, intrinsicMH, fallback), type);
+        MethodHandle intrinsicMH = dropAllArgumentTypes(INTRINSIC_FALSE_MH, type);
+        MethodHandle initialSetup = dropAllArgumentTypes(MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_FALSE_MH, 0, site, intrinsicMH, fallback), type);
         site.setTarget(initialSetup);
         return site;
     }
@@ -68,9 +77,18 @@ public class Bootstrap {
         SephCallSite site = new SephCallSite(type);
         MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
         MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, bootstrapType, fallbackType), 0, site, decode(name));
-        MethodHandle intrinsicMH = dropAllArgumentTypes(findStatic(Bootstrap.class, "intrinsic_nil", NO_ARGS_SIGNATURE), type);
-        MethodType initialSetupType = NO_ARGS_SIGNATURE.insertParameterTypes(0, SephCallSite.class, MethodHandle.class, MethodHandle.class);
-        MethodHandle initialSetup = dropAllArgumentTypes(MethodHandles.insertArguments(findStatic(Bootstrap.class, "initialSetup_intrinsic_nil", initialSetupType), 0, site, intrinsicMH, fallback), type);
+        MethodHandle intrinsicMH = dropAllArgumentTypes(INTRINSIC_NIL_MH, type);
+        MethodHandle initialSetup = dropAllArgumentTypes(MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_NIL_MH, 0, site, intrinsicMH, fallback), type);
+        site.setTarget(initialSetup);
+        return site;
+    }
+
+    private static CallSite bootstrap_intrinsic_if(MethodHandles.Lookup lookup, String name, MethodType type, String bootstrapType) {
+        SephCallSite site = new SephCallSite(type);
+        MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
+        MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, bootstrapType, fallbackType), 0, site, decode(name));
+        MethodType initialSetupType = ARGS_3_SIGNATURE.insertParameterTypes(0, SephCallSite.class, MethodHandle.class);
+        MethodHandle initialSetup = MethodHandles.insertArguments(findStatic(Bootstrap.class, "initialSetup_intrinsic_if", initialSetupType), 0, site, fallback);
         site.setTarget(initialSetup);
         return site;
     }
@@ -140,6 +158,23 @@ public class Bootstrap {
 
     public static CallSite noReceiverTailCallSephBootstrap_intrinsic_nil(MethodHandles.Lookup lookup, String name, MethodType type) {
         return bootstrap_intrinsic_nil(lookup, name, type, "noReceiverTailCallFallback");
+    }
+
+
+    public static CallSite basicSephBootstrap_intrinsic_if(MethodHandles.Lookup lookup, String name, MethodType type) {
+        return bootstrap_intrinsic_if(lookup, name, type, "fallback");
+    }
+
+    public static CallSite noReceiverSephBootstrap_intrinsic_if(MethodHandles.Lookup lookup, String name, MethodType type) {
+        return bootstrap_intrinsic_if(lookup, name, type, "noReceiverFallback");
+    }
+
+    public static CallSite tailCallSephBootstrap_intrinsic_if(MethodHandles.Lookup lookup, String name, MethodType type) {
+        return bootstrap_intrinsic_if(lookup, name, type, "tailCallFallback");
+    }
+
+    public static CallSite noReceiverTailCallSephBootstrap_intrinsic_if(MethodHandles.Lookup lookup, String name, MethodType type) {
+        return bootstrap_intrinsic_if(lookup, name, type, "noReceiverTailCallFallback");
     }
 
 
@@ -635,9 +670,20 @@ public class Bootstrap {
         return (SephObject)mh.invokeExact(receiver, thread, scope);
     }
 
+    public static SephObject replaceCompletely3Impl(MethodHandle mh, SephCallSite site, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) throws Throwable {
+        site.setTarget(mh);
+        return (SephObject)mh.invokeExact(receiver, thread, scope, arg0, arg1, arg2);
+    }
+
     public static MethodHandle replaceCompletely(MethodHandle mh, SephCallSite site) {
         return MethodHandles.insertArguments(findStatic(Bootstrap.class, "replaceCompletelyImpl", 
                                                         MethodType.methodType(SephObject.class, MethodHandle.class, SephCallSite.class, SephObject.class, SThread.class, LexicalScope.class)), 
+                                             0, mh, site);
+    }
+
+    public static MethodHandle replaceCompletely3(MethodHandle mh, SephCallSite site) {
+        return MethodHandles.insertArguments(findStatic(Bootstrap.class, "replaceCompletely3Impl", 
+                                                        MethodType.methodType(SephObject.class, MethodHandle.class, SephCallSite.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class)), 
                                              0, mh, site);
     }
 
@@ -671,6 +717,28 @@ public class Bootstrap {
     public static SephObject intrinsic_nil(SephObject receiver, SThread thread, LexicalScope scope) {
         return seph.lang.Runtime.NIL;
     }
+
+
+
+    public final static MethodHandle SEPH_OBJECT_TRUE = findVirtual(SephObject.class, "isTrue", MethodType.methodType(boolean.class));
+
+    public static SephObject initialSetup_intrinsic_if(SephCallSite site, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle test, MethodHandle then, MethodHandle _else) throws Throwable {
+        System.err.println("Setting up blazing fast if-statement...");
+        MethodHandle t1 = MethodHandles.insertArguments(MethodHandles.filterReturnValue(test, SEPH_OBJECT_TRUE), 2, true, true);
+        MethodHandle t2 = MethodHandles.insertArguments(then, 2, true, false);
+        MethodHandle t3 = MethodHandles.insertArguments(_else, 2, true, false);
+        System.err.println(" t1: " + t1.type());
+        System.err.println(" t2: " + t2.type());
+        System.err.println(" t3: " + t3.type());
+
+        MethodHandle fast = MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.guardWithTest(t1, t2, t3), 0, SephObject.class), 3, MethodHandle.class, MethodHandle.class, MethodHandle.class);
+        System.err.println(" fast: " + fast.type());
+        MethodHandle guarded = thread.runtime.INTRINSIC_NIL_SP.guardWithTest(fast, replaceCompletely3(slow, site));
+        site.setTarget(guarded);
+        return (SephObject)guarded.invokeExact(receiver, thread, scope, test, then, _else);
+    }
+
+
 
     public static MethodHandle findStatic(Class target, String name, MethodType type) {
         try {
