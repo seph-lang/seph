@@ -33,6 +33,7 @@ public class Bootstrap {
     public final static MethodType NO_ARGS_SIGNATURE = MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class);
     public final static MethodType INITIAL_SETUP_TYPE = MethodType.methodType(SephObject.class, SephCallSite.class, MethodHandle.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class);
     public final static MethodType ARGS_3_SIGNATURE = MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
+    public final static MethodType INITIAL_SETUP_3_TYPE = MethodType.methodType(SephObject.class, SephCallSite.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
 
     private static MethodHandle dropAllArgumentTypes(MethodHandle mh, MethodType type) {
         if(type.equals(NO_ARGS_SIGNATURE)) {
@@ -52,6 +53,8 @@ public class Bootstrap {
 
     public final static MethodHandle INTRINSIC_NIL_MH = findStatic(Bootstrap.class, "intrinsic_nil", NO_ARGS_SIGNATURE);
     public final static MethodHandle INITIAL_SETUP_INTRINSIC_NIL_MH = findStatic(Bootstrap.class, "initialSetup_intrinsic_nil", INITIAL_SETUP_TYPE);
+
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_IF_MH = findStatic(Bootstrap.class, "initialSetup_intrinsic_if", INITIAL_SETUP_3_TYPE);
 
     private static CallSite bootstrap_intrinsic_true(MethodHandles.Lookup lookup, String name, MethodType type, String bootstrapType) {
         SephCallSite site = new SephCallSite(type);
@@ -87,8 +90,7 @@ public class Bootstrap {
         SephCallSite site = new SephCallSite(type);
         MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, String.class);
         MethodHandle fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, bootstrapType, fallbackType), 0, site, decode(name));
-        MethodType initialSetupType = ARGS_3_SIGNATURE.insertParameterTypes(0, SephCallSite.class, MethodHandle.class);
-        MethodHandle initialSetup = MethodHandles.insertArguments(findStatic(Bootstrap.class, "initialSetup_intrinsic_if", initialSetupType), 0, site, fallback);
+        MethodHandle initialSetup = MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_IF_MH, 0, site, fallback);
         site.setTarget(initialSetup);
         return site;
     }

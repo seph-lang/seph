@@ -1,8 +1,5 @@
 
 Current compilation is missing several pieces:
-- Possibly have a few shortcircuited things like if, + etc. Make that use a SwitchPoint that invalidates if something with that name is redefined
-     specifically inline things like "nil", "true", "false", etc
-        See if it's possible to implement if-statements using GWT
 - Lexical scopes - compile based on what variables the compiler can see. Do things as a message send if it can't be seen in a static scope.
     Or consider it at least
 - Make toplevel also use the compiler
@@ -11,13 +8,5 @@ Current compilation is missing several pieces:
 - Compile assignments
 
 - Check the performance of tail recursive odd/even, and larger fib...
-
-
-- Intrinsics
-  - true   (DONE)
-  - false  (DONE)
-  - nil    (DONE)
-  - with
-  - if
 
 
