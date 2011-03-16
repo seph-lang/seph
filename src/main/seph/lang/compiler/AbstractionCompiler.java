@@ -413,10 +413,6 @@ public class AbstractionCompiler {
             
         final int arity = compileArguments(mv, current.arguments(), activateWith, plusArity);
 
-        // check for the special cases. Start with "true"
-        // make sure to write tests for all the special cases, with and without receiver, with and outside of tail position
-        //   and specifically with and without the flag.
-
         String possibleIntrinsic = "";
 
         if(current.name().equals("true")) {
@@ -425,11 +421,9 @@ public class AbstractionCompiler {
             possibleIntrinsic = "_intrinsic_false";
         } else if(current.name().equals("nil")) {
             possibleIntrinsic = "_intrinsic_nil";
-        // } else if(current.name().equals("if")) {
-        //     possibleIntrinsic = "_intrinsic_if";
+        } else if(current.name().equals("if")) {
+            possibleIntrinsic = "_intrinsic_if";
         }
-
-
 
         String bootstrapName = "basicSephBootstrap";
         boolean fullPumping = false;
