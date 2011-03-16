@@ -630,8 +630,19 @@ public class Bootstrap {
         return value;
     }
 
+    public static SephObject replaceCompletelyImpl(MethodHandle mh, SephCallSite site, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
+        site.setTarget(mh);
+        return (SephObject)mh.invokeExact(receiver, thread, scope);
+    }
+
+    public static MethodHandle replaceCompletely(MethodHandle mh, SephCallSite site) {
+        return MethodHandles.insertArguments(findStatic(Bootstrap.class, "replaceCompletelyImpl", 
+                                                        MethodType.methodType(SephObject.class, MethodHandle.class, SephCallSite.class, SephObject.class, SThread.class, LexicalScope.class)), 
+                                             0, mh, site);
+    }
+
     public static SephObject initialSetup_intrinsic_true(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
-        MethodHandle guarded = thread.runtime.INTRINSIC_TRUE_SP.guardWithTest(fast, slow);
+        MethodHandle guarded = thread.runtime.INTRINSIC_TRUE_SP.guardWithTest(fast, replaceCompletely(slow, site));
         site.setTarget(guarded);
         return (SephObject)guarded.invokeExact(receiver, thread, scope);
     }
@@ -641,7 +652,7 @@ public class Bootstrap {
     }
 
     public static SephObject initialSetup_intrinsic_false(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
-        MethodHandle guarded = thread.runtime.INTRINSIC_FALSE_SP.guardWithTest(fast, slow);
+        MethodHandle guarded = thread.runtime.INTRINSIC_FALSE_SP.guardWithTest(fast, replaceCompletely(slow, site));
         site.setTarget(guarded);
         return (SephObject)guarded.invokeExact(receiver, thread, scope);
     }
@@ -652,7 +663,7 @@ public class Bootstrap {
 
 
     public static SephObject initialSetup_intrinsic_nil(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
-        MethodHandle guarded = thread.runtime.INTRINSIC_NIL_SP.guardWithTest(fast, slow);
+        MethodHandle guarded = thread.runtime.INTRINSIC_NIL_SP.guardWithTest(fast, replaceCompletely(slow, site));
         site.setTarget(guarded);
         return (SephObject)guarded.invokeExact(receiver, thread, scope);
     }

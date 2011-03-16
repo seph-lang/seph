@@ -13,4 +13,11 @@ Current compilation is missing several pieces:
 - Check the performance of tail recursive odd/even, and larger fib...
 
 
+- Intrinsics
+  - true   (DONE)
+  - false  (DONE)
+  - nil    (DONE)
+  - with
+  - if
+
 
