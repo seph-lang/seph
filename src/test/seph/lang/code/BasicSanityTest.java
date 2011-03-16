@@ -14,6 +14,8 @@ import static org.hamcrest.CoreMatchers.*;
 import seph.lang.*;
 import gnu.math.*;
 
+import java.dyn.SwitchPoint;
+
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
@@ -341,6 +343,136 @@ public class BasicSanityTest {
         assertThat((IntNum)new seph.lang.Runtime().evaluateString(
                                                                   "f = #(if(nil, 42, 55))\n" +
                                                                   "f\n"), is(equalTo(IntNum.valueOf("55"))));
+    }
+
+    @Test
+    public void true_value_in_abstraction_with_redefinitions() throws Exception, ControlFlow {
+        assertThat((SephObject)new seph.lang.Runtime().evaluateString(
+                                                                      "f = #(true)\n" +
+                                                                      "f\n" +
+                                                                      "f\n" +
+                                                                      "f\n" 
+                                                                      ), is(seph.lang.Runtime.TRUE));
+
+        seph.lang.Runtime r = new seph.lang.Runtime();
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(true)\n" +
+                                                "f\n" +
+                                                "f\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.TRUE));
+
+        SwitchPoint.invalidateAll(new SwitchPoint[]{r.INTRINSIC_TRUE_SP});
+
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(true)\n" +
+                                                "f\n" +
+                                                "f\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.TRUE));
+        r = new seph.lang.Runtime();
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(true)\n" +
+                                                "f\n" +
+                                                "x = #(true = \"bar\")\n" +
+                                                "x\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.TRUE));
+
+        r = new seph.lang.Runtime();
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(true)\n" +
+                                                "f\n" +
+                                                "x = Something with(true: 42)\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.TRUE));
+    }
+
+    @Test
+    public void false_value_in_abstraction_with_redefinitions() throws Exception, ControlFlow {
+        assertThat((SephObject)new seph.lang.Runtime().evaluateString(
+                                                                      "f = #(false)\n" +
+                                                                      "f\n" +
+                                                                      "f\n" +
+                                                                      "f\n" 
+                                                                      ), is(seph.lang.Runtime.FALSE));
+
+        seph.lang.Runtime r = new seph.lang.Runtime();
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(false)\n" +
+                                                "f\n" +
+                                                "f\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.FALSE));
+
+        SwitchPoint.invalidateAll(new SwitchPoint[]{r.INTRINSIC_FALSE_SP});
+
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(false)\n" +
+                                                "f\n" +
+                                                "f\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.FALSE));
+        r = new seph.lang.Runtime();
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(false)\n" +
+                                                "f\n" +
+                                                "x = #(false = \"bar\")\n" +
+                                                "x\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.FALSE));
+
+        r = new seph.lang.Runtime();
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(false)\n" +
+                                                "f\n" +
+                                                "x = Something with(false: 42)\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.FALSE));
+    }
+
+
+    @Test
+    public void nil_value_in_abstraction_with_redefinitions() throws Exception, ControlFlow {
+        assertThat((SephObject)new seph.lang.Runtime().evaluateString(
+                                                                      "f = #(nil)\n" +
+                                                                      "f\n" +
+                                                                      "f\n" +
+                                                                      "f\n" 
+                                                                      ), is(seph.lang.Runtime.NIL));
+
+        seph.lang.Runtime r = new seph.lang.Runtime();
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(nil)\n" +
+                                                "f\n" +
+                                                "f\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.NIL));
+
+        SwitchPoint.invalidateAll(new SwitchPoint[]{r.INTRINSIC_NIL_SP});
+
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(nil)\n" +
+                                                "f\n" +
+                                                "f\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.NIL));
+        r = new seph.lang.Runtime();
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(nil)\n" +
+                                                "f\n" +
+                                                "x = #(nil = \"bar\")\n" +
+                                                "x\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.NIL));
+
+        r = new seph.lang.Runtime();
+        assertThat((SephObject)r.evaluateString(
+                                                "f = #(nil)\n" +
+                                                "f\n" +
+                                                "x = Something with(nil: 42)\n" +
+                                                "f\n" 
+                                                ), is(seph.lang.Runtime.NIL));
     }
 }// RuntimeTest
 

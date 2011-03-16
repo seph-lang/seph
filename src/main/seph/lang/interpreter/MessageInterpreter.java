@@ -22,18 +22,18 @@ public class MessageInterpreter {
     private final SephObject ground;
     private final LexicalScope scope;
 
-    public MessageInterpreter(final SephObject ground) {
+    public MessageInterpreter(final SephObject ground, Runtime runtime) {
         this.ground = ground;
-        this.scope = new LexicalScope(this);
+        this.scope = new LexicalScope(this, runtime);
     }
 
-    public MessageInterpreter(final SephObject ground, final LexicalScope parent) {
+    public MessageInterpreter(final SephObject ground, final LexicalScope parent, Runtime runtime) {
         this.ground = ground;
-        this.scope = new LexicalScope(this, parent);
+        this.scope = new LexicalScope(this, parent, runtime);
     }
 
     public LexicalScope newScope(SephObject ground) {
-        return new MessageInterpreter(ground, scope).scope;
+        return new MessageInterpreter(ground, scope, scope.runtime).scope;
     }
 
     public Object evaluate(SThread thread, Message msg) {

@@ -6,6 +6,8 @@ package seph.lang;
 import seph.lang.structure.SephObjectFactory;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.IPersistentMap;
+import seph.lang.persistent.ISeq;
+import seph.lang.persistent.MapEntry;
 
 import java.dyn.MethodHandle;
 
@@ -82,10 +84,14 @@ public class Base implements SephObject {
     }
 
     @SephMethod
-    public final static SephObject with(SephObject receiver, IPersistentMap restKeywords) {
+    public final static SephObject with(SephObject receiver, SThread thread, IPersistentMap restKeywords) {
         if(restKeywords.count() == 0) {
             return receiver;
         } else {
+            for(ISeq seq = restKeywords.seq(); seq != null; seq = seq.next()) {
+                thread.runtime.checkIntrinsicAssignment((String)((MapEntry)seq.first()).key());
+            }
+
             return SephObjectFactory.spreadAndCreate(null, receiver, restKeywords);
         }
     }

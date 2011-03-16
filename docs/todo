@@ -1,9 +1,11 @@
 
 Current compilation is missing several pieces:
-- Make toplevel also use the compiler
 - Possibly have a few shortcircuited things like if, + etc. Make that use a SwitchPoint that invalidates if something with that name is redefined
      specifically inline things like "nil", "true", "false", etc
         See if it's possible to implement if-statements using GWT
+- Lexical scopes - compile based on what variables the compiler can see. Do things as a message send if it can't be seen in a static scope.
+    Or consider it at least
+- Make toplevel also use the compiler
 - Invoking things that create abstractions doesn't work... (should be very easy to sort out)
 - Invoking things with arguments cannot handle keyword arguments (important for the "with" method)
 - Compile assignments
@@ -12,5 +14,3 @@ Current compilation is missing several pieces:
 
 
 
-- Lexical scopes - compile based on what variables the compiler can see. Do things as a message send if it can't be seen in a static scope.
-    Or consider it at least

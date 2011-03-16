@@ -17,7 +17,7 @@ import seph.lang.persistent.ISeq;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class LexicalScope {
-    public final static LexicalScope ROOT = new LexicalScope(null) {
+    public final static LexicalScope ROOT = new LexicalScope(null, null) {
             public LexicalScope find(String name, LexicalScope def) {
                 return def;
             }
@@ -33,17 +33,19 @@ public class LexicalScope {
     
     private final MessageInterpreter currentInterpreter;
     private final LexicalScope parent;
+    public final Runtime runtime;
     private int version = 1;
 
     public int version() {
         return version + 3 * parent.version();
     }
 
-    public LexicalScope(MessageInterpreter currentInterpreter) {
-        this(currentInterpreter, ROOT);
+    public LexicalScope(MessageInterpreter currentInterpreter, Runtime runtime) {
+        this(currentInterpreter, ROOT, runtime);
     }
 
-    public LexicalScope(MessageInterpreter currentInterpreter, LexicalScope parent) {
+    public LexicalScope(MessageInterpreter currentInterpreter, LexicalScope parent, Runtime runtime) {
+        this.runtime = runtime;
         this.currentInterpreter = currentInterpreter;
         this.parent = parent;
     }
@@ -72,6 +74,7 @@ public class LexicalScope {
 
     public void directlyAssign(String name, SephObject value) {
         version++;
+        runtime.checkIntrinsicAssignment(name);
         values = values.associate(name, value);
     }
 

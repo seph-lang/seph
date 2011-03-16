@@ -38,10 +38,11 @@ public class AbstractionCompiler {
     public static boolean PRINT_COMPILE = false;
 
     private final static Object[] EMPTY = new Object[0];
-    private final static org.objectweb.asm.MethodHandle basicSephBootstrap      = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "basicSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
-    private final static org.objectweb.asm.MethodHandle noReceiverSephBootstrap = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "noReceiverSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
-    private final static org.objectweb.asm.MethodHandle tailCallSephBootstrap   = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "tailCallSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
-    private final static org.objectweb.asm.MethodHandle noReceiverTailCallSephBootstrap   = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", "noReceiverTailCallSephBootstrap", Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
+
+    private static org.objectweb.asm.MethodHandle bootstrapNamed(String name) {
+        return new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", name, Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
+    }
+
     private final static AtomicInteger compiledCount = new AtomicInteger(0);
 
     private final Message code;
@@ -411,23 +412,41 @@ public class AbstractionCompiler {
         }
             
         final int arity = compileArguments(mv, current.arguments(), activateWith, plusArity);
+
+        // check for the special cases. Start with "true"
+        // make sure to write tests for all the special cases, with and without receiver, with and outside of tail position
+        //   and specifically with and without the flag.
+
+        String possibleIntrinsic = "";
+
+        if(current.name().equals("true")) {
+            possibleIntrinsic = "_intrinsic_true";
+        } else if(current.name().equals("false")) {
+            possibleIntrinsic = "_intrinsic_false";
+        } else if(current.name().equals("nil")) {
+            possibleIntrinsic = "_intrinsic_nil";
+        }
+
+
+
+        String bootstrapName = "basicSephBootstrap";
+        boolean fullPumping = false;
+
         if(first) {
             if(current == last) {
-                mv.visitInvokeDynamicInsn(encode(current.name()), sigFor(arity), noReceiverTailCallSephBootstrap, EMPTY);
-                if(!activateWith) {
-                    Label noPump = new Label();
-                    mv.visitVarInsn(ILOAD, SHOULD_EVALUATE_FULLY);
-                    mv.visitInsn(ICONST_0);
-                    mv.visitJumpInsn(IF_ICMPEQ, noPump);
-                    pumpTailCall(mv);
-                    mv.visitLabel(noPump);
-                }
+                bootstrapName = "noReceiverTailCallSephBootstrap";
+                fullPumping = true;
             } else {
-                mv.visitInvokeDynamicInsn(encode(current.name()), sigFor(arity), noReceiverSephBootstrap, EMPTY);
-                pumpTailCall(mv);
+                bootstrapName = "noReceiverSephBootstrap";
+                fullPumping = false;
             }
         } else if(current == last) {
-            mv.visitInvokeDynamicInsn(encode(current.name()), sigFor(arity), tailCallSephBootstrap, EMPTY);
+            bootstrapName = "tailCallSephBootstrap";
+            fullPumping = true;
+        }
+
+        mv.visitInvokeDynamicInsn(encode(current.name()), sigFor(arity), bootstrapNamed(bootstrapName + possibleIntrinsic), EMPTY);
+        if(fullPumping) {
             if(!activateWith) {
                 Label noPump = new Label();
                 mv.visitVarInsn(ILOAD, SHOULD_EVALUATE_FULLY);
@@ -437,7 +456,6 @@ public class AbstractionCompiler {
                 mv.visitLabel(noPump);
             }
         } else {
-            mv.visitInvokeDynamicInsn(encode(current.name()), sigFor(arity), basicSephBootstrap, EMPTY);
             pumpTailCall(mv);
         }
     }

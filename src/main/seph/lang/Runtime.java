@@ -16,6 +16,12 @@ import seph.lang.ast.Message;
 import seph.lang.parser.Parser;
 import seph.lang.parser.StringUtils;
 import seph.lang.interpreter.MessageInterpreter;
+import seph.lang.compiler.Bootstrap;
+
+import java.dyn.SwitchPoint;
+import java.dyn.MethodHandle;
+import java.dyn.MethodHandles;
+import java.dyn.MethodType;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -58,6 +64,35 @@ public class Runtime {
                 return Something.instance.get(cellName);
             }
         };
+    
+    public static void empty() {}
+    public static void invalidate(SwitchPoint sp) {
+        SwitchPoint.invalidateAll(new SwitchPoint[] {sp});
+    }
+
+    public final static MethodHandle INVALIDATE_MH = Bootstrap.findStatic(seph.lang.Runtime.class, "invalidate", MethodType.methodType(void.class, SwitchPoint.class));
+    public final static MethodHandle EMPTY_MH      = Bootstrap.findStatic(seph.lang.Runtime.class, "empty", MethodType.methodType(void.class));
+
+    public final SwitchPoint INTRINSIC_TRUE_SP = new SwitchPoint();
+    public final SwitchPoint INTRINSIC_FALSE_SP = new SwitchPoint();
+    public final SwitchPoint INTRINSIC_NIL_SP = new SwitchPoint();
+
+    public final MethodHandle INVALIDATE_TRUE  = INTRINSIC_TRUE_SP.guardWithTest(INVALIDATE_MH.bindTo(INTRINSIC_TRUE_SP), EMPTY_MH);
+    public final MethodHandle INVALIDATE_FALSE = INTRINSIC_FALSE_SP.guardWithTest(INVALIDATE_MH.bindTo(INTRINSIC_FALSE_SP), EMPTY_MH);
+    public final MethodHandle INVALIDATE_NIL = INTRINSIC_NIL_SP.guardWithTest(INVALIDATE_MH.bindTo(INTRINSIC_NIL_SP), EMPTY_MH);
+
+    public void checkIntrinsicAssignment(String name) {
+        name = name.intern();
+        try {
+            if(name == "true") {
+                INVALIDATE_TRUE.invokeExact();
+            } else if(name == "false") {
+                INVALIDATE_FALSE.invokeExact();
+            } else if(name == "nil") {
+                INVALIDATE_NIL.invokeExact();
+            }
+        } catch(Throwable e) {}
+    }
 
     public Text newText(String stringBeforeEscapeMangling) {
         return new Text(new StringUtils().replaceEscapes(stringBeforeEscapeMangling));
@@ -73,7 +108,7 @@ public class Runtime {
 
     public Object evaluateStream(String name, Reader reader) throws ControlFlow, IOException {
         Message msg = (Message)new Parser(this, reader, name).parseFully().seq().first();
-        return new MessageInterpreter(Ground.instance).evaluateFully(new SThread(this), msg);
+        return new MessageInterpreter(Ground.instance, this).evaluateFully(new SThread(this), msg);
     }
 
     public Object evaluateFile(File f) throws ControlFlow, IOException {
