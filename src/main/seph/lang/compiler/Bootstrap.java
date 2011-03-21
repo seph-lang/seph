@@ -728,28 +728,9 @@ public class Bootstrap {
         }
     }
 
-    public final static MethodHandle SEPH_OBJECT_TRUE = findVirtual(SephObject.class, "isTrue", MethodType.methodType(boolean.class));
-
     public final static MethodHandle INTRINSIC_IF_MH = findStatic(Bootstrap.class, "intrinsic_if", ARGS_3_SIGNATURE);
 
-    public static SephObject initialSetup_intrinsic_if_gwt(SephCallSite site, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle test, MethodHandle then, MethodHandle _else) throws Throwable {
-        System.err.println("Setting up blazing fast if-statement...");
-        MethodHandle t1 = MethodHandles.insertArguments(MethodHandles.filterReturnValue(test, SEPH_OBJECT_TRUE), 2, true, true);
-        MethodHandle t2 = MethodHandles.insertArguments(then, 2, true, false);
-        MethodHandle t3 = MethodHandles.insertArguments(_else, 2, true, false);
-        System.err.println(" t1: " + t1.type());
-        System.err.println(" t2: " + t2.type());
-        System.err.println(" t3: " + t3.type());
-
-        MethodHandle fast = MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.guardWithTest(t1, t2, t3), 0, SephObject.class), 3, MethodHandle.class, MethodHandle.class, MethodHandle.class);
-        System.err.println(" fast: " + fast.type());
-        MethodHandle guarded = thread.runtime.INTRINSIC_IF_SP.guardWithTest(fast, replaceCompletely3(slow, site));
-        site.setTarget(guarded);
-        return (SephObject)guarded.invokeExact(receiver, thread, scope, test, then, _else);
-    }
-
     public static SephObject initialSetup_intrinsic_if(SephCallSite site, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle test, MethodHandle then, MethodHandle _else) throws Throwable {
-        //        System.err.println("Setting up semi fast if-statement...");
         MethodHandle guarded = thread.runtime.INTRINSIC_IF_SP.guardWithTest(INTRINSIC_IF_MH, replaceCompletely3(slow, site));
         site.setTarget(guarded);
         return (SephObject)guarded.invokeExact(receiver, thread, scope, test, then, _else);

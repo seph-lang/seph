@@ -69,8 +69,6 @@ for j in "$SEPH_HOME"/lib/seph*.jar; do
     fi
 done
 
-SEPH_CP="$SEPH_CP$CP_DELIMITER$SEPH_HOME/lib/release/meth.jar"
-
 if $cygwin; then
     SEPH_CP=`cygpath -p -w "$SEPH_CP"`
 fi
@@ -185,7 +183,7 @@ if [ "$VERIFY_SEPH" != "" ]; then
 
   exit $SEPH_STATUS
 else
-  exec "$JAVA_CMD" $JAVA_OPTS "${java_args[@]}" -Xbootclasspath/a:"$SEPH_CP" -classpath "$CP$CP_DELIMETER$CLASSPATH" \
+  exec "$JAVA_CMD" $JAVA_OPTS "${java_args[@]}" -Xbootclasspath/p:"$SEPH_HOME/lib/release/meth.jar" -Xbootclasspath/a:"$SEPH_CP" -classpath "$CP$CP_DELIMETER$CLASSPATH" \
     "-Dseph.home=$SEPH_HOME" \
     "-Dfile.encoding=UTF-8" \
     "-Dseph.lib=$SEPH_HOME/lib" -Dseph.script=seph \
