@@ -13,7 +13,7 @@ import seph.lang.ast.LiteralMessage;
 import seph.lang.ast.NamedMessage;
 import seph.lang.ast.Terminator;
 
-import java.dyn.MethodHandle;
+import java.lang.invoke.MethodHandle;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>

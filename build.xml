@@ -80,10 +80,6 @@
 
   <target name="test" depends="compile-tests" description="Runs all Seph tests">
     <junit fork="yes" forkMode="once" haltonfailure="true" showoutput="true" timeout="1800000">
-      <jvmarg value="-Xbootclasspath/p:lib/release/meth.jar"/>
-      <jvmarg value="-XX:+UnlockExperimentalVMOptions"/>
-      <jvmarg value="-XX:+EnableMethodHandles"/>
-      <jvmarg value="-XX:+EnableInvokeDynamic"/>
       <jvmarg value="-server"/>
       <classpath refid="test.classpath"/>
       <sysproperty key="file.encoding" value="UTF-8"/>

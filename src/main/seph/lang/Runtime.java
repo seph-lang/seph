@@ -18,10 +18,10 @@ import seph.lang.parser.StringUtils;
 import seph.lang.interpreter.MessageInterpreter;
 import seph.lang.compiler.Bootstrap;
 
-import java.dyn.SwitchPoint;
-import java.dyn.MethodHandle;
-import java.dyn.MethodHandles;
-import java.dyn.MethodType;
+import java.lang.invoke.SwitchPoint;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>

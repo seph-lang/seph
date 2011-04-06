@@ -6,7 +6,7 @@ package seph.lang;
 import seph.lang.ast.Message;
 import seph.lang.persistent.IPersistentList;
 
-import java.dyn.MethodHandle;
+import java.lang.invoke.MethodHandle;
 
 /**
  * Represents a running thread of Seph computation. This

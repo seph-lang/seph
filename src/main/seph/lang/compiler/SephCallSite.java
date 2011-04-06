@@ -6,10 +6,10 @@ package seph.lang.compiler;
 import seph.lang.*;
 import seph.lang.persistent.IPersistentList;
 
-import java.dyn.MutableCallSite;
-import java.dyn.MethodType;
-import java.dyn.MethodHandle;
-import java.dyn.MethodHandles;
+import java.lang.invoke.MutableCallSite;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 
 import static seph.lang.compiler.CompilationHelpers.*;
 

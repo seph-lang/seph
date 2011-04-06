@@ -9,7 +9,7 @@ import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.RT;
 import seph.lang.persistent.ISeq;
 
-import java.dyn.MethodHandle;
+import java.lang.invoke.MethodHandle;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>

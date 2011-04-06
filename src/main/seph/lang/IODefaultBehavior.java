@@ -6,7 +6,7 @@ package seph.lang;
 import seph.lang.ast.NamedMessage;
 import seph.lang.persistent.IPersistentList;
 
-import java.dyn.MethodHandle;
+import java.lang.invoke.MethodHandle;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>

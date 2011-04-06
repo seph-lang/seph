@@ -110,7 +110,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                     out.println("/* THIS FILE IS GENERATED. DO NOT EDIT */");
                     out.println("package seph.lang.bim;");
                     out.println();
-                    out.println("import java.dyn.*;");
+                    out.println("import java.lang.invoke.*;");
                     out.println("import seph.lang.*;");
                     out.println("import seph.lang.persistent.*;");
                     out.println();
@@ -270,7 +270,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                         sb.append("thread");
                     } else if(tname.equals("seph.lang.persistent.IPersistentList")) {
                         sb.append("arguments");
-                    } else if(tname.equals("java.dyn.MethodHandle")) {
+                    } else if(tname.equals("java.lang.invoke.MethodHandle")) {
                         sb.append("args.argMH" + positionalArity);
                         positionalArity++;
                     }
@@ -339,7 +339,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                                 haveReceiver = true;
                                 sb.append("receiver");
                             }
-                        } else if(tname.equals("java.dyn.MethodHandle")) {
+                        } else if(tname.equals("java.lang.invoke.MethodHandle")) {
                             sb.append("arg" + (args++));
                         } else if(tname.equals("seph.lang.SThread")) {
                             sb.append("thread");

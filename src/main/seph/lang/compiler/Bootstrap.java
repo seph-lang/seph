@@ -10,11 +10,11 @@ import seph.lang.LexicalScope;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 
-import java.dyn.CallSite;
-import java.dyn.ConstantCallSite;
-import java.dyn.MethodHandle;
-import java.dyn.MethodHandles;
-import java.dyn.MethodType;
+import java.lang.invoke.CallSite;
+import java.lang.invoke.ConstantCallSite;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 
 import static seph.lang.compiler.CompilationHelpers.*;
 

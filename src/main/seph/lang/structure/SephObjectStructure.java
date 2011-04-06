@@ -7,7 +7,7 @@ import seph.lang.*;
 import seph.lang.persistent.*;
 import static seph.lang.SimpleSephObject.activatable;
 
-import java.dyn.MethodHandle;
+import java.lang.invoke.MethodHandle;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>

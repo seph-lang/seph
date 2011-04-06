@@ -7,7 +7,7 @@ import seph.lang.persistent.PersistentArrayMap;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.IPersistentMap;
 
-import java.dyn.MethodHandle;
+import java.lang.invoke.MethodHandle;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>

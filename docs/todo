@@ -1,7 +1,24 @@
 
+
 Current compilation is missing several pieces:
 - Lexical scopes - compile based on what variables the compiler can see. Do things as a message send if it can't be seen in a static scope.
     Or consider it at least
+       in terms of fib and other things like that, there's a real problem:
+                ls = lexical scope
+            ls1(fib = #)
+              ls2 -> ls1
+                 we can know that ls2 will never assign fib
+                    so we only need to make sure that ls1 doesn't change. so we can use the version number of that to figure it out
+                what happens if we have something in between:
+            ls1(fib = #)
+              ls2 -> ls1
+                 ls4 -> ls2
+              ls3 -> ls1
+                     what happens if ls3 changes ls1? - ls1 version changes
+                     what happens if ls3 adds a fib of its own - we don't care
+                     what happens if ls2 adds a fib of its own - ls2 version changes. so we need to know the version numbers of enclosing lexical scopes up til the place where we found fib
+                    
+
 - Make toplevel also use the compiler
 - Invoking things that create abstractions doesn't work... (should be very easy to sort out)
 - Invoking things with arguments cannot handle keyword arguments (important for the "with" method)

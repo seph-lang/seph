@@ -150,7 +150,7 @@ do
 done
 
 # Add a property to report memory max
-JAVA_OPTS="$JAVA_OPTS $JAVA_VM -Dseph.memory.max=${JAVA_MEM:4} -Dseph.stack.max=${JAVA_STACK:4} -XX:+UnlockExperimentalVMOptions -XX:+EnableMethodHandles -XX:+EnableInvokeDynamic"
+JAVA_OPTS="$JAVA_OPTS $JAVA_VM -Dseph.memory.max=${JAVA_MEM:4} -Dseph.stack.max=${JAVA_STACK:4}"
 
 # Append the rest of the arguments
 seph_args=("${seph_args[@]}" "$@")
@@ -183,7 +183,7 @@ if [ "$VERIFY_SEPH" != "" ]; then
 
   exit $SEPH_STATUS
 else
-  exec "$JAVA_CMD" $JAVA_OPTS "${java_args[@]}" -Xbootclasspath/p:"$SEPH_HOME/lib/release/meth.jar" -Xbootclasspath/a:"$SEPH_CP" -classpath "$CP$CP_DELIMETER$CLASSPATH" \
+  exec "$JAVA_CMD" $JAVA_OPTS "${java_args[@]}" -Xbootclasspath/a:"$SEPH_CP" -classpath "$CP$CP_DELIMETER$CLASSPATH" \
     "-Dseph.home=$SEPH_HOME" \
     "-Dfile.encoding=UTF-8" \
     "-Dseph.lib=$SEPH_HOME/lib" -Dseph.script=seph \

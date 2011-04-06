@@ -6,7 +6,7 @@ package gnu.math;
 import seph.lang.*;
 import seph.lang.persistent.IPersistentList;
 
-import java.dyn.MethodHandle;
+import java.lang.invoke.MethodHandle;
 
 public abstract class Numeric extends java.lang.Number implements SephObject
 {

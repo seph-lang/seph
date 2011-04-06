@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.*;
 import seph.lang.*;
 import gnu.math.*;
 
-import java.dyn.SwitchPoint;
+import java.lang.invoke.SwitchPoint;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
