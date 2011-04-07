@@ -38,7 +38,7 @@ public class DefaultAbstraction extends SimpleSephObject {
         try {
             return AbstractionCompiler.compile(seq, scope);
         } catch(CompilationAborted e) {
-            // System.err.println("BAILED OUT ON COMPILE (" + e.getMessage() + "): " + message);
+            System.err.println("BAILED OUT ON COMPILE (" + e.getMessage() + "): " + message);
         }
 
         List<String> argNames = new ArrayList<String>();

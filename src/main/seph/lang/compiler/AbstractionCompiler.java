@@ -54,7 +54,7 @@ public class AbstractionCompiler {
     private Class<?> abstractionClass;
 
     private final ClassWriter cw;
-    private final String className;
+    public final String className;
     private final List<String> argNames;
 
     private int messageIndex = 0;
@@ -101,7 +101,8 @@ public class AbstractionCompiler {
 
     private SephObject instantiateAbstraction() {
         try {
-            return (SephObject)abstractionClass.newInstance();
+
+            return (SephObject)abstractionClass.getConstructor(LexicalScope.class).newInstance(capture);
         } catch(Exception e) {
             System.err.println(e);
             e.printStackTrace();
@@ -115,10 +116,6 @@ public class AbstractionCompiler {
             Field f = abstractionClass.getDeclaredField("fullMsg");
             f.setAccessible(true);
             f.set(null, code);
-
-            f = abstractionClass.getDeclaredField("capture");
-            f.setAccessible(true);
-            f.set(null, capture);
 
             for(LiteralEntry le : literals) {
                 f = abstractionClass.getDeclaredField(le.name);
@@ -145,20 +142,25 @@ public class AbstractionCompiler {
 
     private void abstractionFields() {
         cw.visitField(ACC_PRIVATE + ACC_STATIC, "fullMsg", c(Message.class), null, null);
-        cw.visitField(ACC_PRIVATE + ACC_STATIC, "capture", c(LexicalScope.class), null, null);
+        cw.visitField(ACC_PRIVATE + ACC_FINAL, "capture", c(LexicalScope.class), null, null);
     }
 
     private void constructor(Class<?> superClass) {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", sig(void.class), null, null);
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", sig(void.class, LexicalScope.class), null, null);
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);   // [recv]
         mv.visitInsn(DUP);           // [recv, recv]
-        mv.visitFieldInsn(GETSTATIC, p(PersistentArrayMap.class), "EMPTY", c(PersistentArrayMap.class));   // [recv, recv, EMPTY]
-        mv.visitFieldInsn(GETSTATIC, p(SimpleSephObject.class), "activatable", c(Symbol.class));           // [recv, recv, EMPTY, act]
-        mv.visitFieldInsn(GETSTATIC, p(seph.lang.Runtime.class), "TRUE", c(SephObject.class));             // [recv, recv, EMPTY, act, true]
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(PersistentArrayMap.class), "associate", sig(IPersistentMap.class, Object.class, Object.class)); // [recv, recv, map]
-        mv.visitMethodInsn(INVOKESPECIAL, p(superClass), "<init>", sig(void.class, IPersistentMap.class));                                  // [recv]
-        mv.visitInsn(RETURN);        // []
+        mv.visitInsn(DUP);           // [recv, recv, recv]
+        mv.visitFieldInsn(GETSTATIC, p(PersistentArrayMap.class), "EMPTY", c(PersistentArrayMap.class));   // [recv, recv, recv, EMPTY]
+        mv.visitFieldInsn(GETSTATIC, p(SimpleSephObject.class), "activatable", c(Symbol.class));           // [recv, recv, recv, EMPTY, act]
+        mv.visitFieldInsn(GETSTATIC, p(seph.lang.Runtime.class), "TRUE", c(SephObject.class));             // [recv, recv, recv, EMPTY, act, true]
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(PersistentArrayMap.class), "associate", sig(IPersistentMap.class, Object.class, Object.class)); // [recv, recv, recv, map]
+        mv.visitMethodInsn(INVOKESPECIAL, p(superClass), "<init>", sig(void.class, IPersistentMap.class));                                  // [recv, recv]
+
+        mv.visitVarInsn(ALOAD, 1); // [recv, recv, capture]
+        mv.visitFieldInsn(PUTFIELD, className, "capture", c(LexicalScope.class)); // [recv]
+        
+        mv.visitInsn(RETURN);      // []
         mv.visitMaxs(0,0);
         mv.visitEnd();
     }
@@ -174,6 +176,17 @@ public class AbstractionCompiler {
         return c.instantiateAbstraction();
     }
 
+    public static String compile(Message code, List<String> argNames) {
+        if(!DO_COMPILE) {
+            throw new CompilationAborted("Compilation disabled...");
+        }
+
+        AbstractionCompiler c = new AbstractionCompiler(code, argNames, null);
+        c.generateAbstractionClass();
+        c.setStaticValues();
+        return c.className;
+    }
+
     public static SephObject compile(ISeq argumentsAndCode, LexicalScope capture) {
         final List<String> argNames = new ArrayList<>();
         if(argumentsAndCode != null) {
@@ -182,6 +195,16 @@ public class AbstractionCompiler {
             }
         }
         return compile((Message)RT.first(argumentsAndCode), argNames, capture);
+    }
+
+    public static String compile(ISeq argumentsAndCode) {
+        final List<String> argNames = new ArrayList<>();
+        if(argumentsAndCode != null) {
+            for(;RT.next(argumentsAndCode) != null; argumentsAndCode = RT.next(argumentsAndCode)) {
+                argNames.add(((Message)RT.first(argumentsAndCode)).name());
+            }
+        }
+        return compile((Message)RT.first(argumentsAndCode), argNames);
     }
 
     private static class LiteralEntry {
@@ -286,8 +309,13 @@ public class AbstractionCompiler {
                 compileTerminator(mv, current);
                 first = true;
             } else if(current instanceof Abstraction) {
+                mv.visitInsn(POP);
+                String newName = AbstractionCompiler.compile(RT.seq(current.arguments()));
+                mv.visitTypeInsn(NEW, newName);
+                mv.visitInsn(DUP);
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitMethodInsn(INVOKESPECIAL, newName, "<init>", sig(Void.TYPE, LexicalScope.class));
                 first = false;
-                throw new CompilationAborted("No support for compiling abstractions in abstractions");
             } else if(current instanceof Assignment) {
                 first = false;
                 throw new CompilationAborted("No support for compiling assignment");
@@ -483,8 +511,13 @@ public class AbstractionCompiler {
                 compileTerminator(mv, current);
                 first = true;
             } else if(current instanceof Abstraction) {
+                mv.visitInsn(POP);
+                String newName = AbstractionCompiler.compile(RT.seq(current.arguments()));
+                mv.visitTypeInsn(NEW, newName);
+                mv.visitInsn(DUP);
+                mv.visitVarInsn(ALOAD, METHOD_SCOPE + plusArity); 
+                mv.visitMethodInsn(INVOKESPECIAL, newName, "<init>", sig(Void.TYPE, LexicalScope.class));
                 first = false;
-                throw new CompilationAborted("No support for compiling abstractions in abstractions");
             } else if(current instanceof Assignment) {
                 first = false;
                 throw new CompilationAborted("No support for compiling assignment");
@@ -505,7 +538,8 @@ public class AbstractionCompiler {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "activateWith", sigFor(arity), null, null);
         mv.visitCode();
         
-        mv.visitFieldInsn(GETSTATIC, className, "capture", c(LexicalScope.class));
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, className, "capture", c(LexicalScope.class));
         mv.visitVarInsn(ALOAD, RECEIVER);
         mv.visitMethodInsn(INVOKEVIRTUAL, p(LexicalScope.class), "newScopeWith", sig(LexicalScope.class, SephObject.class));
         mv.visitVarInsn(ASTORE, METHOD_SCOPE - 1 + arity);
@@ -530,7 +564,8 @@ public class AbstractionCompiler {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "activateWith", sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), null, null);
         mv.visitCode();
 
-        mv.visitFieldInsn(GETSTATIC, className, "capture", c(LexicalScope.class));
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, className, "capture", c(LexicalScope.class));
         mv.visitVarInsn(ALOAD, RECEIVER);
         mv.visitMethodInsn(INVOKEVIRTUAL, p(LexicalScope.class), "newScopeWith", sig(LexicalScope.class, SephObject.class));
         mv.visitVarInsn(ASTORE, METHOD_SCOPE);

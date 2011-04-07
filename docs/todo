@@ -20,7 +20,6 @@ Current compilation is missing several pieces:
                     
 
 - Make toplevel also use the compiler
-- Invoking things that create abstractions doesn't work... (should be very easy to sort out)
 - Invoking things with arguments cannot handle keyword arguments (important for the "with" method)
 - Compile assignments
 
