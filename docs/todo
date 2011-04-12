@@ -26,3 +26,5 @@ Current compilation is missing several pieces:
 - Check the performance of tail recursive odd/even, and larger fib...
 
 
+
+- Generate structural types on the fly instead
