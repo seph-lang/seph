@@ -18,93 +18,157 @@ import static seph.lang.compiler.CompilationHelpers.*;
 public class MethodAdapter {
     private final MethodVisitor mv;
 
+    private static interface NextLoadOperation {
+        void execute();
+    }
+
+    private NextLoadOperation next = null;
+
     public MethodAdapter(MethodVisitor mv) {
         this.mv = mv;
         this.mv.visitCode();
     }
     
-    public void load(String constant) {
-        mv.visitLdcInsn(constant);
+    public void load(final String constant) {
+        op();
+        next = new NextLoadOperation() {
+                public void execute() {
+                    mv.visitLdcInsn(constant);
+                }
+            };
     }
 
     public void loadThis() {
         loadLocal(0);
     }
 
-    public void loadLocal(int index) {
-        mv.visitVarInsn(ALOAD, index);   
+    public void loadLocal(final int index) {
+        op();
+        next = new NextLoadOperation() {
+                public void execute() {
+                    mv.visitVarInsn(ALOAD, index);   
+                }
+            };
     }
 
     public void storeLocal(int index) {
+        op();
         mv.visitVarInsn(ASTORE, index);
     }
 
-    public void loadLocalInt(int index) {
-        mv.visitVarInsn(ILOAD, index);   
+    public void loadLocalInt(final int index) {
+        op();
+        next = new NextLoadOperation() {
+                public void execute() {
+                    mv.visitVarInsn(ILOAD, index);   
+                }
+            };
     }
 
     public void nul() {
-        mv.visitInsn(ACONST_NULL);
+        op();
+        next = new NextLoadOperation() {
+                public void execute() {
+                    mv.visitInsn(ACONST_NULL);
+                }
+            };
     }
 
     public void zero() {
-        mv.visitInsn(ICONST_0);
+        op();
+        next = new NextLoadOperation() {
+                public void execute() {
+                    mv.visitInsn(ICONST_0);
+                }
+            };
     }
 
     public void one() {
-        mv.visitInsn(ICONST_1);
+        op();
+        next = new NextLoadOperation() {
+                public void execute() {
+                    mv.visitInsn(ICONST_1);
+                }
+            };
     }
     
     public void dup() {
-        mv.visitInsn(DUP);
+        op();
+        next = new NextLoadOperation() {
+                public void execute() {
+                    mv.visitInsn(DUP);
+                }
+            };
+    }
+
+    private void op() {
+        if(next != null) {
+            next.execute();
+            next = null;
+        }
     }
 
     public void pop() {
-        mv.visitInsn(POP);
+        if(next != null) {
+            next = null;
+        } else {
+            mv.visitInsn(POP);
+        }
     }
 
     public void swap() {
+        op();
         mv.visitInsn(SWAP);
     }
 
     public void ret() {
+        op();
         mv.visitInsn(RETURN);
     }
 
     public void retValue() {
+        op();
         mv.visitInsn(ARETURN);
     }
 
     public void end() {
+        op();
         mv.visitMaxs(0,0);
         mv.visitEnd();
     }
 
     public void ifNotEqual(Label l) {
+        op();
         mv.visitJumpInsn(IF_ICMPNE, l);
     }
 
     public void ifEqual(Label l) {
+        op();
         mv.visitJumpInsn(IF_ICMPEQ, l);
     }
 
     public void ifRefNotEqual(Label l) {
+        op();
         mv.visitJumpInsn(IF_ACMPNE, l);
     }
 
     public void jump(Label l) {
+        op();
         mv.visitJumpInsn(GOTO, l);
     }
 
     public void ifNonNull(Label l) {
+        op();
         mv.visitJumpInsn(IFNONNULL, l);
     }
 
     public void label(Label l) {
+        op();
         mv.visitLabel(l);
     }
 
     public void create(String name) {
+        op();
         mv.visitTypeInsn(NEW, name);
     }
 
@@ -121,6 +185,7 @@ public class MethodAdapter {
     }
 
     public void getStatic(String from, String name, String type) {
+        op();
         mv.visitFieldInsn(GETSTATIC, from, name, type);
     }
 
@@ -135,6 +200,7 @@ public class MethodAdapter {
     }
 
     public void putField(String fromClass, String name, String type) {
+        op();
         mv.visitFieldInsn(PUTFIELD, fromClass, name, type);
     }
 
@@ -149,6 +215,7 @@ public class MethodAdapter {
     }
 
     public void getField(String fromClass, String name, String type) {
+        op();
         mv.visitFieldInsn(GETFIELD, fromClass, name, type);
     }
 
@@ -159,6 +226,7 @@ public class MethodAdapter {
     }
 
     public void staticCall(String on, String name, Class<?> ret, Class<?>... params) {
+        op();
         mv.visitMethodInsn(INVOKESTATIC, on, name, sig(ret, params));
     }
 
@@ -172,6 +240,7 @@ public class MethodAdapter {
     }
 
     public void virtualCall(String on, String name, String sig) {
+        op();
         mv.visitMethodInsn(INVOKEVIRTUAL, on, name, sig);
     }
 
@@ -181,11 +250,13 @@ public class MethodAdapter {
     }
 
     public void interfaceCall(String on, String name, Class<?> ret, Class<?>... params) {
+        op();
         mv.visitMethodInsn(INVOKEINTERFACE, on, name, sig(ret, params));
     }
 
     private final static Object[] EMPTY = new Object[0];
     public void dynamicCall(String name, String sig, org.objectweb.asm.MethodHandle bootstrap) {
+        op();
         mv.visitInvokeDynamicInsn(name, sig, bootstrap, EMPTY);
     }
 
@@ -194,6 +265,7 @@ public class MethodAdapter {
     }
 
     public void init(String on, Class<?> ret, Class<?>... params) {
+        op();
         mv.visitMethodInsn(INVOKESPECIAL, on, "<init>", sig(ret, params));
     }
 }
