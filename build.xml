@@ -24,6 +24,8 @@
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${main.classes.dir}"/>
     <mkdir dir="${test.classes.dir}"/>
+    <mkdir dir="${test.results.dir}"/>
+    <mkdir dir="${html.test.results.dir}"/>
     <mkdir dir="${src.gen.dir}/seph/lang/bim"/>
   </target>
 
@@ -79,7 +81,7 @@
   </target>
 
   <target name="test" depends="compile-tests" description="Runs all Seph tests">
-    <junit fork="yes" forkMode="once" haltonfailure="true" showoutput="true" timeout="1800000">
+    <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
       <classpath refid="test.classpath"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
@@ -91,21 +93,46 @@
         </fileset>
       </batchtest>
     </junit>
+    <fail if="junit.failure" message="Test(s) failed."/>
   </target>
 
-  <target name="test-parser" depends="compile-tests" description="Runs all Seph tests">
-    <junit fork="yes" forkMode="once" haltonfailure="true" showoutput="true" timeout="1800000">
+  <target name="ci-test" depends="compile-tests" description="Runs all Seph tests with XML output for the CI">
+    <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
+      <jvmarg value="-server"/>
       <classpath refid="test.classpath"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
       <formatter type="brief" usefile="false" />
+      <formatter type="xml"/>
 
-      <batchtest fork="yes">
+      <batchtest fork="yes" todir="${test.results.dir}">
         <fileset dir="${src.test.dir}">
-          <include name="**/ParserTest.java"/>
+          <include name="**/*Test*.java"/>
         </fileset>
       </batchtest>
     </junit>
+    <junitreport todir="${test.results.dir}">
+      <fileset dir="${test.results.dir}" includes="TEST-*.xml"/>
+      <report format="frames" todir="${html.test.results.dir}"/>
+    </junitreport>
+    <fail if="junit.failure" message="Test(s) failed."/>
   </target>
+
+  <target name="ci-jar" description="Create the seph.jar file without depending on earlier stages">
+    <jar destfile="${lib.dir}/seph.jar">
+      <fileset dir="${main.classes.dir}">
+        <include name="**/*.class"/>
+        <include name="**/*.sp"/>
+        <include name="**/*.properties"/>
+      </fileset>
+      <zipfileset src="${lib.release.dir}/jline-0.9.93.jar" includes="**/*"/>
+      <zipfileset src="${lib.release.dir}/asm-all-4.0.jar" includes="**/*"/>
+      <manifest>
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Main-Class" value="seph.lang.Main"/>
+      </manifest>
+    </jar>
+  </target>
+
 
   <target name="jar" depends="test" description="Create the seph.jar file">
     <jar destfile="${lib.dir}/seph.jar">
