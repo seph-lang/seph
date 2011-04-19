@@ -110,7 +110,9 @@
         </fileset>
       </batchtest>
     </junit>
-    <junitreport todir="${test.results.dir}">
+    <delete dir="${html.test.results.dir}" quiet="true"/>
+    <delete file="${test.results.dir}/TESTS-TestSuites.xml" quiet="true"/>
+    <junitreport todir="${test.results.dir}" tofile="${build.dir}/TESTS-TestSuites.xml">
       <fileset dir="${test.results.dir}" includes="TEST-*.xml"/>
       <report format="frames" todir="${html.test.results.dir}"/>
     </junitreport>
