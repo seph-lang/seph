@@ -80,6 +80,14 @@
     </javac>
   </target>
 
+  <target name="ci-compile-tests" description="Compile the test source files for the CI.">
+    <javac destdir="${test.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" encoding="UTF-8">
+      <classpath refid="test.classpath"/>
+      <src path="${src.test.dir}"/>
+      <include name="**/*.java"/>
+    </javac>
+  </target>
+
   <target name="test" depends="compile-tests" description="Runs all Seph tests">
     <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
@@ -96,7 +104,7 @@
     <fail if="junit.failure" message="Test(s) failed."/>
   </target>
 
-  <target name="ci-test" depends="compile-tests" description="Runs all Seph tests with XML output for the CI">
+  <target name="ci-test" depends="ci-compile-tests" description="Runs all Seph tests with XML output for the CI">
     <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
       <classpath refid="test.classpath"/>
