@@ -2,7 +2,7 @@
 
 <project basedir="." default="jar" name="seph">
   <description>
-    seph is a past generation language, based on Ioke, Clojure and Erjanh
+    seph is a past generation language, based on Ioke, Clojure and Erjang
   </description>
 
   <property file="build.properties"/>
@@ -80,7 +80,7 @@
     </javac>
   </target>
 
-  <target name="ci-compile-tests" description="Compile the test source files for the CI.">
+  <target name="ci-compile-tests" depends="prepare" description="Compile the test source files for the CI.">
     <javac destdir="${test.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" encoding="UTF-8">
       <classpath refid="test.classpath"/>
       <src path="${src.test.dir}"/>
