@@ -43,6 +43,33 @@
     </javac>
   </target>
 
+  <target name="generate_version_data" depends="prepare" description="Generates version data">
+    <tstamp>
+      <format property="build.time" pattern="yyyy-MM-dd hh:mm"/>
+    </tstamp>
+
+    <exec executable="git" outputproperty="seph.revision" failonerror="false" failifexecutionfails="false">
+      <arg line="log -1 --format=format:%h"/>
+    </exec>
+
+    <filter token="DATE" value="${build.time}"/>
+    <filter token="COMMIT" value="${seph.revision}"/>
+    <filter token="VERSION_NUMBER" value="${VERSION_NUMBER}"/>
+    <filter token="VERSION_STRING" value="Seph ${VERSION_NUMBER}${VERSION_ADDITION}"/>
+
+    <copy todir="${classes.dir}" filtering="true" overwrite="true">
+      <fileset dir="${src.dir}" includes="**/*.properties"/>
+    </copy>
+  </target>
+
+  <target name="add_new_version_file" depends="generate_version_data" description="Adds a new version property file to an existing jar-file">
+    <jar destfile="${lib.dir}/seph.jar" update="true">
+      <fileset dir="${classes.dir}">
+        <include name="**/*.properties"/>
+      </fileset>
+    </jar>
+  </target>
+
   <target name="compile" depends="compile-annotation-bims" description="Compile the source files for the project.">
     <tstamp>
       <format property="build.time" pattern="yyyy-MM-dd hh:mm"/>
