@@ -207,7 +207,7 @@
   <target name="dist-bin" depends="jar, ci-dist-bin"/>
 
   <target name="ci-push-distribution-files" depends="prepare">
-    <copy file="${lib.dir}/seph.jar" tofile="${release.dir}/seph--${VERSION_NUMBER}${VERSION_ADDITION}.jar" overwrite="true"/>
+    <copy file="${lib.dir}/seph.jar" tofile="${release.dir}/seph-${VERSION_NUMBER}${VERSION_ADDITION}.jar" overwrite="true"/>
 
     <scp todir="seph-lang.org@seph-lang.org:/home/seph-lang.org/web/public/dist" keyfile="${user.home}/.ssh/id_rsa">
       <fileset dir="${release.dir}">
