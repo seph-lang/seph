@@ -7,6 +7,7 @@
 
   <property file="build.properties"/>
   <property file="default.build.properties"/>
+  <property file="version.properties"/>
 
   <path id="build.classpath">
     <fileset dir="${lib.build.dir}" includes="*.jar"/>
@@ -27,6 +28,7 @@
     <mkdir dir="${test.results.dir}"/>
     <mkdir dir="${html.test.results.dir}"/>
     <mkdir dir="${src.gen.dir}/seph/lang/bim"/>
+    <mkdir dir="${release.dir}"/>
   </target>
 
   <target name="compile-annotation-bims" depends="prepare">
@@ -52,9 +54,8 @@
 
     <filter token="DATE" value="${build.time}"/>
     <filter token="COMMIT" value="${seph.revision}"/>
-    <filter token="VERSION" value="0"/>
-    <filter token="VERSION_RUNTIME" value="0.0.1"/>
-    <filter token="VERSION_STRING" value="Seph 0 sephj 0.0.1"/>
+    <filter token="VERSION_NUMBER" value="${VERSION_NUMBER}"/>
+    <filter token="VERSION_STRING" value="Seph ${VERSION_NUMBER}${VERSION_ADDITION}"/>
 
     <apt factory="seph.lang.anno.AnnotationBimCreator" destdir="${main.classes.dir}" debug="true" encoding="UTF-8">
       <classpath refid="build.classpath"/>
@@ -176,8 +177,27 @@
     </jar>
   </target>
 
-  <target name="dist-bin" depends="jar">
-    <tar destfile="${release.dir}/seph-0-sepj-0.0.1.tar.gz" compression="gzip">
+  <target name="dist-bin" depends="jar, ci-dist-bin"/>
+
+  <target name="ci-push-distribution-files" depends="prepare">
+    <copy file="${lib.dir}/seph.jar" tofile="${release.dir}/seph--${VERSION_NUMBER}${VERSION_ADDITION}.jar" overwrite="true"/>
+
+    <scp todir="seph-lang.org@seph-lang.org:/home/seph-lang.org/web/public/dist" keyfile="${user.home}/.ssh/id_rsa">
+      <fileset dir="${release.dir}">
+        <include name="seph-${VERSION_NUMBER}${VERSION_ADDITION}.tar.gz"/>
+        <include name="seph-${VERSION_NUMBER}${VERSION_ADDITION}.zip"/>
+        <include name="seph-${VERSION_NUMBER}${VERSION_ADDITION}.jar"/>
+      </fileset>
+    </scp>    
+
+    <sshexec host="seph-lang.org" username="seph-lang.org" keyfile="${user.home}/.ssh/id_rsa" command="(cd /home/seph-lang.org/web/public/dist; rm -rf *-latest.*)"/>
+    <sshexec host="seph-lang.org" username="seph-lang.org" keyfile="${user.home}/.ssh/id_rsa" command="(cd /home/seph-lang.org/web/public/dist; ln -s seph-${VERSION_NUMBER}${VERSION_ADDITION}.tar.gz seph-latest.tar.gz)"/>
+    <sshexec host="seph-lang.org" username="seph-lang.org" keyfile="${user.home}/.ssh/id_rsa" command="(cd /home/seph-lang.org/web/public/dist; ln -s seph-${VERSION_NUMBER}${VERSION_ADDITION}.zip seph-latest.zip)"/>
+    <sshexec host="seph-lang.org" username="seph-lang.org" keyfile="${user.home}/.ssh/id_rsa" command="(cd /home/seph-lang.org/web/public/dist; ln -s seph-${VERSION_NUMBER}${VERSION_ADDITION}.jar seph-latest.jar)"/>
+  </target>
+
+  <target name="ci-dist-bin" depends="prepare">
+    <tar destfile="${release.dir}/seph-${VERSION_NUMBER}${VERSION_ADDITION}.tar.gz" compression="gzip">
       <tarfileset mode="755" dir="." prefix="ioke">
         <include name="bin/*.bat"/>
         <include name="bin/seph"/>
@@ -194,7 +214,7 @@
       </tarfileset>
     </tar>
 
-    <zip destfile="${release.dir}/seph-0-sepj-0.0.1.zip">
+    <zip destfile="${release.dir}/seph-${VERSION_NUMBER}${VERSION_ADDITION}.zip">
       <zipfileset filemode="755" dir="." prefix="seph">
         <include name="bin/*.bat"/>
         <include name="bin/seph"/>
@@ -213,6 +233,11 @@
   </target>
 
   <target name="dist" depends="dist-bin"/>
+  <target name="ci-dist" depends="ci-dist-bin"/>
+
+  <target name="ci-clean-dist" description="clean things from releases">
+    <delete dir="${release.dir}"/>
+  </target>
 
   <target name="clean" description="clean almost everything">
     <delete dir="${build.dir}"/>
