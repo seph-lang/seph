@@ -70,7 +70,37 @@
     </jar>
   </target>
 
-  <target name="compile" depends="compile-annotation-bims" description="Compile the source files for the project.">
+  <target name="-get-jvm">
+    <echoproperties/>
+    <condition property="jvm.ok">
+      <and>
+        <not>
+          <equals arg1="${ant.java.version}" arg2="1.1"/>
+        </not>
+        <not>
+          <equals arg1="${ant.java.version}" arg2="1.2"/>
+        </not>
+        <not>
+          <equals arg1="${ant.java.version}" arg2="1.3"/>
+        </not>
+        <not>
+          <equals arg1="${ant.java.version}" arg2="1.4"/>
+        </not>
+        <not>
+          <equals arg1="${ant.java.version}" arg2="1.5"/>
+        </not>
+        <not>
+          <equals arg1="${ant.java.version}" arg2="1.6"/>
+        </not>
+      </and>
+    </condition>
+  </target>
+
+  <target name="-check-jvm" depends="-get-jvm" unless="jvm.ok">
+    <fail message="Wrong JVM ${ant.java.version} - this requires at least Java 7"/>
+  </target>
+
+  <target name="compile" depends="compile-annotation-bims, -check-jvm" description="Compile the source files for the project.">
     <tstamp>
       <format property="build.time" pattern="yyyy-MM-dd hh:mm"/>
     </tstamp>
