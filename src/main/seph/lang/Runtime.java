@@ -87,13 +87,13 @@ public class Runtime {
         name = name.intern();
         try {
             if(name == "true") {
-                INVALIDATE_TRUE.invokeExact();
+                INVALIDATE_TRUE.invoke();
             } else if(name == "false") {
-                INVALIDATE_FALSE.invokeExact();
+                INVALIDATE_FALSE.invoke();
             } else if(name == "nil") {
-                INVALIDATE_NIL.invokeExact();
+                INVALIDATE_NIL.invoke();
             } else if(name == "if") {
-                INVALIDATE_IF.invokeExact();
+                INVALIDATE_IF.invoke();
             }
         } catch(Throwable e) {}
     }

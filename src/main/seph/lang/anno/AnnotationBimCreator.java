@@ -151,7 +151,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                     out.println("    }");
                     out.println("    private static SephObject invoke(MethodHandle mh, SThread thread, LexicalScope scope) {");
                     out.println("        try {");
-                    out.println("            return (SephObject)mh.invokeExact(thread, scope, true, true);");
+                    out.println("            return (SephObject)mh.invoke(thread, scope, true, true);");
                     out.println("        } catch(Throwable e) {");
                     out.println("            e.printStackTrace();");
                     out.println("            throw new RuntimeException(e);");

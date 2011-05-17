@@ -62,7 +62,7 @@ public abstract class SephMethodObject implements SephObject {
                 MethodHandle toEvaluate = null;
                 if(o instanceof MethodHandle) {
                     toEvaluate = (MethodHandle)o;
-                    current = (Message)((SephObject)toEvaluate.invokeExact((SThread)null, (LexicalScope)null, false, true));
+                    current = (Message)((SephObject)toEvaluate.invoke((SThread)null, (LexicalScope)null, false, true));
                 } else {
                     current = (Message)o;
                 }
@@ -77,7 +77,7 @@ public abstract class SephMethodObject implements SephObject {
                     if(toEvaluate == null) {
                         part = scope.evaluateFully(thread, current);
                     } else {
-                        part = (SephObject)toEvaluate.invokeExact(thread, scope, true, true);
+                        part = (SephObject)toEvaluate.invoke(thread, scope, true, true);
                     }
 
                     if(collectingRestp) {

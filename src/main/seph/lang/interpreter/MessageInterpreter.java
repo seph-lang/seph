@@ -58,7 +58,7 @@ public class MessageInterpreter {
                         while(tmp == SThread.TAIL_MARKER) {
                             MethodHandle tail = thread.tail;
                             thread.tail = null;
-                            tmp = (SephObject)tail.invokeExact();
+                            tmp = (SephObject)tail.invoke();
                         }
                     }
 
@@ -94,7 +94,7 @@ public class MessageInterpreter {
                     while(tmp == SThread.TAIL_MARKER) {
                         MethodHandle tail = thread.tail;
                         thread.tail = null;
-                        tmp = (SephObject)tail.invokeExact();
+                        tmp = (SephObject)tail.invoke();
                     }
 
                     if(tmp != null) {

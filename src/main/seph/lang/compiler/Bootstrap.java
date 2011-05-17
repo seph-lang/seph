@@ -669,12 +669,12 @@ public class Bootstrap {
 
     public static SephObject replaceCompletelyImpl(MethodHandle mh, SephCallSite site, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
         site.setTarget(mh);
-        return (SephObject)mh.invokeExact(receiver, thread, scope);
+        return (SephObject)mh.invoke(receiver, thread, scope);
     }
 
     public static SephObject replaceCompletely3Impl(MethodHandle mh, SephCallSite site, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) throws Throwable {
         site.setTarget(mh);
-        return (SephObject)mh.invokeExact(receiver, thread, scope, arg0, arg1, arg2);
+        return (SephObject)mh.invoke(receiver, thread, scope, arg0, arg1, arg2);
     }
 
     public static MethodHandle replaceCompletely(MethodHandle mh, SephCallSite site) {
@@ -692,7 +692,7 @@ public class Bootstrap {
     public static SephObject initialSetup_intrinsic_true(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
         MethodHandle guarded = thread.runtime.INTRINSIC_TRUE_SP.guardWithTest(fast, replaceCompletely(slow, site));
         site.setTarget(guarded);
-        return (SephObject)guarded.invokeExact(receiver, thread, scope);
+        return (SephObject)guarded.invoke(receiver, thread, scope);
     }
 
     public static SephObject intrinsic_true(SephObject receiver, SThread thread, LexicalScope scope) {
@@ -702,7 +702,7 @@ public class Bootstrap {
     public static SephObject initialSetup_intrinsic_false(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
         MethodHandle guarded = thread.runtime.INTRINSIC_FALSE_SP.guardWithTest(fast, replaceCompletely(slow, site));
         site.setTarget(guarded);
-        return (SephObject)guarded.invokeExact(receiver, thread, scope);
+        return (SephObject)guarded.invoke(receiver, thread, scope);
     }
 
     public static SephObject intrinsic_false(SephObject receiver, SThread thread, LexicalScope scope) {
@@ -713,7 +713,7 @@ public class Bootstrap {
     public static SephObject initialSetup_intrinsic_nil(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
         MethodHandle guarded = thread.runtime.INTRINSIC_NIL_SP.guardWithTest(fast, replaceCompletely(slow, site));
         site.setTarget(guarded);
-        return (SephObject)guarded.invokeExact(receiver, thread, scope);
+        return (SephObject)guarded.invoke(receiver, thread, scope);
     }
 
     public static SephObject intrinsic_nil(SephObject receiver, SThread thread, LexicalScope scope) {
@@ -721,10 +721,10 @@ public class Bootstrap {
     }
 
     public static SephObject intrinsic_if(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle test, MethodHandle then, MethodHandle _else) throws Throwable {
-        if(((SephObject)test.invokeExact(thread, scope, true, true)).isTrue()) {
-            return (SephObject)then.invokeExact(thread, scope, true, false);
+        if(((SephObject)test.invoke(thread, scope, true, true)).isTrue()) {
+            return (SephObject)then.invoke(thread, scope, true, false);
         } else {
-            return (SephObject)_else.invokeExact(thread, scope, true, false);
+            return (SephObject)_else.invoke(thread, scope, true, false);
         }
     }
 
@@ -733,7 +733,7 @@ public class Bootstrap {
     public static SephObject initialSetup_intrinsic_if(SephCallSite site, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle test, MethodHandle then, MethodHandle _else) throws Throwable {
         MethodHandle guarded = thread.runtime.INTRINSIC_IF_SP.guardWithTest(INTRINSIC_IF_MH, replaceCompletely3(slow, site));
         site.setTarget(guarded);
-        return (SephObject)guarded.invokeExact(receiver, thread, scope, test, then, _else);
+        return (SephObject)guarded.invoke(receiver, thread, scope, test, then, _else);
     }
 
     public static MethodHandle findStatic(Class target, String name, MethodType type) {

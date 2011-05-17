@@ -400,7 +400,7 @@ public class AbstractionCompiler {
         ma.swap();
         ma.nul();
         ma.putField(SThread.class, "tail", MethodHandle.class);
-        ma.virtualCall(MethodHandle.class, "invokeExact", SephObject.class);
+        ma.virtualCall(MethodHandle.class, "invoke", SephObject.class);
         ma.jump(loop);
         ma.label(done);
     }

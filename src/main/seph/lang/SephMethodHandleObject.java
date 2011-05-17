@@ -43,7 +43,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments) {
         try {
-            return (SephObject)this.handle.invokeExact(thread, scope, receiver, arguments);
+            return (SephObject)this.handle.invoke(thread, scope, receiver, arguments);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -55,7 +55,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope) {
         try {
-            return (SephObject)this.handle0.invokeExact(thread, scope, receiver);
+            return (SephObject)this.handle0.invoke(thread, scope, receiver);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -67,7 +67,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0) {
         try {
-            return (SephObject)this.handle1s.invokeExact(thread, scope, receiver, arg0);
+            return (SephObject)this.handle1s.invoke(thread, scope, receiver, arg0);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -79,7 +79,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1) {
         try {
-            return (SephObject)this.handle2s.invokeExact(thread, scope, receiver, arg0, arg1);
+            return (SephObject)this.handle2s.invoke(thread, scope, receiver, arg0, arg1);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -91,7 +91,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2) {
         try {
-            return (SephObject)this.handle3s.invokeExact(thread, scope, receiver, arg0, arg1, arg2);
+            return (SephObject)this.handle3s.invoke(thread, scope, receiver, arg0, arg1, arg2);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -103,7 +103,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3) {
         try {
-            return (SephObject)this.handle4s.invokeExact(thread, scope, receiver, arg0, arg1, arg2, arg3);
+            return (SephObject)this.handle4s.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -115,7 +115,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3, SephObject arg4) {
         try {
-            return (SephObject)this.handle5s.invokeExact(thread, scope, receiver, arg0, arg1, arg2, arg3, arg4);
+            return (SephObject)this.handle5s.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3, arg4);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -127,7 +127,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0) {
         try {
-            return (SephObject)this.handle1m.invokeExact(thread, scope, receiver, arg0);
+            return (SephObject)this.handle1m.invoke(thread, scope, receiver, arg0);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -139,7 +139,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1) {
         try {
-            return (SephObject)this.handle2m.invokeExact(thread, scope, receiver, arg0, arg1);
+            return (SephObject)this.handle2m.invoke(thread, scope, receiver, arg0, arg1);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -151,7 +151,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) {
         try {
-            return (SephObject)this.handle3m.invokeExact(thread, scope, receiver, arg0, arg1, arg2);
+            return (SephObject)this.handle3m.invoke(thread, scope, receiver, arg0, arg1, arg2);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -163,7 +163,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3) {
         try {
-            return (SephObject)this.handle4m.invokeExact(thread, scope, receiver, arg0, arg1, arg2, arg3);
+            return (SephObject)this.handle4m.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -175,7 +175,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4) {
         try {
-            return (SephObject)this.handle5m.invokeExact(thread, scope, receiver, arg0, arg1, arg2, arg3, arg4);
+            return (SephObject)this.handle5m.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3, arg4);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
