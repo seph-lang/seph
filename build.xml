@@ -220,11 +220,13 @@
   <target name="benchmark" depends="prepare" description="Runs all Seph benchmarks and outputs everything on the console">
     <bench file="bench/bench_fact.sp"/>
     <bench file="bench/bench_fib.sp"/>
+    <bench file="bench/bench_arithmetic.sp"/>
   </target>
 
   <target name="ci-benchmark" depends="prepare" description="Runs all Seph benchmarks and outputs everything to a file in build">
     <bench-ci file="bench/bench_fact.sp" append="false"/>
     <bench-ci file="bench/bench_fib.sp"/>
+    <bench-ci file="bench/bench_arithmetic.sp"/>
 
     <exec executable="ruby" input="massage_benchmark_info.rb"/>
   </target>
