@@ -119,6 +119,7 @@
   <target name="test" depends="compile-tests" description="Runs all Seph tests">
     <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
+      <jvmarg value="-Xint"/>
       <classpath refid="test.classpath"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
       <formatter type="brief" usefile="false" />
@@ -135,6 +136,7 @@
   <target name="ci-test" depends="ci-compile-tests" description="Runs all Seph tests with XML output for the CI">
     <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
+      <jvmarg value="-Xint"/>
       <classpath refid="test.classpath"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
       <formatter type="brief" usefile="false" />
