@@ -227,6 +227,7 @@
     <bench file="bench/bench_intrinsic_if.sp"/>
     <bench file="bench/bench_create_abstraction.sp"/>
     <bench file="bench/bench_object_creation.sp"/>
+    <bench file="bench/bench_read_cell.sp"/>
   </target>
 
   <target name="ci-benchmark" depends="prepare" description="Runs all Seph benchmarks and outputs everything to a file in build">
@@ -239,6 +240,7 @@
     <bench-ci file="bench/bench_intrinsic_if.sp"/>
     <bench-ci file="bench/bench_create_abstraction.sp"/>
     <bench-ci file="bench/bench_object_creation.sp"/>
+    <bench-ci file="bench/bench_read_cell.sp"/>
 
     <exec executable="ruby" input="massage_benchmark_info.rb"/>
   </target>
