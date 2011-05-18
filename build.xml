@@ -224,15 +224,19 @@
     <bench file="bench/bench_intrinsic_true.sp"/>
     <bench file="bench/bench_intrinsic_false.sp"/>
     <bench file="bench/bench_intrinsic_nil.sp"/>
+    <bench file="bench/bench_intrinsic_if.sp"/>
+    <bench file="bench/bench_create_abstraction.sp"/>
   </target>
 
   <target name="ci-benchmark" depends="prepare" description="Runs all Seph benchmarks and outputs everything to a file in build">
     <bench-ci file="bench/bench_fact.sp" append="false"/>
     <bench-ci file="bench/bench_fib.sp"/>
     <bench-ci file="bench/bench_arithmetic.sp"/>
-    <bench-ci file="bench/bench_true.sp"/>
-    <bench-ci file="bench/bench_false.sp"/>
-    <bench-ci file="bench/bench_nil.sp"/>
+    <bench-ci file="bench/bench_intrinsic_true.sp"/>
+    <bench-ci file="bench/bench_intrinsic_false.sp"/>
+    <bench-ci file="bench/bench_intrinsic_nil.sp"/>
+    <bench-ci file="bench/bench_intrinsic_if.sp"/>
+    <bench-ci file="bench/bench_create_abstraction.sp"/>
 
     <exec executable="ruby" input="massage_benchmark_info.rb"/>
   </target>
