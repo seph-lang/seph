@@ -21,6 +21,11 @@
     <pathelement path="${test.classes.dir}"/>
   </path>
 
+  <path id="run.classpath">
+    <fileset dir="${lib.release.dir}" includes="*.jar"/>
+    <pathelement path="${main.classes.dir}"/>
+  </path>
+
   <target name="prepare" description="Creates the directories needed for building">
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${main.classes.dir}"/>
@@ -173,6 +178,56 @@
     </jar>
   </target>
 
+
+
+
+
+  <macrodef name="bench">
+    <attribute name="file"/>
+    <sequential>
+      <java classname="seph.lang.Main" fork="true" failonerror="true">
+        <jvmarg value="-server"/>
+        <jvmarg value="-Xint"/>
+
+        <sysproperty key="seph.benchmark.format" value="human"/>
+        <sysproperty key="file.encoding" value="UTF-8"/>
+
+        <classpath refid="run.classpath"/>
+
+        <arg line="@{file}"/>
+      </java>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="bench-ci">
+    <attribute name="file"/>
+    <attribute name="append" default="true"/>
+    <sequential>
+      <java classname="seph.lang.Main" fork="true" failonerror="true" output="${build.dir}/all_bench_results" logError="true" append="@{append}">
+        <jvmarg value="-server"/>
+        <jvmarg value="-Xint"/>
+
+        <sysproperty key="seph.benchmark.format" value="robot"/>
+        <sysproperty key="file.encoding" value="UTF-8"/>
+
+        <classpath refid="run.classpath"/>
+
+        <arg line="@{file}"/>
+      </java>
+    </sequential>
+  </macrodef>
+
+  <target name="benchmark" depends="prepare" description="Runs all Seph benchmarks and outputs everything on the console">
+    <bench file="bench/bench_fact.sp"/>
+    <bench file="bench/bench_fib.sp"/>
+  </target>
+
+  <target name="ci-benchmark" depends="prepare" description="Runs all Seph benchmarks and outputs everything to a file in build">
+    <bench-ci file="bench/bench_fact.sp" append="false"/>
+    <bench-ci file="bench/bench_fib.sp"/>
+
+    <exec executable="ruby" input="massage_benchmark_info.rb"/>
+  </target>
 
   <target name="jar" depends="test" description="Create the seph.jar file">
     <jar destfile="${lib.dir}/seph.jar">
