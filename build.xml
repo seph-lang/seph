@@ -185,7 +185,7 @@
   <macrodef name="bench">
     <attribute name="file"/>
     <sequential>
-      <java classname="seph.lang.Main" fork="true" failonerror="true">
+      <java classname="seph.lang.Main" fork="true" failonerror="true" maxmemory="256m">
         <jvmarg value="-server"/>
         <jvmarg value="-Xint"/>
 
@@ -203,7 +203,7 @@
     <attribute name="file"/>
     <attribute name="append" default="true"/>
     <sequential>
-      <java classname="seph.lang.Main" fork="true" failonerror="true" output="${build.dir}/all_bench_results" logError="true" append="@{append}">
+      <java classname="seph.lang.Main" fork="true" failonerror="true" output="${build.dir}/all_bench_results" logError="true" append="@{append}" maxmemory="256m">
         <jvmarg value="-server"/>
         <jvmarg value="-Xint"/>
 
