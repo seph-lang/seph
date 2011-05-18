@@ -268,6 +268,10 @@ public class AbstractionCompiler {
 
     private void compileArgument(Message argument, int currentMessageIndex, int argIndex, List<ArgumentEntry> currentArguments) {
         //               printThisClass = true;
+        if(argument.name().endsWith(":")) {
+            throw new CompilationAborted("No support for compiling keyword arguments");
+        }
+
         final String codeName   = "code_arg_" + currentMessageIndex + "_" + argIndex;
         final String handleName = "handle_arg_" + currentMessageIndex + "_" + argIndex;
         final String methodName = "argument_" + currentMessageIndex + "_" + argIndex;
