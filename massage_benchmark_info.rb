@@ -84,21 +84,24 @@ set ylabel "Best time (s)"
 set title "Benchmark: #{group}"
 set key left box
 STR
-        ixh.puts "<img src=\"benchmark_group_#{group_index}.svg\"/>"
         first = true
 
         plot = ""
         
         Tempfile.open("seph_benchmark_data") do |f|
-          groups[group].sort.each_with_index do |bname, ix|
-            entries.zip(collated_results[bname]).each do |timestamp, entry|
-              f.puts "#{timestamp.gsub("_", "-")}\t#{entry}"
-            end
-            f.puts ""
-            f.puts ""
+          ix = 0
+          groups[group].sort.each do |bname|
+            unless collated_results[bname].compact.empty?
+              entries.zip(collated_results[bname]).each do |timestamp, entry|
+                f.puts "#{timestamp.gsub("_", "-")}\t#{entry}"
+              end
+              f.puts ""
+              f.puts ""
 
-            plot << "#{first ? "plot " : ", "}\"#{f.path}\" using 1:2 index #{ix} title \"#{bname}\" with linespoints"
-            first = false
+              plot << "#{first ? "plot " : ", "}\"#{f.path}\" using 1:2 index #{ix} title \"#{bname}\" with linespoints"
+              first = false
+              ix += 1
+            end
           end
 
           pf.puts plot
@@ -106,8 +109,11 @@ STR
           f.flush
           pf.flush
 
-          system("cat #{pf.path} | gnuplot")
-          group_index += 1
+          unless first
+            ixh.puts "<img src=\"benchmark_group_#{group_index}.svg\"/>"
+            system("cat #{pf.path} | gnuplot")
+            group_index += 1
+          end
         end
       end  
     end
