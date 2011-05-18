@@ -244,6 +244,16 @@
     <bench-ci file="bench/bench_read_cell.sp"/>
     <bench-ci file="bench/bench_read_lexical.sp"/>
 
+    <tstamp>
+      <format property="current.timestamp" pattern="yyyy_MM_dd_hh_mm"/>
+    </tstamp>
+    
+    <copy file="${build.dir}/all_bench_results" tofile="/var/log/seph_benchmarks/all_bench_results-${current.timestamp}" overwrite="true"/>
+    
+    <exec executable="ruby" input="massage_benchmark_info.rb"/>
+  </target>
+
+  <target name="ci-massage-benchmarks" depends="prepare" description="Output information about benchmarks to a series of images">
     <exec executable="ruby" input="massage_benchmark_info.rb"/>
   </target>
 

@@ -6,7 +6,6 @@ require 'tempfile'
 dir_name = "/var/log/seph_benchmarks"
 current_timestamp = Time.now.strftime("%Y_%m_%d_%H_%M")
 
-FileUtils.cp_r "build/all_bench_results", "#{dir_name}/all_bench_results-#{current_timestamp}"
 FileUtils.mkdir_p "build/performance_report"
 
 def read_bench_file(f, names, collated_results)
