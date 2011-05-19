@@ -38,6 +38,15 @@ public class MethodAdapter {
             };
     }
 
+    public void load(final int constant) {
+        op();
+        next = new NextLoadOperation() {
+                public void execute() {
+                    mv.visitLdcInsn(constant);
+                }
+            };
+    }
+
     public void loadThis() {
         loadLocal(0);
     }
@@ -49,6 +58,16 @@ public class MethodAdapter {
                     mv.visitVarInsn(ALOAD, index);   
                 }
             };
+    }
+
+    public void newArray(Class c) {
+        op();
+        this.mv.visitTypeInsn(ANEWARRAY, p(c));
+    }
+
+    public void storeArray() {
+        op();
+        this.mv.visitInsn(AASTORE);
     }
 
     public void storeLocal(int index) {

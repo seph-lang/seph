@@ -220,12 +220,14 @@ public class AbstractionCompiler {
         public final String handleName;
         public final String methodName;
         public final Message argumentCode;
+        public final String keyword;
 
-        public ArgumentEntry(String codeName, String handleName, String methodName, Message argumentCode) {
+        public ArgumentEntry(String codeName, String handleName, String methodName, Message argumentCode, String keyword) {
             this.codeName = codeName;
             this.handleName = handleName;
             this.methodName = methodName;
             this.argumentCode = argumentCode;
+            this.keyword = keyword;
         }
     }
 
@@ -298,14 +300,18 @@ public class AbstractionCompiler {
 
     private void compileArgument(Message argument, int currentMessageIndex, int argIndex, List<ArgumentEntry> currentArguments) {
         //               printThisClass = true;
-        if(argument.name().endsWith(":")) {
-            throw new CompilationAborted("No support for compiling keyword arguments");
+        String keyword = null;
+        Message argumentToCompile = argument;
+        String name = argument.name();
+        if(name.endsWith(":")) {
+            keyword = name.substring(0, name.length() - 1);
+            argumentToCompile = argument.next();
         }
 
         final String codeName   = "code_arg_" + currentMessageIndex + "_" + argIndex;
         final String handleName = "handle_arg_" + currentMessageIndex + "_" + argIndex;
         final String methodName = "argument_" + currentMessageIndex + "_" + argIndex;
-        ArgumentEntry ae = new ArgumentEntry(codeName, handleName, methodName, argument);
+        ArgumentEntry ae = new ArgumentEntry(codeName, handleName, methodName, argument, keyword);
         arguments.add(ae);
         currentArguments.add(ae);
         
@@ -324,7 +330,7 @@ public class AbstractionCompiler {
 
         ma.label(els);
 
-        Message current = argument;
+        Message current = argumentToCompile;
         Message last = findLast(current);
 
         ma.loadLocal(RECEIVER);
@@ -360,20 +366,44 @@ public class AbstractionCompiler {
         ma.end();
     }
 
-    private int compileArguments(MethodAdapter ma, IPersistentList arguments, boolean activateWith, int plusArity) {
+    private static class Arity {
+        public final int positional;
+        public final int keyword;
+        public Arity(int positional, int keyword) {
+            this.positional = positional;
+            this.keyword = keyword;
+        }
+    }
+
+    private Arity compileArguments(MethodAdapter ma, IPersistentList arguments, boolean activateWith, int plusArity) {
         int num = 0;
         final int currentMessageIndex = messageIndex++;
 
         final int arity = RT.count(arguments);
         final LinkedList<ArgumentEntry> currentArguments = new LinkedList<>();
+        final List<Message> keywordArguments = new LinkedList<>();
+        final List<String> keywordArgumentNames = new LinkedList<>();
+
         for(ISeq seq = arguments.seq(); seq != null; seq = seq.next()) {
-            compileArgument((Message)seq.first(), currentMessageIndex, num++, currentArguments);
+            Message m = (Message)seq.first();
+            if(m.name().endsWith(":")) {
+                keywordArgumentNames.add(m.name().substring(0, m.name().length() - 1));
+                keywordArguments.add(m);
+            } else {
+                compileArgument((Message)seq.first(), currentMessageIndex, num++, currentArguments);
+            }
         }
-        if(arity > 5) {
+
+        final LinkedList<ArgumentEntry> keywordCurrentArguments = new LinkedList<>();
+        for(Message m : keywordArguments) {
+            compileArgument(m, currentMessageIndex, num++, keywordCurrentArguments);
+        }
+
+        if((arity - keywordArguments.size()) > 5) {
             ma.getStatic(PersistentList.class, "EMPTY", "Lseph/lang/persistent/PersistentList$EmptyList;");
             for(final Iterator<ArgumentEntry> iter = currentArguments.descendingIterator(); iter.hasNext();) {
                 ArgumentEntry ae = iter.next();
-
+                
                 ma.getStatic(className, ae.handleName, MethodHandle.class);
 
                 if(activateWith) {
@@ -404,7 +434,39 @@ public class AbstractionCompiler {
             }
         }
 
-        return arity;
+        if(keywordArguments.size() > 0) {
+            ma.load(keywordArgumentNames.size());
+            ma.newArray(String.class);
+            int i = 0;
+            for(String s : keywordArgumentNames) {
+                ma.dup();
+                ma.load(i++);
+                ma.load(s);
+                ma.storeArray();
+            }
+
+            ma.load(keywordArgumentNames.size());
+            ma.newArray(MethodHandle.class);
+            i = 0;
+            for(ArgumentEntry ae : keywordCurrentArguments) {
+                ma.dup();
+                ma.load(i++);
+                ma.getStatic(className, ae.handleName, MethodHandle.class);
+
+                if(activateWith) {
+                    ma.loadLocal(METHOD_SCOPE + plusArity); 
+                } else {
+                    ma.loadLocal(METHOD_SCOPE_ARG);
+                }
+
+                ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
+                ma.loadLocal(RECEIVER);
+                ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
+                ma.storeArray();
+            }
+        }
+
+        return new Arity(arity - keywordArguments.size(), keywordArguments.size());
     }
 
     private final static int METHOD_SCOPE_ARG       = 0;
@@ -439,22 +501,41 @@ public class AbstractionCompiler {
         ma.label(done);
     }
 
-    private String sigFor(int arity) {
-        switch(arity) {
-        case 0:
-            return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class);
-        case 1:
-            return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class);
-        case 2:
-            return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class);
-        case 3:
-            return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
-        case 4:
-            return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
-        case 5:
-            return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
-        default:
-            return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class);
+    private String sigFor(Arity arity) {
+        if(arity.keyword > 0) {
+            switch(arity.positional) {
+            case 0:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class);
+            case 1:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, String[].class, MethodHandle[].class);
+            case 2:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+            case 3:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+            case 4:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+            case 5:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+            default:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class, String[].class, MethodHandle[].class);
+            }
+        } else {
+            switch(arity.positional) {
+            case 0:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class);
+            case 1:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class);
+            case 2:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class);
+            case 3:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
+            case 4:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
+            case 5:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
+            default:
+                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class);
+            }
         }
     }
 
@@ -467,7 +548,7 @@ public class AbstractionCompiler {
             ma.loadLocal(METHOD_SCOPE_ARG);
         }
             
-        final int arity = compileArguments(ma, current.arguments(), activateWith, plusArity);
+        final Arity arity = compileArguments(ma, current.arguments(), activateWith, plusArity);
 
         String possibleIntrinsic = "";
 
@@ -564,7 +645,7 @@ public class AbstractionCompiler {
 
     // Should only be called for up to five arguments
     private void activateWithMethodRealArity(final int arity) {
-        MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC, "activateWith", sigFor(arity), null, null));
+        MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC, "activateWith", sigFor(new Arity(arity, 0)), null, null));
 
         ma.loadThis();
         ma.getField(className, "capture", LexicalScope.class);
@@ -643,7 +724,7 @@ public class AbstractionCompiler {
             ma.pop();
         }
 
-        ma.virtualCall(className, "activateWith", sigFor(arity));
+        ma.virtualCall(className, "activateWith", sigFor(new Arity(arity, 0)));
 
         ma.retValue();
         ma.end();

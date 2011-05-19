@@ -406,6 +406,15 @@ public class Bootstrap {
     public final static MethodHandle ACTIVATE_WITH_ARG3 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
     public final static MethodHandle ACTIVATE_WITH_ARG4 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
     public final static MethodHandle ACTIVATE_WITH_ARG5 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
+
+
+    public final static MethodHandle ACTIVATE_WITH_ARGS_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class, String[].class, MethodHandle[].class));
+    public final static MethodHandle ACTIVATE_WITH_ARG0_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class));
+    public final static MethodHandle ACTIVATE_WITH_ARG1_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, String[].class, MethodHandle[].class));
+    public final static MethodHandle ACTIVATE_WITH_ARG2_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
+    public final static MethodHandle ACTIVATE_WITH_ARG3_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
+    public final static MethodHandle ACTIVATE_WITH_ARG4_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
+    public final static MethodHandle ACTIVATE_WITH_ARG5_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
     
     public static SephObject tailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
         SephObject value = receiver.get(name);
@@ -666,6 +675,561 @@ public class Bootstrap {
         }
         return value;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, null, value, -1);
+            return value.activateWith(receiver, thread, scope, args, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, -1);
+        }
+        return value;
+    }
+
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, null, value, 0);
+            return value.activateWith(receiver, thread, scope, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 0);
+        }
+        return value;
+    }
+
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, null, value, 1);
+            return value.activateWith(receiver, thread, scope, arg0, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 1);
+        }
+        return value;
+    }
+
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, null, value, 2);
+            return value.activateWith(receiver, thread, scope, arg0, arg1, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 2);
+        }
+        return value;
+    }
+
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, null, value, 3);
+            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 3);
+        }
+        return value;
+    }
+
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, null, value, 4);
+            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 4);
+        }
+
+        return value;
+    }
+
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, null, value, 5);
+            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 5);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, scope, value, -1);
+            return value.activateWith(receiver, thread, scope, args, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, -1);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, scope, value, 0);
+            return value.activateWith(receiver, thread, scope, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 0);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, scope, value, 1);
+            return value.activateWith(receiver, thread, scope, arg0, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 1);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, scope, value, 2);
+            return value.activateWith(receiver, thread, scope, arg0, arg1, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 2);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, scope, value, 3);
+            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 3);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, scope, value, 4);
+            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 4);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            site.installActivatableEntryWithKeywords(receiver, scope, value, 5);
+            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4, keywordNames, keywords);
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 5);
+        }
+        return value;
+    }
+
+    public static SephObject tailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARGS_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, null, h, -1);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, -1);
+        }
+        return value;
+    }
+
+    public static SephObject tailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG0_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, null, h, 0);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 0);
+        }
+        return value;
+    }
+
+    public static SephObject tailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG1_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, null, h, 1);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 1);
+        }
+        return value;
+    }
+
+    public static SephObject tailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG2_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, null, h, 2);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 2);
+        }
+        return value;
+    }
+
+    public static SephObject tailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG3_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, null, h, 3);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 3);
+        }
+        return value;
+    }
+
+    public static SephObject tailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG4_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, null, h, 4);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 4);
+        }
+        return value;
+    }
+
+    public static SephObject tailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = receiver.get(name);
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG5_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, null, h, 5);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, null, value, 5);
+        }
+        return value;
+    }
+
+
+    public static SephObject noReceiverTailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARGS_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, scope, h, -1);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, -1);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverTailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG0_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, scope, h, 0);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 0);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverTailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG1_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, scope, h, 1);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 1);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverTailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG2_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, scope, h, 2);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 2);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverTailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG3_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, scope, h, 3);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 3);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverTailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG4_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, scope, h, 4);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 4);
+        }
+        return value;
+    }
+
+    public static SephObject noReceiverTailCallFallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywords) {
+        SephObject value = scope.get(name);
+        if(null == value) {
+            value = receiver.get(name);
+        }
+        if(null == value) {
+            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+        }
+        if(value.isActivatable()) {
+            MethodHandle h = ACTIVATE_WITH_ARG5_KEYWORDS.bindTo(value);
+            site.installActivatableEntryWithKeywords(receiver, scope, h, 5);
+            h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4, keywordNames, keywords);
+            thread.tail = h;
+            return SThread.TAIL_MARKER;
+        } else {
+            site.installConstantEntryWithKeywords(receiver, scope, value, 5);
+        }
+        return value;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public static SephObject replaceCompletelyImpl(MethodHandle mh, SephCallSite site, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
         site.setTarget(mh);

@@ -127,6 +127,18 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                     out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_3M = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);");
                     out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_4M = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);");
                     out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_5M = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_K    = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class, String[].class, MethodHandle[].class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_0_K  = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, String[].class, MethodHandle[].class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_1S_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, SephObject.class, String[].class, MethodHandle[].class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_2S_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, SephObject.class, SephObject.class, String[].class, MethodHandle[].class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_3S_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, SephObject.class, SephObject.class, SephObject.class, String[].class, MethodHandle[].class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_4S_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, SephObject.class, SephObject.class, SephObject.class, SephObject.class, String[].class, MethodHandle[].class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_5S_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, SephObject.class, SephObject.class, SephObject.class, SephObject.class, SephObject.class, String[].class, MethodHandle[].class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_1M_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, String[].class, MethodHandle[].class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_2M_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_3M_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_4M_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);");
+                    out.println("    private final static MethodType ACTIVATE_METHOD_TYPE_5M_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);");
 
                     out.println("    private static SephMethodHandleObject getSephMethodHandleObject(String name) {");
                     out.println("        try {");
@@ -143,7 +155,19 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                     out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_2M),");
                     out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_3M),");
                     out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_4M),");
-                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_5M));");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_5M),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_K),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_0_K),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_1S_K),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_2S_K),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_3S_K),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_4S_K),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_5S_K),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_1M_K),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_2M_K),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_3M_K),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_4M_K),");
+                    out.println("                             l.findStatic(" + cd.getSimpleName() + "Base.class, name, ACTIVATE_METHOD_TYPE_5M_K));");
                     out.println("        } catch(Throwable e) {");
                     out.println("            e.printStackTrace();");
                     out.println("            throw new RuntimeException(e);");
@@ -236,8 +260,11 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                         }
                     } else if(tname.equals("seph.lang.SThread")) {
                         sb.append("thread");
-                    } else if(tname.equals("seph.lang.persistent.IPersistentMap")) {
-                        sb.append("args.restKeywords");
+                    } else if(tname.equals("java.lang.String[]")) {
+                        sb.append("args.restKeywordNames");
+                        hasRestKeywords = true;
+                    } else if(tname.equals("java.lang.invoke.MethodHandle[]")) {
+                        sb.append("args.restKeywordMHs");
                         hasRestKeywords = true;
                     } else if(tname.equals("seph.lang.persistent.IPersistentList")) {
                         sb.append("args.restPositional");
@@ -285,7 +312,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                 return positionalArity;
             }
 
-            private void generateForArity(int arity, int currentArity, MethodDeclaration md, ClassDeclaration cd, boolean eval) throws IOException {
+            private void generateForArity(int arity, int currentArity, MethodDeclaration md, ClassDeclaration cd, boolean eval, boolean key) throws IOException {
                 if(!eval) {
                     out.println("        throw new RuntimeException(\"Expected unevaluated arguments but got evaluated arguments. This is most likely a compiler bug\");");
                 } else if(arity == currentArity) {
@@ -296,6 +323,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                     for(ParameterDeclaration pd : md.getParameters()) {
                         sb.append(sep);
                         String tname = pd.getType().toString();
+
                         if(tname.equals("seph.lang.LexicalScope")) {
                             sb.append("scope");
                         } else if(tname.equals("seph.lang.SephObject")) {
@@ -305,6 +333,10 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                                 haveReceiver = true;
                                 sb.append("receiver");
                             }
+                        } else if(key && tname.equals("java.lang.invoke.MethodHandle[]")) {
+                            sb.append("keywordArguments");
+                        } else if(key && tname.equals("java.lang.String[]")) {
+                            sb.append("keywordNames");
                         } else if(tname.equals("seph.lang.SThread")) {
                             sb.append("thread");
                         } else {
@@ -321,7 +353,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                 }
             }
 
-            private void generateForArityMH(int arity, int currentArity, MethodDeclaration md, ClassDeclaration cd, boolean eval) throws IOException {
+            private void generateForArityMH(int arity, int currentArity, MethodDeclaration md, ClassDeclaration cd, boolean eval, boolean key) throws IOException {
                 if(arity == currentArity) {
                     int args = 0;
                     StringBuilder sb = new StringBuilder();
@@ -341,6 +373,10 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                             }
                         } else if(tname.equals("java.lang.invoke.MethodHandle")) {
                             sb.append("arg" + (args++));
+                        } else if(key && tname.equals("java.lang.invoke.MethodHandle[]")) {
+                            sb.append("keywordArguments");
+                        } else if(key && tname.equals("java.lang.String[]")) {
+                            sb.append("keywordNames");
                         } else if(tname.equals("seph.lang.SThread")) {
                             sb.append("thread");
                         } else {
@@ -379,47 +415,111 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
 
                 
                 out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver) {");
-                generateForArity(arity, 0, md, cd, eval);
+                generateForArity(arity, 0, md, cd, eval, false);
                 out.println("    }");
 
                 out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, SephObject arg0) {");
-                generateForArity(arity, 1, md, cd, eval);
+                generateForArity(arity, 1, md, cd, eval, false);
                 out.println("    }");
 
                 out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, SephObject arg0, SephObject arg1) {");
-                generateForArity(arity, 2, md, cd, eval);
+                generateForArity(arity, 2, md, cd, eval, false);
                 out.println("    }");
 
                 out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, SephObject arg0, SephObject arg1, SephObject arg2) {");
-                generateForArity(arity, 3, md, cd, eval);
+                generateForArity(arity, 3, md, cd, eval, false);
                 out.println("    }");
 
                 out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3) {");
-                generateForArity(arity, 4, md, cd, eval);
+                generateForArity(arity, 4, md, cd, eval, false);
                 out.println("    }");
 
                 out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3, SephObject arg4) {");
-                generateForArity(arity, 5, md, cd, eval);
+                generateForArity(arity, 5, md, cd, eval, false);
                 out.println("    }");
 
                 out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, MethodHandle arg0) {");
-                generateForArityMH(arity, 1, md, cd, eval);
+                generateForArityMH(arity, 1, md, cd, eval, false);
                 out.println("    }");
 
                 out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, MethodHandle arg0, MethodHandle arg1) {");
-                generateForArityMH(arity, 2, md, cd, eval);
+                generateForArityMH(arity, 2, md, cd, eval, false);
                 out.println("    }");
 
                 out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) {");
-                generateForArityMH(arity, 3, md, cd, eval);
+                generateForArityMH(arity, 3, md, cd, eval, false);
                 out.println("    }");
 
                 out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3) {");
-                generateForArityMH(arity, 4, md, cd, eval);
+                generateForArityMH(arity, 4, md, cd, eval, false);
                 out.println("    }");
 
                 out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4) {");
-                generateForArityMH(arity, 5, md, cd, eval);
+                generateForArityMH(arity, 5, md, cd, eval, false);
+                out.println("    }");
+
+
+
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, IPersistentList arguments, String[] keywordNames, MethodHandle[] keywordArguments) {");
+
+                sb = new StringBuilder();
+
+                eval = true;
+                arity = -1;
+                if(sm.evaluateArguments()) {
+                    arity = generateRegularArgumentEvaluation(md, sb);
+                } else {
+                    arity = generateUnevaluatedArguments(md, sb);
+                    eval = false;
+                }
+
+                out.println("        return " + cd.getQualifiedName() + "." + md.getSimpleName() + "(" + sb + ");");
+                out.println("    }");
+                out.println();
+
+                
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                generateForArity(arity, 0, md, cd, eval, true);
+                out.println("    }");
+
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, SephObject arg0, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                generateForArity(arity, 1, md, cd, eval, true);
+                out.println("    }");
+
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, SephObject arg0, SephObject arg1, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                generateForArity(arity, 2, md, cd, eval, true);
+                out.println("    }");
+
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, SephObject arg0, SephObject arg1, SephObject arg2, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                generateForArity(arity, 3, md, cd, eval, true);
+                out.println("    }");
+
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                generateForArity(arity, 4, md, cd, eval, true);
+                out.println("    }");
+
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3, SephObject arg4, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                generateForArity(arity, 5, md, cd, eval, true);
+                out.println("    }");
+
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                generateForArityMH(arity, 1, md, cd, eval, true);
+                out.println("    }");
+
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                generateForArityMH(arity, 2, md, cd, eval, true);
+                out.println("    }");
+
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                generateForArityMH(arity, 3, md, cd, eval, true);
+                out.println("    }");
+
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                generateForArityMH(arity, 4, md, cd, eval, true);
+                out.println("    }");
+
+                out.println("    public static SephObject " + name + "(SThread thread, LexicalScope scope, SephObject receiver, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                generateForArityMH(arity, 5, md, cd, eval, true);
                 out.println("    }");
             }
         }

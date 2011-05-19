@@ -8,6 +8,7 @@ import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.IPersistentMap;
 import seph.lang.persistent.ISeq;
 import seph.lang.persistent.MapEntry;
+import seph.lang.persistent.PersistentArrayMap;
 
 import java.lang.invoke.MethodHandle;
 
@@ -83,16 +84,77 @@ public class Base implements SephObject {
         throw new RuntimeException(" *** couldn't activate: " + this);
     }
 
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3, SephObject arg4, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywordArguments) {
+        throw new RuntimeException(" *** couldn't activate: " + this);
+    }
+
+
+
     @SephMethod
-    public final static SephObject with(SephObject receiver, SThread thread, IPersistentMap restKeywords) {
-        if(restKeywords.count() == 0) {
+    public final static SephObject with(SephObject receiver, LexicalScope scope, SThread thread, String[] keywordNames, MethodHandle[] keywordArguments) {
+        if(keywordNames.length == 0) {
             return receiver;
         } else {
-            for(ISeq seq = restKeywords.seq(); seq != null; seq = seq.next()) {
-                thread.runtime.checkIntrinsicAssignment((String)((MapEntry)seq.first()).key());
+            for(String s : keywordNames) {
+                thread.runtime.checkIntrinsicAssignment(s);
             }
 
-            return SephObjectFactory.spreadAndCreate(null, receiver, restKeywords);
+            IPersistentMap args = PersistentArrayMap.EMPTY;
+            try {
+                for(int i = 0; i < keywordNames.length; i++) {
+                    args = args.associate(keywordNames[i], keywordArguments[i].invoke(thread, scope, true, true));
+                }
+            } catch(Throwable e) {
+                e.printStackTrace();
+                return null;
+            }
+
+            return SephObjectFactory.spreadAndCreate(null, receiver, args);
         }
     }
 

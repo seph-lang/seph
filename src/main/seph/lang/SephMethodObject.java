@@ -4,6 +4,7 @@
 package seph.lang;
 
 import java.util.List;
+import java.util.LinkedList;
 import java.util.ArrayList;
 
 import seph.lang.persistent.PersistentArrayMap;
@@ -48,7 +49,8 @@ public abstract class SephMethodObject implements SephObject {
 
     public static ArgumentResult parseAndEvaluateArguments(SThread thread, LexicalScope scope, IPersistentList arguments, int posArity, boolean restPos, boolean restKey) {
         List restp = restPos ? new ArrayList(arguments.count() - posArity) : (List)null;
-        IPersistentMap restk = restKey ? PersistentArrayMap.EMPTY : (IPersistentMap)null;
+        List<String> namesk = restKey ? new LinkedList<String>() : (List<String>)null;
+        List<MethodHandle> valuesk = restKey ? new LinkedList<MethodHandle>() : (List<MethodHandle>)null;
         ISeq argsLeft = arguments.seq();
         int currentArg = 0;
         String name;
@@ -71,7 +73,8 @@ public abstract class SephMethodObject implements SephObject {
                     name = name.substring(0, name.length()-1);
                     current = current.next();
                     SephObject part = scope.evaluateFully(thread, current);
-                    restk = restk.associate(name, part);
+                    namesk.add(name);
+                    valuesk.add(MethodHandles.dropArguments(MethodHandles.constant(SephObject.class, part), 0, SThread.class, LexicalScope.class, boolean.class, boolean.class));
                 } else {
                     SephObject part = null;
                     if(toEvaluate == null) {
@@ -99,7 +102,8 @@ public abstract class SephMethodObject implements SephObject {
         }
 
         if(restKey) {
-            result.restKeywords = restk;
+            result.restKeywordNames = namesk.toArray(new String[0]);
+            result.restKeywordMHs = valuesk.toArray(new MethodHandle[0]);
         }
 
         return result;
@@ -157,7 +161,8 @@ public abstract class SephMethodObject implements SephObject {
         public MethodHandle argMH3;
         public MethodHandle argMH4;
         public IPersistentList restPositional;
-        public IPersistentMap restKeywords;
+        public String[] restKeywordNames;
+        public MethodHandle[] restKeywordMHs;
 
         public final void assign(int index, SephObject part) {
             switch(index) {
