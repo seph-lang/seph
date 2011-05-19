@@ -203,6 +203,7 @@
     <attribute name="file"/>
     <attribute name="append" default="true"/>
     <sequential>
+      <echo>Benchmark: @{file}</echo>
       <java classname="seph.lang.Main" fork="true" failonerror="true" output="${build.dir}/all_bench_results" logError="true" append="@{append}" maxmemory="256m">
         <jvmarg value="-server"/>
         <jvmarg value="-Xint"/>

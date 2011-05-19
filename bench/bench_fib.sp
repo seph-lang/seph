@@ -4,7 +4,7 @@ fib = #(n,
     n,
     fib(n - 1) + fib(n - 2)))
 
-fibIter = #(n
+fibIter = #(n,
   i = 0
   j = 1
   cur = 1

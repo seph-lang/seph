@@ -267,14 +267,15 @@ public class AbstractionCompiler {
 
     private static final Message SENTINEL = new LiteralMessage(null, null, null, -1, -1);
     
-    private void compileAssignment(MethodAdapter ma, Assignment current, int plusArity, int scopeIndex) {
+    private void compileAssignment(MethodAdapter ma, Assignment current, int plusArity, int scopeIndex, boolean activateWith) {
         Message left = (Message)current.arguments().seq().first();
         Message right = (Message)current.arguments().seq().next().first();
         String name = left.name();
 
+        //        printThisClass = true;
         switch(current.getAssignment()) {
         case EQ:
-            compileCode(ma, plusArity, right, SENTINEL);
+            compileCode(ma, plusArity, right, SENTINEL, activateWith);
             ma.dup();
             ma.loadLocal(scopeIndex);
             ma.swap();
@@ -283,8 +284,8 @@ public class AbstractionCompiler {
             ma.virtualCall(LexicalScope.class, "assign", void.class, String.class, SephObject.class);
             break;
         case PLUS_EQ:
-            compileCode(ma, plusArity, left, SENTINEL);
-            compileCode(ma, plusArity, NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position()), SENTINEL);
+            compileCode(ma, plusArity, left, SENTINEL, activateWith);
+            compileCode(ma, plusArity, NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position()), SENTINEL, activateWith);
             ma.dup();
             ma.loadLocal(scopeIndex);
             ma.swap();
@@ -346,7 +347,7 @@ public class AbstractionCompiler {
                 ma.init(newName, Void.TYPE, LexicalScope.class);
                 first = false;
             } else if(current instanceof Assignment) {
-                compileAssignment(ma, (Assignment)current, -1, 0);
+                compileAssignment(ma, (Assignment)current, -1, 0, false);
                 first = false;
             } else {
                 compileMessageSend(ma, current, false, -1, first, last);
@@ -523,7 +524,7 @@ public class AbstractionCompiler {
         return lastReal;
     }
 
-    private void compileCode(MethodAdapter ma, int plusArity, Message _code, Message last) {
+    private void compileCode(MethodAdapter ma, int plusArity, Message _code, Message last, boolean isActivateWith) {
         boolean first = true;
 
         Message current = _code;
@@ -544,10 +545,10 @@ public class AbstractionCompiler {
                 ma.init(newName, Void.TYPE, LexicalScope.class);
                 first = false;
             } else if(current instanceof Assignment) {
-                compileAssignment(ma, (Assignment)current, plusArity, METHOD_SCOPE + plusArity);
+                compileAssignment(ma, (Assignment)current, plusArity, METHOD_SCOPE + plusArity, isActivateWith);
                 first = false;
             } else {
-                compileMessageSend(ma, current, true, plusArity, first, last);
+                compileMessageSend(ma, current, isActivateWith, isActivateWith ? plusArity : -1, first, last);
                 first = false;
             }
             current = current.next();
@@ -556,7 +557,7 @@ public class AbstractionCompiler {
 
     private void activateWithBody(MethodAdapter ma, int plusArity) {
         ma.loadLocal(RECEIVER);
-        compileCode(ma, plusArity, code, findLast(code));
+        compileCode(ma, plusArity, code, findLast(code), true);
         ma.retValue();
         ma.end();
     }
