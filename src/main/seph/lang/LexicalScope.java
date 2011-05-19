@@ -18,14 +18,17 @@ import seph.lang.persistent.ISeq;
  */
 public class LexicalScope {
     public final static LexicalScope ROOT = new LexicalScope(null, null) {
-            public LexicalScope find(String name, LexicalScope def) {
+            @Override
+            protected LexicalScope find(String name, LexicalScope def) {
                 return def;
             }
 
+            @Override
             public SephObject get(String name) {
                 return null;
             }
             
+            @Override
             public int version() {
                 return 13;
             }
@@ -64,7 +67,7 @@ public class LexicalScope {
 
     private IPersistentMap values = PersistentArrayMap.EMPTY;
 
-    public LexicalScope find(String name, LexicalScope def) {
+    protected LexicalScope find(String name, LexicalScope def) {
         if(values.containsKey(name)) {
             return this;
         } else {

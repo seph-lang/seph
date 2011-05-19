@@ -16,7 +16,7 @@ import seph.lang.persistent.ISeq;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public final class Assignment extends NamedMessage {
-    private static enum ActualAssignment {
+    public static enum ActualAssignment {
         EQ {
             public SephObject assignOp(SThread thread, Message left, Message right, LexicalScope scope) {
                 SephObject value = scope.evaluateFully(thread, right);
@@ -48,6 +48,10 @@ public final class Assignment extends NamedMessage {
         } else {
             assgn = null;
         }
+    }
+
+    public ActualAssignment getAssignment() {
+        return assgn;
     }
 
     @Override
