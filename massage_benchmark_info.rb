@@ -80,7 +80,7 @@ set xrange ["#{entries.first.gsub("_", "-")}":"#{entries.last.gsub("_", "-")}"]
 set grid
 set xlabel "Timestamp"
 set ylabel "Best time (s)"
-set title "Benchmark: #{group}"
+set title "Benchmark: #{group.gsub("&", "&amp;").gsub(">", "&gt;").gsub("<", "&lt;")}"
 set key left box
 STR
         first = true
@@ -97,7 +97,7 @@ STR
               f.puts ""
               f.puts ""
 
-              plot << "#{first ? "plot " : ", "}\"#{f.path}\" using 1:2 index #{ix} title \"#{bname}\" with linespoints"
+              plot << "#{first ? "plot " : ", "}\"#{f.path}\" using 1:2 index #{ix} title \"#{bname.gsub("&", "&amp;").gsub(">", "&gt;").gsub("<", "&lt;")}\" with linespoints"
               first = false
               ix += 1
             end
