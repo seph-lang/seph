@@ -85,7 +85,6 @@ public class AbstractionCompiler {
             //     ff.close();
             // } catch(Exception e) {
             // }
-            //            throw new CompilationAborted("No support for method calls with arguments");
         }
 
         try {
@@ -283,8 +282,16 @@ public class AbstractionCompiler {
             ma.swap();
             ma.virtualCall(LexicalScope.class, "assign", void.class, String.class, SephObject.class);
             break;
-        default:
-            throw new CompilationAborted("No support for compiling assignment other than =");
+        case PLUS_EQ:
+            compileCode(ma, plusArity, left, SENTINEL);
+            compileCode(ma, plusArity, NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position()), SENTINEL);
+            ma.dup();
+            ma.loadLocal(scopeIndex);
+            ma.swap();
+            ma.load(name);
+            ma.swap();
+            ma.virtualCall(LexicalScope.class, "assign", void.class, String.class, SephObject.class);
+            break;
         }
     }
 
