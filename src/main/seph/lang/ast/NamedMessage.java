@@ -40,7 +40,12 @@ public class NamedMessage implements Message, SephObject {
         if(name.equals(".")) {
             return new Terminator(name, arguments, next, filename, line, position);
         } else if(Parser.DEFAULT_ASSIGNMENT_OPERATORS.containsKey(name)) {
-            return new Assignment(name, arguments, next, filename, line, position);
+            if(scope != null) {
+                return new Assignment(name, arguments, next, filename, line, position, scope);
+            } else {
+                assert false : "Trying to create an abstraction with no scope information...";
+                return null;
+            }
         } else if(name.equals("#")) {
             if(scope != null) {
                 return new Abstraction(name, arguments, next, filename, line, position, scope);

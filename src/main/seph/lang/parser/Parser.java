@@ -1090,13 +1090,13 @@ public class Parser {
             if(!unary) {
                 top.popOperatorsTo(op.precedence);
                 List<Message> currentChain = top.currentMessageChain;
-                MutableMessage result = new MutableMessage(name, null, sourcename,  l, cc);
+                MutableMessage result = new MutableMessage(name, null, sourcename,  l, cc, scope);
                 currentChain.add(result);
                 top.added();
                 top.push(op.precedence, result, false);
             } else {
                 List<Message> currentChain = top.currentMessageChain;
-                MutableMessage result = new MutableMessage(name, null, sourcename,  l, cc);
+                MutableMessage result = new MutableMessage(name, null, sourcename,  l, cc, scope);
                 currentChain.add(result);
                 top.added();
                 top.push(-1, result, true);
@@ -1108,7 +1108,7 @@ public class Parser {
                     top.popOperatorsTo(13);
                     List<Message> currentChain = top.currentMessageChain;
                     Message last = currentChain.remove(currentChain.size() - 1);
-                    MutableMessage result = new MutableMessage(name, null, sourcename,  l, cc);
+                    MutableMessage result = new MutableMessage(name, null, sourcename,  l, cc, scope);
                     currentChain.add(result);
                     top.added();
                     top.push(13, result, false);

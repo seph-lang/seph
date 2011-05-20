@@ -33,12 +33,15 @@ public class MutableMessage implements Message {
     private final int line;
     private final int position;
 
-    public MutableMessage(String name, Message next, String filename, int line, int position) {
+    private final StaticScope scope;
+
+    public MutableMessage(String name, Message next, String filename, int line, int position, StaticScope scope) {
         this.name = name == null ? null : name.intern();
         this.next = next;
         this.filename = filename;
         this.line = line;
         this.position = position;
+        this.scope = scope;
     }
 
     public String name() {
@@ -57,7 +60,7 @@ public class MutableMessage implements Message {
         IPersistentList args = realArguments == null ? null :
             (firstArgument == null ? new PersistentList(realArguments) : PersistentList.create(Arrays.asList(firstArgument, realArguments)));
 
-        return NamedMessage.create(name, args, newNext, filename, line, position, null);
+        return NamedMessage.create(name, args, newNext, filename, line, position, scope);
     }
 
     public Message withArguments(IPersistentList args) {

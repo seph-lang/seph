@@ -8,6 +8,7 @@ import seph.lang.Runtime;
 import seph.lang.LexicalScope;
 import seph.lang.SThread;
 import seph.lang.parser.Parser;
+import seph.lang.parser.StaticScope;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.ISeq;
@@ -37,8 +38,10 @@ public final class Assignment extends NamedMessage {
     }
 
     private ActualAssignment assgn;
+    private final StaticScope scope;
+    private final int place;
 
-    public Assignment(String name, IPersistentList arguments, Message next, String filename, int line, int position) {
+    public Assignment(String name, IPersistentList arguments, Message next, String filename, int line, int position, StaticScope scope) {
         super(name, arguments, next, filename, line, position);
 
         if(name.equals("=")) {
@@ -48,10 +51,26 @@ public final class Assignment extends NamedMessage {
         } else {
             assgn = null;
         }
+
+        this.scope = scope;
+        this.place = scope.addOrFindName(((Message)arguments().seq().first()).name());
+        // System.err.println("Found the place in: " + scope);
+        // System.err.println("  depth: " + (place >> 16));
+        // System.err.println("  index: " + (place & 0xFFFF));
     }
 
     public ActualAssignment getAssignment() {
         return assgn;
+    }
+
+    @Override
+    public Message withNext(Message newNext) {
+        return NamedMessage.create(this.name, this.arguments, newNext, filename, line, position, scope);
+    }
+
+    @Override
+    public Message withArguments(IPersistentList args) {
+        return NamedMessage.create(this.name, args, this.next, filename, line, position, scope);
     }
 
     @Override

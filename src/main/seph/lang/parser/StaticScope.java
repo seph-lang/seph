@@ -55,4 +55,9 @@ public class StaticScope {
         }
         return existing.toInt();
     }
+
+    @Override
+    public String toString() {
+        return "Scope<" +  names + (parent == null ? ">" : " || parent=" + parent + ">");
+    }
 }// StaticScope
