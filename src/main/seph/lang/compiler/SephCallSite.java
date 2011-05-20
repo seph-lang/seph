@@ -38,58 +38,52 @@ public class SephCallSite extends MutableCallSite {
         return true;
     }
 
-    void installActivatableEntry(SephObject receiver, LexicalScope scope, SephObject value, int args) {
+    void installActivatableEntry(SephObject receiver, SephObject value, int args) {
         if(newEntry()) {
             MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles.guardWithTest(eq(receiver, scope, args), invokeActivateWith(value, args), currentEntry));
+            setTarget(MethodHandles.guardWithTest(eq(receiver, args), invokeActivateWith(value, args), currentEntry));
         }
     }
 
-    void installActivatableEntry(SephObject receiver, LexicalScope scope, MethodHandle value, int args) {
+    void installActivatableEntry(SephObject receiver, MethodHandle value, int args) {
         if(newEntry()) {
             MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles.guardWithTest(eq(receiver, scope, args), tailInvokeActivateWith(value, args), currentEntry));
+            setTarget(MethodHandles.guardWithTest(eq(receiver, args), tailInvokeActivateWith(value, args), currentEntry));
         }
     }
 
-    void installConstantEntry(SephObject receiver, LexicalScope scope, SephObject value, int args) {
+    void installConstantEntry(SephObject receiver, SephObject value, int args) {
         if(newEntry()) {
             MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles.guardWithTest(eq(receiver, scope, args), constantValue(value, args), currentEntry));
+            setTarget(MethodHandles.guardWithTest(eq(receiver, args), constantValue(value, args), currentEntry));
         }
     }
 
-    void installActivatableEntryWithKeywords(SephObject receiver, LexicalScope scope, SephObject value, int args) {
+    void installActivatableEntryWithKeywords(SephObject receiver, SephObject value, int args) {
         if(newEntry()) {
             MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles. guardWithTest(eqKeywords(receiver, scope, args), invokeActivateWithKeywords(value, args), currentEntry));
+            setTarget(MethodHandles. guardWithTest(eqKeywords(receiver, args), invokeActivateWithKeywords(value, args), currentEntry));
         }
     }
 
-    void installActivatableEntryWithKeywords(SephObject receiver, LexicalScope scope, MethodHandle value, int args) {
+    void installActivatableEntryWithKeywords(SephObject receiver, MethodHandle value, int args) {
         if(newEntry()) {
             MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, scope, args), tailInvokeActivateWithKeywords(value, args), currentEntry));
+            setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), tailInvokeActivateWithKeywords(value, args), currentEntry));
         }
     }
 
-    void installConstantEntryWithKeywords(SephObject receiver, LexicalScope scope, SephObject value, int args) {
+    void installConstantEntryWithKeywords(SephObject receiver, SephObject value, int args) {
         if(newEntry()) {
             MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, scope, args), constantValueKeywords(value, args), currentEntry));
+            setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), constantValueKeywords(value, args), currentEntry));
         }
     }
 
     public static boolean eq(Object first, SephObject receiver) {
         return first == receiver.identity();
     }
-
-    public static boolean eq(Object first, LexicalScope firstScope, int scopeVersion, SephObject receiver, LexicalScope scope) {
-        return first == receiver.identity() && firstScope == scope && scopeVersion == scope.version();
-    }
-
-    private final static MethodHandle EQ_SIMPLE = Bootstrap.findStatic(SephCallSite.class, "eq", MethodType.methodType(boolean.class, Object.class, SephObject.class));
-    private final static MethodHandle EQ_SCOPE =  Bootstrap.findStatic(SephCallSite.class, "eq", MethodType.methodType(boolean.class, Object.class, LexicalScope.class, int.class, SephObject.class, LexicalScope.class));
+    private final static MethodHandle EQ = Bootstrap.findStatic(SephCallSite.class, "eq", MethodType.methodType(boolean.class, Object.class, SephObject.class));
 
     private final static Class[] INDETERMINATE = new Class[]{IPersistentList.class};
     private final static Class[] CLASS_0       = new Class[0];
@@ -149,22 +143,14 @@ public class SephCallSite extends MutableCallSite {
         }
     }
 
-    private MethodHandle eq(SephObject receiver, LexicalScope scope, int args) {
+    private MethodHandle eq(SephObject receiver, int args) {
         Class[] argumentsToDrop = dropClasses(args);
-        if(scope == null) {
-            return MethodHandles.dropArguments(MethodHandles.dropArguments(EQ_SIMPLE.bindTo(receiver.identity()), 1, SThread.class, LexicalScope.class), 3, argumentsToDrop);
-        } else {
-            return MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.insertArguments(EQ_SCOPE, 0, receiver.identity(), scope, scope.version()), 1, SThread.class), 3, argumentsToDrop);
-        }
+        return MethodHandles.dropArguments(MethodHandles.dropArguments(EQ.bindTo(receiver.identity()), 1, SThread.class, LexicalScope.class), 3, argumentsToDrop);
     }
 
-    private MethodHandle eqKeywords(SephObject receiver, LexicalScope scope, int args) {
+    private MethodHandle eqKeywords(SephObject receiver, int args) {
         Class[] argumentsToDrop = dropClassesKeywords(args);
-        if(scope == null) {
-            return MethodHandles.dropArguments(MethodHandles.dropArguments(EQ_SIMPLE.bindTo(receiver.identity()), 1, SThread.class, LexicalScope.class), 3, argumentsToDrop);
-        } else {
-            return MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.insertArguments(EQ_SCOPE, 0, receiver.identity(), scope, scope.version()), 1, SThread.class), 3, argumentsToDrop);
-        }
+        return MethodHandles.dropArguments(MethodHandles.dropArguments(EQ.bindTo(receiver.identity()), 1, SThread.class, LexicalScope.class), 3, argumentsToDrop);
     }
 
     private MethodHandle invokeActivateWith(SephObject value, int args) {

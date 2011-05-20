@@ -18,16 +18,11 @@ import seph.lang.persistent.ISeq;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public final class Abstraction extends NamedMessage {
-    private final StaticScope scope;
+    public final StaticScope scope;
 
     public Abstraction(String name, IPersistentList arguments, Message next, String filename, int line, int position, StaticScope scope) {
         super(name, arguments, next, filename, line, position);
         this.scope = scope;
-    }
-
-    @Override
-    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver, boolean first) {
-        return DefaultAbstraction.createFrom(this, scope);
     }
 
     @Override

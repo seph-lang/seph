@@ -19,53 +19,9 @@ import seph.lang.persistent.RT;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public class DefaultAbstraction extends SimpleSephObject {
-    private Message code;
-    private LexicalScope capture;
-
-    private IPersistentList argumentNames;
-
-    private DefaultAbstraction(IPersistentList argNames, Message code, LexicalScope capture) {
-        super(PersistentArrayMap.EMPTY.associate(activatable, Runtime.TRUE));
-        this.argumentNames = argNames;
-        this.code = code;
-        this.capture = capture;
-    }
-
+public class DefaultAbstraction {
     public final static SephObject createFrom(Abstraction message, LexicalScope scope) {
         ISeq seq = RT.seq(message.arguments());
-
-        try {
-            return AbstractionCompiler.compile(seq, scope);
-        } catch(CompilationAborted e) {
-            System.err.println("BAILED OUT ON COMPILE (" + e.getMessage() + "): " + message);
-        }
-
-        List<String> argNames = new ArrayList<String>();
-        if(seq != null) {
-            for(;RT.next(seq) != null; seq = RT.next(seq)) {
-                argNames.add(((Message)RT.first(seq)).name());
-            }
-        }
-
-        Message code = (Message)RT.first(seq);
-        return new DefaultAbstraction(PersistentList.create(argNames), code, scope);
-    }
-
-    @Override
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments) {
-        LexicalScope methodScope = capture.newScopeWith(receiver);
-
-        for(ISeq argNames = argumentNames.seq(), args = arguments.seq(); 
-            argNames != null && args != null; 
-            argNames = argNames.next(), args = args.next()) {
-
-            String name = (String)argNames.first();
-            SephObject val = ControlDefaultBehavior.evaluateArgument(args.first(), scope, thread, true);
-
-            methodScope.directlyAssign(name, val);
-        }
-
-        return methodScope.evaluate(thread, code);
+        return AbstractionCompiler.compile(seq, scope, message.scope, new AbstractionCompiler.SemiStaticScope(new ArrayList<String>(), null));
     }
 }// DefaultAbstraction

@@ -62,26 +62,16 @@ public abstract class SephMethodObject implements SephObject {
                 Object o = argsLeft.first();
                 Message current;
                 MethodHandle toEvaluate = null;
-                if(o instanceof MethodHandle) {
-                    toEvaluate = (MethodHandle)o;
-                    current = (Message)((SephObject)toEvaluate.invoke((SThread)null, (LexicalScope)null, false, true));
-                } else {
-                    current = (Message)o;
-                }
+                toEvaluate = (MethodHandle)o;
+                current = (Message)((SephObject)toEvaluate.invoke((SThread)null, (LexicalScope)null, false, true));
 
                 if(restKey && (name = current.name()).endsWith(":")) {
                     name = name.substring(0, name.length()-1);
-                    current = current.next();
-                    SephObject part = scope.evaluateFully(thread, current);
+                    SephObject part = (SephObject)toEvaluate.invoke(thread, scope, true, true);
                     namesk.add(name);
                     valuesk.add(MethodHandles.dropArguments(MethodHandles.constant(SephObject.class, part), 0, SThread.class, LexicalScope.class, boolean.class, boolean.class));
                 } else {
-                    SephObject part = null;
-                    if(toEvaluate == null) {
-                        part = scope.evaluateFully(thread, current);
-                    } else {
-                        part = (SephObject)toEvaluate.invoke(thread, scope, true, true);
-                    }
+                    SephObject part = (SephObject)toEvaluate.invoke(thread, scope, true, true);
 
                     if(collectingRestp) {
                         restp.add(part);
@@ -109,24 +99,6 @@ public abstract class SephMethodObject implements SephObject {
         return result;
     }
 
-    public static SephObject evaluateMessage(Message msg, SThread thread, LexicalScope scope, boolean evalMessage, boolean ignored) {
-        if(evalMessage) {
-            return scope.evaluateFully(thread, msg);
-        } else {
-            return (SephObject)msg;
-        }
-    }
-
-    public static MethodHandle evaluateMH = Bootstrap.findStatic(SephMethodObject.class, "evaluateMessage", MethodType.methodType(SephObject.class, Message.class, SThread.class, LexicalScope.class, boolean.class, boolean.class));
-
-    public static MethodHandle ensureMH(Object o) {
-        if(o instanceof MethodHandle) {
-            return (MethodHandle)o;
-        } else {
-            return evaluateMH.bindTo((Message)o);
-        }
-    }
-
     public static ArgumentResult parseAndEvaluateArgumentsUneval(SThread thread, LexicalScope scope, IPersistentList arguments, int posArity) {
         ISeq argsLeft = arguments.seq();
         int currentArg = 0;
@@ -136,7 +108,7 @@ public abstract class SephMethodObject implements SephObject {
         try {
             while(argsLeft != null) {
                 Object o = argsLeft.first();
-                MethodHandle xx = ensureMH(o);
+                MethodHandle xx = (MethodHandle)o;
 
                 result.assign(currentArg, xx);
                 currentArg++;

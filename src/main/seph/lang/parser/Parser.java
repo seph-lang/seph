@@ -349,6 +349,32 @@ public class Parser {
         return PersistentList.create(chain);
     }
 
+    private IPersistentList parseCommaSeparatedMessageChainsAddingArgumentNames() throws IOException, ControlFlow {
+        ArrayList<Message> chain = new ArrayList<Message>();
+
+        Message curr = parseMessageChain();
+        while(curr != null) {
+            chain.add(curr);
+            readWhiteSpace();
+            int rr = peek();
+            if(rr == ',') {
+                scope.addShadowing(curr.name());
+                read();
+                curr = parseMessageChain();
+                if(curr == null) {
+                    fail("Expected message chain following comma");
+                }
+            } else {
+                if(curr != null && curr.name().equals(".") && curr.next() == null) {
+                    chain.remove(chain.size()-1);
+                }
+                curr = null;
+            }
+        }
+
+        return PersistentList.create(chain);
+    }
+
     private int lineNumber = 1;
     private int currentCharacter = -1;
     private boolean skipLF = false;
@@ -597,17 +623,10 @@ public class Parser {
 
         IPersistentList args = null;
         if(rr == '(') {
-            boolean abstraction = sb.toString().equals("#");
             read();
-            if(abstraction) {
-                scope = new StaticScope(scope);
-            }
             args = parseCommaSeparatedMessageChains();
             parseCharacter(')');
             top.currentMessageChain.add(NamedMessage.create(sb.toString(), args, null, sourcename, l, cc, scope));
-            if(abstraction) {
-                scope = scope.getParent();
-            }
             top.added();
         } else {
             possibleOperator(sb.toString(), sourcename, l, cc);
@@ -1168,10 +1187,14 @@ public class Parser {
                 if(rr == '(') {
                     boolean abstraction = sb.toString().equals("#");
                     read();
+                    IPersistentList args = null;
                     if(abstraction) {
                         scope = new StaticScope(scope);
+                        args = parseCommaSeparatedMessageChainsAddingArgumentNames();
+                    } else {
+                        args = parseCommaSeparatedMessageChains();
                     }
-                    IPersistentList args = parseCommaSeparatedMessageChains();
+
                     parseCharacter(')');
                     top.currentMessageChain.add(NamedMessage.create(sb.toString(), args, null, sourcename,  l, cc, scope));
                     if(abstraction) {

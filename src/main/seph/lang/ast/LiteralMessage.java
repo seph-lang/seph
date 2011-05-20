@@ -84,14 +84,6 @@ public final class LiteralMessage implements Message, SephObject {
         return ret;
     }
 
-    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver, boolean first) {
-        return literal;
-    }
-
-    public SephObject go(SThread thread, LexicalScope scope, SephObject receiver, boolean first) {
-        return literal;
-    }
-
     public SephObject get(String cellName) {
         return null;
     }

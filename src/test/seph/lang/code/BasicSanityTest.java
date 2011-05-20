@@ -22,7 +22,6 @@ import java.lang.invoke.SwitchPoint;
 public class BasicSanityTest {
     @After
     public void resetCompilerSettings() {
-        seph.lang.compiler.AbstractionCompiler.DO_COMPILE = true;
         seph.lang.compiler.AbstractionCompiler.PRINT_COMPILE = false;
     }
 
@@ -252,18 +251,6 @@ public class BasicSanityTest {
     }
 
     @Test(expected=RuntimeException.class)
-    public void should_not_lookup_on_local_scope_when_explicit_receiver_is_used_in_interpreter() throws Exception, ControlFlow {
-        seph.lang.compiler.AbstractionCompiler.DO_COMPILE = false;
-        new seph.lang.Runtime().evaluateString(
-                                               "f = #(\n" +
-                                               "  x = 42\n" +
-                                               "  blargiman = 15\n" +
-                                               "  #(x blargiman))\n" +
-                                               "fp = f\n" +
-                                               "fp\n");
-    }
-
-    @Test(expected=RuntimeException.class)
     public void should_not_lookup_on_local_scope_when_explicit_receiver_is_used_in_compiler() throws Exception, ControlFlow {
         new seph.lang.Runtime().evaluateString(
                                                "f = #(\n" +
@@ -272,18 +259,6 @@ public class BasicSanityTest {
                                                "  #(x blargiman))\n" +
                                                "fp = f\n" +
                                                "fp\n");
-    }
-
-    @Test
-    public void evaluate_simple_if_statement_in_interpreter() throws Exception, ControlFlow {
-        seph.lang.compiler.AbstractionCompiler.DO_COMPILE = false;
-        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
-                                                                  "f = #(if(false, 42, 55))\n" +
-                                                                  "f\n"), is(equalTo(IntNum.valueOf("55"))));
-
-        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
-                                                                  "f = #(if(true, 42, 55))\n" +
-                                                                  "f\n"), is(equalTo(IntNum.valueOf("42"))));
     }
 
     @Test
@@ -297,19 +272,6 @@ public class BasicSanityTest {
                                                                   "f\n"), is(equalTo(IntNum.valueOf("42"))));
     }
 
-
-    @Test
-    public void evaluate_if_statement_with_expression_in_conditional_in_interpreter() throws Exception, ControlFlow {
-        seph.lang.compiler.AbstractionCompiler.DO_COMPILE = false;
-        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
-                                                                  "f = #(if(1 == 0, 42, 55))\n" +
-                                                                  "f\n"), is(equalTo(IntNum.valueOf("55"))));
-
-        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
-                                                                  "f = #(if(1 == 1, 42, 55))\n" +
-                                                                  "f\n"), is(equalTo(IntNum.valueOf("42"))));
-    }
-
     @Test
     public void evaluate_if_statement_with_expression_in_conditional_in_compiler() throws Exception, ControlFlow {
         assertThat((IntNum)new seph.lang.Runtime().evaluateString(
@@ -319,15 +281,6 @@ public class BasicSanityTest {
         assertThat((IntNum)new seph.lang.Runtime().evaluateString(
                                                                   "f = #(if(1 == 1, 42, 55))\n" +
                                                                   "f\n"), is(equalTo(IntNum.valueOf("42"))));
-    }
-
-    @Test
-    public void arguments_to_other_methods_in_interpreter() throws Exception, ControlFlow {
-        seph.lang.compiler.AbstractionCompiler.DO_COMPILE = false;
-        captureStandardOut();
-        new seph.lang.Runtime().evaluateString("f = #(x, y, x asText println\ny asText println)\nf(42, 55)\nff = #(f(42, 55))\nff\n");
-        String stdout = restoreStandardOut();
-        assertThat(stdout, is(equalTo("42\n55\n42\n55\n")));
     }
 
     @Test

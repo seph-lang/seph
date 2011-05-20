@@ -19,20 +19,12 @@ public class ControlDefaultBehavior implements SephObject {
     public final static ControlDefaultBehavior instance = new ControlDefaultBehavior();
 
     public static SephObject evaluateArgument(Object possibleArgument, LexicalScope scope, SThread thread, boolean fully) {
-        if(possibleArgument instanceof Message) {
-            if(fully) {
-                return scope.evaluateFully(thread, (Message)possibleArgument);
-            } else {
-                return scope.evaluate(thread, (Message)possibleArgument);
-            }
-        } else {
-            try {
-                MethodHandle mh = (MethodHandle)possibleArgument;
-                return (SephObject)mh.invoke(thread, scope, true, fully);
-            } catch(Throwable e) {
-                e.printStackTrace();
-                return null;
-            }
+        try {
+            MethodHandle mh = (MethodHandle)possibleArgument;
+            return (SephObject)mh.invoke(thread, scope, true, fully);
+        } catch(Throwable e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

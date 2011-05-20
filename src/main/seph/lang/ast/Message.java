@@ -23,8 +23,5 @@ public interface Message {
     String filename();
     int line();
     int position();
-
-    SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver, boolean first);
-    SephObject go(SThread thread, LexicalScope scope, SephObject receiver, boolean first);
 }// Message
 

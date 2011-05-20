@@ -137,39 +137,6 @@ public class NamedMessage implements Message, SephObject {
         return ret;
     }
 
-    private static MethodHandle GO = Bootstrap.findVirtual(NamedMessage.class, "go", MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, boolean.class));
-
-    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver, boolean first) {
-        if(next == null) {
-            thread.tail = MethodHandles.insertArguments(GO, 0, this, thread, scope, receiver, first);
-            return SThread.TAIL_MARKER;
-        }
-
-        return go(thread, scope, receiver, first);
-    }
-
-    public SephObject go(SThread thread, LexicalScope scope, SephObject receiver, boolean first) {
-        SephObject value = null;
-        
-        if(first) {
-            value = scope.get(name);
-        }
-
-        if(null == value) {
-            value = receiver.get(name);
-        }
-
-        if(null == value) {
-            throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
-        }
-
-        if(value.isActivatable()) {
-            return value.activateWith(receiver, thread, scope, arguments);
-        }
-
-        return value;
-    }
-
     public SephObject get(String cellName) {
         return null;
     }

@@ -18,29 +18,11 @@ import seph.lang.persistent.ISeq;
  */
 public final class Assignment extends NamedMessage {
     public static enum ActualAssignment {
-        EQ {
-            public SephObject assignOp(SThread thread, Message left, Message right, LexicalScope scope) {
-                SephObject value = scope.evaluateFully(thread, right);
-                scope.assign(left.name(), value);
-                return value;
-            }
-        },
-        PLUS_EQ {
-            public SephObject assignOp(SThread thread, Message left, Message right, LexicalScope scope) {
-                SephObject leftValue = scope.evaluateFully(thread, left);
-                SephObject value = NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position(), null).go(thread, scope, leftValue, false);
-                scope.assign(left.name(), value);
-                return value;
-            }
-        };
-
-        public abstract SephObject assignOp(SThread thread, Message left, Message right, LexicalScope scope);
+        EQ, PLUS_EQ;
     }
 
     private ActualAssignment assgn;
-    private final StaticScope scope;
-    private final int place;
-
+    private StaticScope scope;
     public Assignment(String name, IPersistentList arguments, Message next, String filename, int line, int position, StaticScope scope) {
         super(name, arguments, next, filename, line, position);
 
@@ -51,12 +33,9 @@ public final class Assignment extends NamedMessage {
         } else {
             assgn = null;
         }
-
+        
+        scope.addName(((Message)arguments.seq().first()).name());
         this.scope = scope;
-        this.place = scope.addOrFindName(((Message)arguments().seq().first()).name());
-        // System.err.println("Found the place in: " + scope);
-        // System.err.println("  depth: " + (place >> 16));
-        // System.err.println("  index: " + (place & 0xFFFF));
     }
 
     public ActualAssignment getAssignment() {
@@ -71,12 +50,5 @@ public final class Assignment extends NamedMessage {
     @Override
     public Message withArguments(IPersistentList args) {
         return NamedMessage.create(this.name, args, this.next, filename, line, position, scope);
-    }
-
-    @Override
-    public SephObject sendTo(SThread thread, LexicalScope scope, SephObject receiver, boolean first) {
-        Message left = (Message)arguments().seq().first();
-        Message right = (Message)arguments().seq().next().first();
-        return assgn.assignOp(thread, left, right, scope);
     }
 }// Assignment

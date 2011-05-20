@@ -12,11 +12,13 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.IOException;
 
+import seph.lang.ast.Abstraction;
 import seph.lang.ast.Message;
+import seph.lang.ast.NamedMessage;
 import seph.lang.parser.Parser;
 import seph.lang.parser.StringUtils;
-import seph.lang.interpreter.MessageInterpreter;
 import seph.lang.compiler.Bootstrap;
+import seph.lang.persistent.PersistentList;
 
 import java.lang.invoke.SwitchPoint;
 import java.lang.invoke.MethodHandle;
@@ -111,8 +113,22 @@ public class Runtime {
     }
 
     public Object evaluateStream(String name, Reader reader) throws ControlFlow, IOException {
-        Message msg = (Message)new Parser(this, reader, name).parseFully().seq().first();
-        return new MessageInterpreter(Ground.instance, this).evaluateFully(new SThread(this), msg);
+        Parser p = new Parser(this, reader, name);
+        Message msg = (Message)p.parseFully().seq().first();
+        Abstraction amsg = (Abstraction)NamedMessage.create("#", new PersistentList(msg), null, "<init>", -1, -1, p.scope);
+        SephObject so = DefaultAbstraction.createFrom(amsg, new LexicalScope(null, this));
+        SThread thread = new SThread(this);
+        SephObject tmp = so.activateWith(Ground.instance, thread, null);
+        try {
+            while(tmp == SThread.TAIL_MARKER) {
+                MethodHandle tail = thread.tail;
+                thread.tail = null;
+                tmp = (SephObject)tail.invoke();
+            }
+        } catch(Throwable e) {
+            throw new RuntimeException(e);
+        }
+        return tmp;
     }
 
     public Object evaluateFile(File f) throws ControlFlow, IOException {

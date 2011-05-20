@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import seph.lang.*;
 import seph.lang.ast.*;
 import seph.lang.persistent.*;
+import seph.lang.parser.StaticScope;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -33,7 +34,6 @@ import java.lang.invoke.MethodType;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class AbstractionCompiler {
-    public static boolean DO_COMPILE    = true;
     public static boolean PRINT_COMPILE = false;
 
     private static org.objectweb.asm.MethodHandle bootstrapNamed(String name) {
@@ -58,12 +58,69 @@ public class AbstractionCompiler {
 
     private boolean printThisClass = false;
 
-    private AbstractionCompiler(Message code, List<String> argNames, LexicalScope capture) {
+    private final SemiStaticScope scope;
+
+    private static class ScopeEntry {
+        public final int depth;
+        public final int index;
+        public ScopeEntry(int depth, int index) {
+            this.depth = depth;
+            this.index = index;
+        }
+    }
+
+    public static class SemiStaticScope {
+        public final List<String> names;
+        public final SemiStaticScope parent;
+        public SemiStaticScope(List<String> names, SemiStaticScope parent) {
+            this.names = names;
+            this.parent = parent;
+        }
+
+        public boolean hasName(String name) {
+            if(names.contains(name)) {
+                return true;
+            }
+            if(parent != null) {
+                return parent.hasName(name);
+            }
+            return false;
+        }
+
+        public ScopeEntry find(String name) {
+            return find(name, 0);
+        }
+        
+        private ScopeEntry find(String name, int depth) {
+            int ix = names.indexOf(name);
+            if(ix != -1) {
+                return new ScopeEntry(depth, ix);
+            } else if(parent != null) {
+                return parent.find(name, depth + 1);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    private AbstractionCompiler(Message code, List<String> argNames, LexicalScope capture, StaticScope scope, SemiStaticScope parentScope) {
         this.code = code;
         this.argNames = argNames;
         this.capture = capture;
         this.className = "seph$gen$abstraction$" + compiledCount.getAndIncrement();
         this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        List<String> newNames = new LinkedList<>();
+        for(String s : scope.getNames()) {
+            if(!parentScope.hasName(s)) {
+                newNames.add(s);
+            }
+        }
+        for(String s : scope.getShadowing()) {
+            if(!newNames.contains(s)) {
+                newNames.add(s);
+            }
+        }
+        this.scope = new SemiStaticScope(newNames, parentScope);
     }
 
     private void generateAbstractionClass() {
@@ -162,46 +219,38 @@ public class AbstractionCompiler {
         ma.end();
     }
 
-    public static SephObject compile(Message code, List<String> argNames, LexicalScope capture) {
-        if(!DO_COMPILE) {
-            throw new CompilationAborted("Compilation disabled...");
-        }
-
-        AbstractionCompiler c = new AbstractionCompiler(code, argNames, capture);
+    public static SephObject compile(Message code, List<String> argNames, LexicalScope capture, StaticScope scope, SemiStaticScope parent) {
+        AbstractionCompiler c = new AbstractionCompiler(code, argNames, capture, scope, parent);
         c.generateAbstractionClass();
         c.setStaticValues();
         return c.instantiateAbstraction();
     }
 
-    public static String compile(Message code, List<String> argNames) {
-        if(!DO_COMPILE) {
-            throw new CompilationAborted("Compilation disabled...");
-        }
-
-        AbstractionCompiler c = new AbstractionCompiler(code, argNames, null);
+    public static String compile(Message code, List<String> argNames, StaticScope scope, SemiStaticScope parent) {
+        AbstractionCompiler c = new AbstractionCompiler(code, argNames, null, scope, parent);
         c.generateAbstractionClass();
         c.setStaticValues();
         return c.className;
     }
 
-    public static SephObject compile(ISeq argumentsAndCode, LexicalScope capture) {
+    public static SephObject compile(ISeq argumentsAndCode, LexicalScope capture, StaticScope scope, SemiStaticScope parent) {
         final List<String> argNames = new ArrayList<>();
         if(argumentsAndCode != null) {
             for(;RT.next(argumentsAndCode) != null; argumentsAndCode = RT.next(argumentsAndCode)) {
                 argNames.add(((Message)RT.first(argumentsAndCode)).name());
             }
         }
-        return compile((Message)RT.first(argumentsAndCode), argNames, capture);
+        return compile((Message)RT.first(argumentsAndCode), argNames, capture, scope, parent);
     }
 
-    public static String compile(ISeq argumentsAndCode) {
+    public static String compile(ISeq argumentsAndCode, StaticScope scope, SemiStaticScope parent) {
         final List<String> argNames = new ArrayList<>();
         if(argumentsAndCode != null) {
             for(;RT.next(argumentsAndCode) != null; argumentsAndCode = RT.next(argumentsAndCode)) {
                 argNames.add(((Message)RT.first(argumentsAndCode)).name());
             }
         }
-        return compile((Message)RT.first(argumentsAndCode), argNames);
+        return compile((Message)RT.first(argumentsAndCode), argNames, scope, parent);
     }
 
     private static class LiteralEntry {
@@ -273,17 +322,20 @@ public class AbstractionCompiler {
         Message left = (Message)current.arguments().seq().first();
         Message right = (Message)current.arguments().seq().next().first();
         String name = left.name();
+        ScopeEntry se = scope.find(name);
 
         //        printThisClass = true;
         switch(current.getAssignment()) {
         case EQ:
-            compileCode(ma, plusArity, right, SENTINEL, activateWith);
-            ma.dup();
-            ma.loadLocal(scopeIndex);
-            ma.swap();
-            ma.load(name);
-            ma.swap();
-            ma.virtualCall(LexicalScope.class, "assign", void.class, String.class, SephObject.class);
+            compileCode(ma, plusArity, right, SENTINEL, activateWith);   // [val]
+            ma.dup(); // [val, val]
+            ma.loadLocal(scopeIndex);  // [val, val, scope]
+            ma.swap(); // [val, scope, val]
+            ma.load(se.depth); // [val, scope, val, depth]
+            ma.swap(); // [val, scope, depth, val]
+            ma.load(se.index); // [val, scope, depth, val, index]
+            ma.swap(); // [val, scope, depth, index, val]
+            ma.virtualCall(LexicalScope.class, "assign", void.class, int.class, int.class, SephObject.class);
             break;
         case PLUS_EQ:
             compileCode(ma, plusArity, left, SENTINEL, activateWith);
@@ -291,9 +343,11 @@ public class AbstractionCompiler {
             ma.dup();
             ma.loadLocal(scopeIndex);
             ma.swap();
-            ma.load(name);
-            ma.swap();
-            ma.virtualCall(LexicalScope.class, "assign", void.class, String.class, SephObject.class);
+            ma.load(se.depth); // [val, scope, val, depth]
+            ma.swap(); // [val, scope, depth, val]
+            ma.load(se.index); // [val, scope, depth, val, index]
+            ma.swap(); // [val, scope, depth, index, val]
+            ma.virtualCall(LexicalScope.class, "assign", void.class, int.class, int.class, SephObject.class);
             break;
         default:
             assert false : "Should never reach here - the compiler has to cover all cases of assignment, but is missing: " + current.getAssignment();
@@ -348,7 +402,7 @@ public class AbstractionCompiler {
                 first = true;
             } else if(current instanceof Abstraction) {
                 ma.pop();
-                String newName = AbstractionCompiler.compile(RT.seq(current.arguments()));
+                String newName = AbstractionCompiler.compile(RT.seq(current.arguments()), ((Abstraction)current).scope, scope);
                 ma.create(newName);
                 ma.dup();
                 ma.loadLocal(0);
@@ -552,46 +606,62 @@ public class AbstractionCompiler {
             
         final Arity arity = compileArguments(ma, current.arguments(), activateWith, plusArity);
 
-        String possibleIntrinsic = "";
-
-        if(current.name().equals("true")) {
-            possibleIntrinsic = "_intrinsic_true";
-        } else if(current.name().equals("false")) {
-            possibleIntrinsic = "_intrinsic_false";
-        } else if(current.name().equals("nil")) {
-            possibleIntrinsic = "_intrinsic_nil";
-        } else if(current.name().equals("if")) {
-            possibleIntrinsic = "_intrinsic_if";
-        }
-
-        String bootstrapName = "basicSephBootstrap";
-        boolean fullPumping = false;
-
-        if(first) {
+        ScopeEntry se = null;
+        if(first && (se = scope.find(current.name())) != null) {
+            boolean fullPumping = false;
+            String nm = "var";
             if(current == last) {
-                bootstrapName = "noReceiverTailCallSephBootstrap";
+                nm = "tailVar";
                 fullPumping = true;
-            } else {
-                bootstrapName = "noReceiverSephBootstrap";
-                fullPumping = false;
             }
-        } else if(current == last) {
-            bootstrapName = "tailCallSephBootstrap";
-            fullPumping = true;
-        }
 
-        ma.dynamicCall(encode(current.name()), sigFor(arity), bootstrapNamed(bootstrapName + possibleIntrinsic));
-        if(fullPumping) {
-            if(!activateWith) {
-                Label noPump = new Label();
-                ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
-                ma.zero();
-                ma.ifEqual(noPump);
+            ma.dynamicCall("seph:" + nm + ":" + se.depth + ":" + se.index + ":" + encode(current.name()), sigFor(arity), bootstrapNamed("sephBootstrap"));
+            if(fullPumping) {
+                if(!activateWith) {
+                    Label noPump = new Label();
+                    ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
+                    ma.zero();
+                    ma.ifEqual(noPump);
+                    pumpTailCall(ma);
+                    ma.label(noPump);
+                }
+            } else {
                 pumpTailCall(ma);
-                ma.label(noPump);
             }
         } else {
-            pumpTailCall(ma);
+            String possibleIntrinsic = "";
+
+            if(current.name().equals("true")) {
+                possibleIntrinsic = "_intrinsic_true";
+            } else if(current.name().equals("false")) {
+                possibleIntrinsic = "_intrinsic_false";
+            } else if(current.name().equals("nil")) {
+                possibleIntrinsic = "_intrinsic_nil";
+            } else if(current.name().equals("if")) {
+                possibleIntrinsic = "_intrinsic_if";
+            }
+
+            String bootstrapName = "basicSephBootstrap";
+            boolean fullPumping = false;
+
+            if(current == last) {
+                bootstrapName = "tailCallSephBootstrap";
+                fullPumping = true;
+            }
+
+            ma.dynamicCall(encode(current.name()), sigFor(arity), bootstrapNamed(bootstrapName + possibleIntrinsic));
+            if(fullPumping) {
+                if(!activateWith) {
+                    Label noPump = new Label();
+                    ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
+                    ma.zero();
+                    ma.ifEqual(noPump);
+                    pumpTailCall(ma);
+                    ma.label(noPump);
+                }
+            } else {
+                pumpTailCall(ma);
+            }
         }
     }
 
@@ -621,7 +691,7 @@ public class AbstractionCompiler {
                 first = true;
             } else if(current instanceof Abstraction) {
                 ma.pop();
-                String newName = AbstractionCompiler.compile(RT.seq(current.arguments()));
+                String newName = AbstractionCompiler.compile(RT.seq(current.arguments()), ((Abstraction)current).scope, scope);
                 ma.create(newName);
                 ma.dup();
                 ma.loadLocal(METHOD_SCOPE + plusArity);
@@ -648,23 +718,35 @@ public class AbstractionCompiler {
     // Should only be called for up to five arguments
     private void activateWithMethodRealArity(final int arity) {
         MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC, "activateWith", sigFor(new Arity(arity, 0)), null, null));
-
         ma.loadThis();
         ma.getField(className, "capture", LexicalScope.class);
-        ma.loadLocal(RECEIVER);
-        ma.virtualCall(LexicalScope.class, "newScopeWith", LexicalScope.class, SephObject.class);
+
+        List<String> names = scope.names;
+        ma.load(names.size());
+        ma.newArray(String.class);
+        int ix = 0;
+        for(String s : names) {
+            ma.dup();
+            ma.load(ix++);
+            ma.load(s);
+            ma.storeArray();
+        }
+        ma.virtualCall(LexicalScope.class, "newScopeWith", LexicalScope.class, String[].class);
         ma.storeLocal(METHOD_SCOPE - 1 + arity);
 
         for(int i = 0; i < arity; i++) {
             String name = argNames.get(i);
             ma.loadLocal(METHOD_SCOPE - 1 + arity);
-            ma.load(name);
+            ScopeEntry se = scope.find(name);
+            ma.load(se.depth);
+            ma.load(se.index);
             ma.loadLocal(ARGUMENTS + i);
             ma.loadLocal(SCOPE);
             ma.loadLocal(THREAD);
             ma.one();
             ma.staticCall(ControlDefaultBehavior.class, "evaluateArgument", SephObject.class, Object.class, LexicalScope.class, SThread.class, boolean.class);
-            ma.virtualCall(LexicalScope.class, "directlyAssign", void.class, String.class, SephObject.class);
+            
+            ma.virtualCall(LexicalScope.class, "assign", void.class, int.class, int.class, SephObject.class);
         }
 
         activateWithBody(ma, arity - 1);
@@ -676,8 +758,17 @@ public class AbstractionCompiler {
 
         ma.loadThis();
         ma.getField(className, "capture", LexicalScope.class);
-        ma.loadLocal(RECEIVER);
-        ma.virtualCall(LexicalScope.class, "newScopeWith", LexicalScope.class, SephObject.class);
+        List<String> names = scope.names;
+        ma.load(names.size());
+        ma.newArray(String.class);
+        int ix = 0;
+        for(String s : names) {
+            ma.dup();
+            ma.load(ix++);
+            ma.load(s);
+            ma.storeArray();
+        }
+        ma.virtualCall(LexicalScope.class, "newScopeWith", LexicalScope.class, String[].class);
         ma.loadLocal(METHOD_SCOPE);
 
         ma.loadLocal(ARGUMENTS);

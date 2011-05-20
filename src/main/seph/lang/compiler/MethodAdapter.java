@@ -28,6 +28,11 @@ public class MethodAdapter {
         this.mv = mv;
         this.mv.visitCode();
     }
+
+    public void print(final String message) {
+        op();
+        printMessage(message, mv);
+    }
     
     public void load(final String constant) {
         op();
