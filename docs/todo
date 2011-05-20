@@ -1,6 +1,4 @@
 
 
 Current compilation is missing several pieces:
-- Make toplevel also use the compiler
-- Invoking things with arguments cannot handle keyword arguments (important for the "with" method)
 - Generate structural types on the fly instead
