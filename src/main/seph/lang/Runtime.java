@@ -116,7 +116,7 @@ public class Runtime {
         Parser p = new Parser(this, reader, name);
         Message msg = (Message)p.parseFully().seq().first();
         Abstraction amsg = (Abstraction)NamedMessage.create("#", new PersistentList(msg), null, "<init>", -1, -1, p.scope);
-        SephObject so = DefaultAbstraction.createFrom(amsg, new LexicalScope(null, this));
+        SephObject so = DefaultAbstraction.createFrom(amsg, LexicalScope.create(null, this, new String[0]));
         SThread thread = new SThread(this);
         SephObject tmp = so.activateWith(Ground.instance, thread, null);
         try {
