@@ -284,7 +284,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
             private int generateUnevaluatedArguments(MethodDeclaration md, StringBuilder sb) throws IOException {
                 boolean hasReceiver = false;
                 int positionalArity = 0;
-
+                boolean restArgs = false;
                 String sep = "";
                 for(ParameterDeclaration pd : md.getParameters()) {
                     sb.append(sep);
@@ -297,6 +297,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                         sb.append("thread");
                     } else if(tname.equals("seph.lang.persistent.IPersistentList")) {
                         sb.append("arguments");
+                        restArgs = true;
                     } else if(tname.equals("java.lang.invoke.MethodHandle")) {
                         sb.append("args.argMH" + positionalArity);
                         positionalArity++;
@@ -309,7 +310,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                 }
 
                 out.println("        SephMethodObject.ArgumentResult args = SephMethodObject.parseAndEvaluateArgumentsUneval(thread, scope, arguments, "+positionalArity+");");
-                return positionalArity;
+                return restArgs ? -1 : positionalArity;
             }
 
             private void generateForArity(int arity, int currentArity, MethodDeclaration md, ClassDeclaration cd, boolean eval, boolean key) throws IOException {
@@ -387,6 +388,49 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                         sep = ", ";
                     }
                 
+                    out.println("        return " + cd.getQualifiedName() + "." + md.getSimpleName() + "(" + sb + ");");
+                } else if(arity < 0) {
+                    int args = 0;
+                    StringBuilder sb = new StringBuilder();
+                    String sep = "";
+                    boolean haveReceiver = false;
+                    boolean createArgs = false;
+                    for(ParameterDeclaration pd : md.getParameters()) {
+                        sb.append(sep);
+                        String tname = pd.getType().toString();
+                        if(tname.equals("seph.lang.LexicalScope")) {
+                            sb.append("scope");
+                        } else if(tname.equals("seph.lang.persistent.IPersistentList")) {
+                            sb.append("arguments");
+                            createArgs = true;
+                        } else if(tname.equals("seph.lang.SephObject")) {
+                            if(haveReceiver) {
+                                sb.append("invoke(arg" + (args++)).append(", thread, scope)");;
+                            } else {
+                                haveReceiver = true;
+                                sb.append("receiver");
+                            }
+                        } else if(tname.equals("java.lang.invoke.MethodHandle")) {
+                            sb.append("arg" + (args++));
+                        } else if(key && tname.equals("java.lang.invoke.MethodHandle[]")) {
+                            sb.append("keywordArguments");
+                        } else if(key && tname.equals("java.lang.String[]")) {
+                            sb.append("keywordNames");
+                        } else if(tname.equals("seph.lang.SThread")) {
+                            sb.append("thread");
+                        } else {
+                            out.println("        throw new RuntimeException(\"Unexpected argument type: " + tname + ". This is most likely a compiler bug\");");
+                            return;
+                        }
+
+                        sep = ", ";
+                    }
+                    if(createArgs) {
+                        out.println("        IPersistentList arguments = PersistentList.EMPTY;");
+                        for(int i = currentArity-1; i >= 0; i--) {
+                            out.println("        arguments = (IPersistentList)arguments.cons(arg" + i + ");");
+                        }
+                    }
                     out.println("        return " + cd.getQualifiedName() + "." + md.getSimpleName() + "(" + sb + ");");
                 } else {
                     out.println("        throw new RuntimeException(\"Expected " + arity + " arguments, got " + currentArity + "\");");
