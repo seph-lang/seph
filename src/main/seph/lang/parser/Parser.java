@@ -44,6 +44,8 @@ public class Parser {
     private final IPersistentMap assignmentOperators;
     private final IPersistentSet unaryOperators;
 
+    public StaticScope scope;
+
     public Parser(Runtime runtime, Reader reader, String sourcename) {
         this(runtime, reader, sourcename, DEFAULT_OPERATORS, DEFAULT_ASSIGNMENT_OPERATORS, DEFAULT_UNARY_OPERATORS);
     }
@@ -56,13 +58,14 @@ public class Parser {
         this.operators = operators;
         this.assignmentOperators = assignmentOperators;
         this.unaryOperators = unaryOperators;
+        this.scope = new StaticScope(null);
     }
 
     public IPersistentList parseFully() throws IOException, ControlFlow {
         IPersistentList all = parseCommaSeparatedMessageChains();
 
         if(all.count() == 0) {
-            all = (IPersistentList)all.cons(NamedMessage.create(".", null, null, sourcename, 0, 0));
+            all = (IPersistentList)all.cons(NamedMessage.create(".", null, null, sourcename, 0, 0, scope));
         }
 
         return all;
@@ -594,10 +597,17 @@ public class Parser {
 
         IPersistentList args = null;
         if(rr == '(') {
+            boolean abstraction = sb.toString().equals("#");
             read();
+            if(abstraction) {
+                scope = new StaticScope(scope);
+            }
             args = parseCommaSeparatedMessageChains();
             parseCharacter(')');
-            top.currentMessageChain.add(NamedMessage.create(sb.toString(), args, null, sourcename, l, cc));
+            top.currentMessageChain.add(NamedMessage.create(sb.toString(), args, null, sourcename, l, cc, scope));
+            if(abstraction) {
+                scope = scope.getParent();
+            }
             top.added();
         } else {
             possibleOperator(sb.toString(), sourcename, l, cc);
@@ -653,7 +663,7 @@ public class Parser {
             read();
             IPersistentList args = parseCommaSeparatedMessageChains();
             parseCharacter(')');
-            top.currentMessageChain.add(NamedMessage.create(result, args, null, sourcename,  l, cc));
+            top.currentMessageChain.add(NamedMessage.create(result, args, null, sourcename,  l, cc, scope));
             top.added();
             return;
         } else {
@@ -687,7 +697,7 @@ public class Parser {
         }
 
         top.popOperatorsTo(999999);
-        top.currentMessageChain.add(NamedMessage.create(".", null, null, sourcename, l, cc));
+        top.currentMessageChain.add(NamedMessage.create(".", null, null, sourcename, l, cc, scope));
         top.added();
     }
 
@@ -738,7 +748,7 @@ public class Parser {
                                 args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
                             }
                             args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
-                            top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc));
+                            top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc, scope));
                             top.added();
                             return;
                         }
@@ -773,7 +783,7 @@ public class Parser {
                                 args.add(new LiteralMessage(runtime.newUnescapedText(pattern), null, sourcename, l, cc));
                             }
                             args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
-                            top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc));
+                            top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc, scope));
                             top.added();
                             return;
                         }
@@ -839,7 +849,7 @@ public class Parser {
                     if(sb.length() > 0) {
                         args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
                     }
-                    top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc));
+                    top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc, scope));
                     top.added();
                     return;
                 } else {
@@ -857,7 +867,7 @@ public class Parser {
                     if(sb.length() > 0) {
                         args.add(new LiteralMessage(runtime.newText(sb.toString()), null, sourcename, l, cc));
                     }
-                    top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc));
+                    top.currentMessageChain.add(NamedMessage.create(name, PersistentList.create(args), null, sourcename, l, cc, scope));
                     top.added();
                     return;
                 } else {
@@ -1106,11 +1116,11 @@ public class Parser {
                 } else {
                     List<Message> currentChain = top.currentMessageChain;
                     Message last = currentChain.remove(currentChain.size() - 1);
-                    currentChain.add(NamedMessage.create(name, new PersistentList(last), null, sourcename, l, cc));
+                    currentChain.add(NamedMessage.create(name, new PersistentList(last), null, sourcename, l, cc, scope));
                     top.added();
                 }
             } else {
-                top.currentMessageChain.add(NamedMessage.create(name, null, null, sourcename,  l, cc));
+                top.currentMessageChain.add(NamedMessage.create(name, null, null, sourcename,  l, cc, scope));
                 top.added();
             }
         }
@@ -1156,10 +1166,17 @@ public class Parser {
                 // FALL THROUGH
             default:
                 if(rr == '(') {
+                    boolean abstraction = sb.toString().equals("#");
                     read();
+                    if(abstraction) {
+                        scope = new StaticScope(scope);
+                    }
                     IPersistentList args = parseCommaSeparatedMessageChains();
                     parseCharacter(')');
-                    top.currentMessageChain.add(NamedMessage.create(sb.toString(), args, null, sourcename,  l, cc));
+                    top.currentMessageChain.add(NamedMessage.create(sb.toString(), args, null, sourcename,  l, cc, scope));
+                    if(abstraction) {
+                        scope = scope.getParent();
+                    }
                     top.added();
                     return;
                 } else {
@@ -1186,7 +1203,7 @@ public class Parser {
         IPersistentList args = parseCommaSeparatedMessageChains();
         parseCharacter(')');
 
-        top.currentMessageChain.add(NamedMessage.create("", args, null, sourcename,  l, cc));
+        top.currentMessageChain.add(NamedMessage.create("", args, null, sourcename,  l, cc, scope));
         top.added();
     }
 
@@ -1208,7 +1225,7 @@ public class Parser {
             parseCharacter(end);
         }
 
-        top.currentMessageChain.add(NamedMessage.create(name, args, null, sourcename,  l, cc));
+        top.currentMessageChain.add(NamedMessage.create(name, args, null, sourcename,  l, cc, scope));
         top.added();
     }
 
@@ -1219,7 +1236,7 @@ public class Parser {
         IPersistentList args = parseCommaSeparatedMessageChains();
         parseCharacter(end);
 
-        top.currentMessageChain.add(NamedMessage.create(name, args, null, sourcename,  l, cc));
+        top.currentMessageChain.add(NamedMessage.create(name, args, null, sourcename,  l, cc, scope));
         top.added();
     }
 

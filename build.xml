@@ -125,6 +125,7 @@
     <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
       <jvmarg value="-Xint"/>
+      <jvmarg value="-ea"/>
       <classpath refid="test.classpath"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
       <formatter type="brief" usefile="false" />
@@ -142,6 +143,7 @@
     <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
       <jvmarg value="-Xint"/>
+      <jvmarg value="-ea"/>
       <classpath refid="test.classpath"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
       <formatter type="brief" usefile="false" />

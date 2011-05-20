@@ -2116,19 +2116,19 @@ public class ParserTest {
     }
 
     private static Message msg(String name) {
-        return NamedMessage.create(name, null, null, null, -1, -1);
+        return NamedMessage.create(name, null, null, null, -1, -1, null);
     }
 
     private static Message msg(String name, Message next) {
-        return NamedMessage.create(name, null, next, null, -1, -1);
+        return NamedMessage.create(name, null, next, null, -1, -1, null);
     }
 
     private static Message msg(String name, IPersistentList args, Message next) {
-        return NamedMessage.create(name, args, next, null, -1, -1);
+        return NamedMessage.create(name, args, next, null, -1, -1, null);
     }
 
     private static Message msg(String name, IPersistentList args) {
-        return NamedMessage.create(name, args, null, null, -1, -1);
+        return NamedMessage.create(name, args, null, null, -1, -1, null);
     }
 
     @Test

@@ -287,7 +287,7 @@ public class AbstractionCompiler {
             break;
         case PLUS_EQ:
             compileCode(ma, plusArity, left, SENTINEL, activateWith);
-            compileCode(ma, plusArity, NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position()), SENTINEL, activateWith);
+            compileCode(ma, plusArity, NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position(), null), SENTINEL, activateWith);
             ma.dup();
             ma.loadLocal(scopeIndex);
             ma.swap();
@@ -295,6 +295,8 @@ public class AbstractionCompiler {
             ma.swap();
             ma.virtualCall(LexicalScope.class, "assign", void.class, String.class, SephObject.class);
             break;
+        default:
+            assert false : "Should never reach here - the compiler has to cover all cases of assignment, but is missing: " + current.getAssignment();
         }
     }
 

@@ -57,7 +57,7 @@ public class MutableMessage implements Message {
         IPersistentList args = realArguments == null ? null :
             (firstArgument == null ? new PersistentList(realArguments) : PersistentList.create(Arrays.asList(firstArgument, realArguments)));
 
-        return NamedMessage.create(name, args, newNext, filename, line, position);
+        return NamedMessage.create(name, args, newNext, filename, line, position, null);
     }
 
     public Message withArguments(IPersistentList args) {

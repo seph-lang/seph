@@ -17,7 +17,7 @@ public class IODefaultBehavior implements SephObject {
 
     @SephMethod
     public final static SephObject println(SThread thread, SephObject receiver) {
-        System.out.println(((Text)NamedMessage.create("asText", null, null, null, -1, -1).go(thread, LexicalScope.ROOT, receiver, false)).text());
+        System.out.println(((Text)NamedMessage.create("asText", null, null, null, -1, -1, null).go(thread, LexicalScope.ROOT, receiver, false)).text());
         return Runtime.NIL;
     }
 
