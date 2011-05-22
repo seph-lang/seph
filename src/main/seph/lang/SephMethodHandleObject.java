@@ -11,66 +11,45 @@ import seph.lang.persistent.IPersistentList;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class SephMethodHandleObject extends SephMethodObject {
-    private final MethodHandle handle;
-    private final MethodHandle handle0;
-    private final MethodHandle handle1s;
-    private final MethodHandle handle2s;
-    private final MethodHandle handle3s;
-    private final MethodHandle handle4s;
-    private final MethodHandle handle5s;
-    private final MethodHandle handle1m;
-    private final MethodHandle handle2m;
-    private final MethodHandle handle3m;
-    private final MethodHandle handle4m;
-    private final MethodHandle handle5m;
-    private final MethodHandle handle_k;
-    private final MethodHandle handle0_k;
-    private final MethodHandle handle1s_k;
-    private final MethodHandle handle2s_k;
-    private final MethodHandle handle3s_k;
-    private final MethodHandle handle4s_k;
-    private final MethodHandle handle5s_k;
-    private final MethodHandle handle1m_k;
-    private final MethodHandle handle2m_k;
-    private final MethodHandle handle3m_k;
-    private final MethodHandle handle4m_k;
-    private final MethodHandle handle5m_k;
+    private final MethodHandle handle_n;
+    private final MethodHandle handle_0;
+    private final MethodHandle handle_1;
+    private final MethodHandle handle_2;
+    private final MethodHandle handle_3;
+    private final MethodHandle handle_4;
+    private final MethodHandle handle_5;
+    private final MethodHandle handle_n_k;
+    private final MethodHandle handle_0_k;
+    private final MethodHandle handle_1_k;
+    private final MethodHandle handle_2_k;
+    private final MethodHandle handle_3_k;
+    private final MethodHandle handle_4_k;
+    private final MethodHandle handle_5_k;
 
-    public SephMethodHandleObject(MethodHandle handle, MethodHandle handle0, 
-                                  MethodHandle handle1s, MethodHandle handle2s, MethodHandle handle3s, MethodHandle handle4s, MethodHandle handle5s, 
-                                  MethodHandle handle1m, MethodHandle handle2m, MethodHandle handle3m, MethodHandle handle4m, MethodHandle handle5m,
-                                  MethodHandle handle_k, MethodHandle handle0_k, 
-                                  MethodHandle handle1s_k, MethodHandle handle2s_k, MethodHandle handle3s_k, MethodHandle handle4s_k, MethodHandle handle5s_k, 
-                                  MethodHandle handle1m_k, MethodHandle handle2m_k, MethodHandle handle3m_k, MethodHandle handle4m_k, MethodHandle handle5m_k) {
-        this.handle = handle;
-        this.handle0 = handle0;
-        this.handle1s = handle1s;
-        this.handle2s = handle2s;
-        this.handle3s = handle3s;
-        this.handle4s = handle4s;
-        this.handle5s = handle5s;
-        this.handle1m = handle1m;
-        this.handle2m = handle2m;
-        this.handle3m = handle3m;
-        this.handle4m = handle4m;
-        this.handle5m = handle5m;
-        this.handle_k = handle_k;
-        this.handle0_k = handle0_k;
-        this.handle1s_k = handle1s_k;
-        this.handle2s_k = handle2s_k;
-        this.handle3s_k = handle3s_k;
-        this.handle4s_k = handle4s_k;
-        this.handle5s_k = handle5s_k;
-        this.handle1m_k = handle1m_k;
-        this.handle2m_k = handle2m_k;
-        this.handle3m_k = handle3m_k;
-        this.handle4m_k = handle4m_k;
-        this.handle5m_k = handle5m_k;
+    public SephMethodHandleObject(MethodHandle handle_n, MethodHandle handle_0, 
+                                  MethodHandle handle_1, MethodHandle handle_2, MethodHandle handle_3, MethodHandle handle_4, MethodHandle handle_5,
+                                  MethodHandle handle_n_k, MethodHandle handle_0_k,
+                                  MethodHandle handle_1_k, MethodHandle handle_2_k, MethodHandle handle_3_k, MethodHandle handle_4_k, MethodHandle handle_5_k) {
+        this.handle_n = handle_n;
+        this.handle_0 = handle_0;
+        this.handle_1 = handle_1;
+        this.handle_2 = handle_2;
+        this.handle_3 = handle_3;
+        this.handle_4 = handle_4;
+        this.handle_5 = handle_5;
+
+        this.handle_n_k = handle_n_k;
+        this.handle_0_k = handle_0_k;
+        this.handle_1_k = handle_1_k;
+        this.handle_2_k = handle_2_k;
+        this.handle_3_k = handle_3_k;
+        this.handle_4_k = handle_4_k;
+        this.handle_5_k = handle_5_k;
     }
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments) {
         try {
-            return (SephObject)this.handle.invoke(thread, scope, receiver, arguments);
+            return (SephObject)this.handle_n.invoke(thread, scope, receiver, arguments);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -82,7 +61,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope) {
         try {
-            return (SephObject)this.handle0.invoke(thread, scope, receiver);
+            return (SephObject)this.handle_0.invoke(thread, scope, receiver);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -94,7 +73,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0) {
         try {
-            return (SephObject)this.handle1m.invoke(thread, scope, receiver, arg0);
+            return (SephObject)this.handle_1.invoke(thread, scope, receiver, arg0);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -106,7 +85,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1) {
         try {
-            return (SephObject)this.handle2m.invoke(thread, scope, receiver, arg0, arg1);
+            return (SephObject)this.handle_2.invoke(thread, scope, receiver, arg0, arg1);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -118,7 +97,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) {
         try {
-            return (SephObject)this.handle3m.invoke(thread, scope, receiver, arg0, arg1, arg2);
+            return (SephObject)this.handle_3.invoke(thread, scope, receiver, arg0, arg1, arg2);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -130,7 +109,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3) {
         try {
-            return (SephObject)this.handle4m.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3);
+            return (SephObject)this.handle_4.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -142,7 +121,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4) {
         try {
-            return (SephObject)this.handle5m.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3, arg4);
+            return (SephObject)this.handle_5.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3, arg4);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -152,12 +131,9 @@ public class SephMethodHandleObject extends SephMethodObject {
         }
     }
 
-
-
-
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments, String[] keywordNames, MethodHandle[] keywordArguments) {
         try {
-            return (SephObject)this.handle_k.invoke(thread, scope, receiver, arguments, keywordNames, keywordArguments);
+            return (SephObject)this.handle_n_k.invoke(thread, scope, receiver, arguments, keywordNames, keywordArguments);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -169,7 +145,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, String[] keywordNames, MethodHandle[] keywordArguments) {
         try {
-            return (SephObject)this.handle0_k.invoke(thread, scope, receiver, keywordNames, keywordArguments);
+            return (SephObject)this.handle_0_k.invoke(thread, scope, receiver, keywordNames, keywordArguments);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -182,7 +158,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywordArguments) {
         try {
-            return (SephObject)this.handle1m_k.invoke(thread, scope, receiver, arg0, keywordNames, keywordArguments);
+            return (SephObject)this.handle_1_k.invoke(thread, scope, receiver, arg0, keywordNames, keywordArguments);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -194,7 +170,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywordArguments) {
         try {
-            return (SephObject)this.handle2m_k.invoke(thread, scope, receiver, arg0, arg1, keywordNames, keywordArguments);
+            return (SephObject)this.handle_2_k.invoke(thread, scope, receiver, arg0, arg1, keywordNames, keywordArguments);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -206,7 +182,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywordArguments) {
         try {
-            return (SephObject)this.handle3m_k.invoke(thread, scope, receiver, arg0, arg1, arg2, keywordNames, keywordArguments);
+            return (SephObject)this.handle_3_k.invoke(thread, scope, receiver, arg0, arg1, arg2, keywordNames, keywordArguments);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -218,7 +194,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywordArguments) {
         try {
-            return (SephObject)this.handle4m_k.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3, keywordNames, keywordArguments);
+            return (SephObject)this.handle_4_k.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3, keywordNames, keywordArguments);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
@@ -230,7 +206,7 @@ public class SephMethodHandleObject extends SephMethodObject {
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywordArguments) {
         try {
-            return (SephObject)this.handle5m_k.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3, arg4, keywordNames, keywordArguments);
+            return (SephObject)this.handle_5_k.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3, arg4, keywordNames, keywordArguments);
         } catch(Error e) {
             throw e;
         } catch(RuntimeException e) {
