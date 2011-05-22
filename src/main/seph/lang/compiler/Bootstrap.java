@@ -599,28 +599,22 @@ public class Bootstrap {
 
     public static SephObject fallbackVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
         SephObject value = null;
+        LexicalScope inScope = scopeFor(depth, scope);
+        MethodHandle specificGetter = getterFor(index);
 
-        if(depth == 0) {
-            value = scope.get(depth, index);
-            
-            // get a MethodHandle accessor, either a field or an aref one that fetches from this field every time.
-
-            // create a foldArgument that actually gets the thing
-
-
-
-        } else {
-            value = scope.get(depth, index);
-
-            // Save away the value and the scope completely, as long as the value, version and scope is the same, return value
-            //    otherwise save away an accessor for getting the new value from the current scope
+        try {
+            value = (SephObject)specificGetter.invoke(inScope);
+        } catch(Throwable e) {
+            throw new RuntimeException(e);
         }
-
-        // add a method handle that activates on the saved value
-
+        
         if(value.isActivatable()) {
+            site.installActivatableVarEntry(receiver, value, inScope, depth, -1);
             return value.activateWith(receiver, thread, scope, args);
+        } else {
+            site.installConstantVarEntry(receiver, specificGetter, value, inScope, depth, -1);
         }
+
         return value;
     }
 
@@ -655,6 +649,7 @@ public class Bootstrap {
         SephObject value = null;
         LexicalScope inScope = scopeFor(depth, scope);
         MethodHandle specificGetter = getterFor(index);
+
         try {
             value = (SephObject)specificGetter.invoke(inScope);
         } catch(Throwable e) {
@@ -662,57 +657,119 @@ public class Bootstrap {
         }
         
         if(value.isActivatable()) {
-            //            site.installActivatableVarEntry(receiver, specificGetter, value, inScope, thread, scope, 0);
+            site.installActivatableVarEntry(receiver, value, inScope, depth, 0);
             return value.activateWith(receiver, thread, scope);
         } else {
             site.installConstantVarEntry(receiver, specificGetter, value, inScope, depth, 0);
         }
 
-
         return value;
     }
 
     public static SephObject fallbackVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0) {
-        SephObject value = scope.get(depth, index);
-        if(value.isActivatable()) {
-            return value.activateWith(receiver, thread, scope, arg0);
+        SephObject value = null;
+        LexicalScope inScope = scopeFor(depth, scope);
+        MethodHandle specificGetter = getterFor(index);
+
+        try {
+            value = (SephObject)specificGetter.invoke(inScope);
+        } catch(Throwable e) {
+            throw new RuntimeException(e);
         }
+        
+        if(value.isActivatable()) {
+            site.installActivatableVarEntry(receiver, value, inScope, depth, 1);
+            return value.activateWith(receiver, thread, scope, arg0);
+        } else {
+            site.installConstantVarEntry(receiver, specificGetter, value, inScope, depth, 1);
+        }
+
         return value;
     }
 
     public static SephObject fallbackVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1) {
-        SephObject value = scope.get(depth, index);
-        if(value.isActivatable()) {
-            return value.activateWith(receiver, thread, scope, arg0, arg1);
+        SephObject value = null;
+        LexicalScope inScope = scopeFor(depth, scope);
+        MethodHandle specificGetter = getterFor(index);
+
+        try {
+            value = (SephObject)specificGetter.invoke(inScope);
+        } catch(Throwable e) {
+            throw new RuntimeException(e);
         }
+        
+        if(value.isActivatable()) {
+            site.installActivatableVarEntry(receiver, value, inScope, depth, 2);
+            return value.activateWith(receiver, thread, scope, arg0, arg1);
+        } else {
+            site.installConstantVarEntry(receiver, specificGetter, value, inScope, depth, 2);
+        }
+
         return value;
     }
 
     public static SephObject fallbackVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) {
-        SephObject value = scope.get(depth, index);
-        if(value.isActivatable()) {
-            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2);
+        SephObject value = null;
+        LexicalScope inScope = scopeFor(depth, scope);
+        MethodHandle specificGetter = getterFor(index);
+
+        try {
+            value = (SephObject)specificGetter.invoke(inScope);
+        } catch(Throwable e) {
+            throw new RuntimeException(e);
         }
+        
+        if(value.isActivatable()) {
+            site.installActivatableVarEntry(receiver, value, inScope, depth, 3);
+            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2);
+        } else {
+            site.installConstantVarEntry(receiver, specificGetter, value, inScope, depth, 3);
+        }
+
         return value;
     }
 
     public static SephObject fallbackVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3) {
-        SephObject value = scope.get(depth, index);
+        SephObject value = null;
+        LexicalScope inScope = scopeFor(depth, scope);
+        MethodHandle specificGetter = getterFor(index);
+
+        try {
+            value = (SephObject)specificGetter.invoke(inScope);
+        } catch(Throwable e) {
+            throw new RuntimeException(e);
+        }
+        
         if(value.isActivatable()) {
+            site.installActivatableVarEntry(receiver, value, inScope, depth, 4);
             return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3);
+        } else {
+            site.installConstantVarEntry(receiver, specificGetter, value, inScope, depth, 4);
         }
 
         return value;
     }
 
     public static SephObject fallbackVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4) {
-        SephObject value = scope.get(depth, index);
-        if(value.isActivatable()) {
-            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
+        SephObject value = null;
+        LexicalScope inScope = scopeFor(depth, scope);
+        MethodHandle specificGetter = getterFor(index);
+
+        try {
+            value = (SephObject)specificGetter.invoke(inScope);
+        } catch(Throwable e) {
+            throw new RuntimeException(e);
         }
+        
+        if(value.isActivatable()) {
+            site.installActivatableVarEntry(receiver, value, inScope, depth, 5);
+            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
+        } else {
+            site.installConstantVarEntry(receiver, specificGetter, value, inScope, depth, 5);
+        }
+
         return value;
     }
-
     
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
         SephObject value = scope.get(depth, index);

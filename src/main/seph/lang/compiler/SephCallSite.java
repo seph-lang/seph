@@ -69,8 +69,16 @@ public class SephCallSite extends MutableCallSite {
         return getter;
     }
 
+    void installActivatableVarEntry(SephObject receiver, SephObject value, LexicalScope inScope, int depth, int args) {
+        if(depth > 0 && newEntry()) {
+            MethodHandle currentEntry = getTarget();
+            MethodHandle parentGetter = parentScopeGetterFor(depth);
+            setTarget(MethodHandles.guardWithTest(eqVar(inScope, parentGetter, args), invokeActivateWith(value, args), currentEntry));
+        }
+    }
+
     void installConstantVarEntry(SephObject receiver, MethodHandle getter, SephObject value, LexicalScope inScope, int depth, int args) {
-        if(newEntry()) {
+        if(depth > 0 && newEntry()) {
             MethodHandle currentEntry = getTarget();
             MethodHandle parentGetter = parentScopeGetterFor(depth);
             setTarget(MethodHandles.guardWithTest(eqVar(inScope, parentGetter, args), constantValue(value, args), getVariableValue(getter, parentGetter, args)));
