@@ -31,8 +31,10 @@ public class Bootstrap {
             MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, int.class, int.class);
             MethodHandle fallback;
             if(pieces[1].equals("var")) {
+                //                System.err.println("USING fallbackVar( " + fallbackType + ")");
                 fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "fallbackVar", fallbackType), 0, site, depth, index);
             } else {
+                //System.err.println("USING fallbackTailVar( " + fallbackType + ")");
                 fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "fallbackTailVar", fallbackType), 0, site, depth, index);
             }
             site.setTarget(fallback);
@@ -631,7 +633,26 @@ public class Bootstrap {
 
 
     public static SephObject fallbackVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
-        SephObject value = scope.get(depth, index);
+        SephObject value = null;
+
+        if(depth == 0) {
+            value = scope.get(depth, index);
+            
+            // get a MethodHandle accessor, either a field or an aref one that fetches from this field every time.
+
+            // create a foldArgument that actually gets the thing
+
+
+
+        } else {
+            value = scope.get(depth, index);
+
+            // Save away the value and the scope completely, as long as the value, version and scope is the same, return value
+            //    otherwise save away an accessor for getting the new value from the current scope
+        }
+
+        // add a method handle that activates on the saved value
+
         if(value.isActivatable()) {
             return value.activateWith(receiver, thread, scope, args);
         }

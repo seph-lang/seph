@@ -92,66 +92,6 @@ public class SephMethodHandleObject extends SephMethodObject {
         }
     }
 
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0) {
-        try {
-            return (SephObject)this.handle1s.invoke(thread, scope, receiver, arg0);
-        } catch(Error e) {
-            throw e;
-        } catch(RuntimeException e) {
-            throw e;
-        } catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1) {
-        try {
-            return (SephObject)this.handle2s.invoke(thread, scope, receiver, arg0, arg1);
-        } catch(Error e) {
-            throw e;
-        } catch(RuntimeException e) {
-            throw e;
-        } catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2) {
-        try {
-            return (SephObject)this.handle3s.invoke(thread, scope, receiver, arg0, arg1, arg2);
-        } catch(Error e) {
-            throw e;
-        } catch(RuntimeException e) {
-            throw e;
-        } catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3) {
-        try {
-            return (SephObject)this.handle4s.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3);
-        } catch(Error e) {
-            throw e;
-        } catch(RuntimeException e) {
-            throw e;
-        } catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3, SephObject arg4) {
-        try {
-            return (SephObject)this.handle5s.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3, arg4);
-        } catch(Error e) {
-            throw e;
-        } catch(RuntimeException e) {
-            throw e;
-        } catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0) {
         try {
             return (SephObject)this.handle1m.invoke(thread, scope, receiver, arg0);
@@ -239,65 +179,6 @@ public class SephMethodHandleObject extends SephMethodObject {
         }
     }
 
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, String[] keywordNames, MethodHandle[] keywordArguments) {
-        try {
-            return (SephObject)this.handle1s_k.invoke(thread, scope, receiver, arg0, keywordNames, keywordArguments);
-        } catch(Error e) {
-            throw e;
-        } catch(RuntimeException e) {
-            throw e;
-        } catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, String[] keywordNames, MethodHandle[] keywordArguments) {
-        try {
-            return (SephObject)this.handle2s_k.invoke(thread, scope, receiver, arg0, arg1, keywordNames, keywordArguments);
-        } catch(Error e) {
-            throw e;
-        } catch(RuntimeException e) {
-            throw e;
-        } catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, String[] keywordNames, MethodHandle[] keywordArguments) {
-        try {
-            return (SephObject)this.handle3s_k.invoke(thread, scope, receiver, arg0, arg1, arg2, keywordNames, keywordArguments);
-        } catch(Error e) {
-            throw e;
-        } catch(RuntimeException e) {
-            throw e;
-        } catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3, String[] keywordNames, MethodHandle[] keywordArguments) {
-        try {
-            return (SephObject)this.handle4s_k.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3, keywordNames, keywordArguments);
-        } catch(Error e) {
-            throw e;
-        } catch(RuntimeException e) {
-            throw e;
-        } catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, SephObject arg0, SephObject arg1, SephObject arg2, SephObject arg3, SephObject arg4, String[] keywordNames, MethodHandle[] keywordArguments) {
-        try {
-            return (SephObject)this.handle5s_k.invoke(thread, scope, receiver, arg0, arg1, arg2, arg3, arg4, keywordNames, keywordArguments);
-        } catch(Error e) {
-            throw e;
-        } catch(RuntimeException e) {
-            throw e;
-        } catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywordArguments) {
         try {
