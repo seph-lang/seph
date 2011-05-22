@@ -192,7 +192,7 @@ deep_larger_scope = #(
 
 benchmark("variable reading, flat short lexical scope", 10, 10000, flat_short_scope)
 benchmark("variable reading, flat larger lexical scope", 10, 10000, flat_larger_scope)
-benchmark("variable reading, shallow short lexical scope", 10, 10, shallow_short_scope)
-benchmark("variable reading, shallow larger lexical scope", 10, 10, shallow_larger_scope)
-benchmark("variable reading, deep short lexical scope", 10, 10, deep_short_scope)
-benchmark("variable reading, deep larger lexical scope", 10, 10, deep_larger_scope)
+benchmark("variable reading, shallow short lexical scope", 10, 10000, shallow_short_scope)
+benchmark("variable reading, shallow larger lexical scope", 10, 10000, shallow_larger_scope)
+benchmark("variable reading, deep short lexical scope", 10, 10000, deep_short_scope)
+benchmark("variable reading, deep larger lexical scope", 10, 10000, deep_larger_scope)

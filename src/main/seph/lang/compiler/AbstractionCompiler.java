@@ -109,7 +109,7 @@ public class AbstractionCompiler {
         this.argNames = argNames;
         this.capture = capture;
         this.className = "seph$gen$abstraction$" + compiledCount.getAndIncrement();
-        this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         List<String> newNames = new LinkedList<>();
         for(String s : scope.getNames()) {
             if(!parentScope.hasName(s)) {
@@ -558,6 +558,10 @@ public class AbstractionCompiler {
         ma.label(done);
     }
 
+    private int dropFor(Arity arity) {
+        return (arity.keyword > 0 ? 2 : 0) + (arity.positional > 5 ? 1 : arity.positional) + 3;
+    }
+
     private String sigFor(Arity arity) {
         if(arity.keyword > 0) {
             switch(arity.positional) {
@@ -596,7 +600,67 @@ public class AbstractionCompiler {
         }
     }
 
+    private void loadFromDepth(int depth, int index, MethodAdapter ma) {
+        int currentDepth = depth;
+        while(currentDepth-- > 0) {
+            ma.getField(LexicalScope.class, "parent", LexicalScope.class);
+        }
+
+        switch(index) {
+        case 0:
+            ma.cast(LexicalScope.One.class);
+            ma.getField(LexicalScope.One.class, "value0", SephObject.class);
+            break;
+        case 1:
+            ma.cast(LexicalScope.Two.class);
+            ma.getField(LexicalScope.Two.class, "value1", SephObject.class);
+            break;
+        case 2:
+            ma.cast(LexicalScope.Three.class);
+            ma.getField(LexicalScope.Three.class, "value2", SephObject.class);
+            break;
+        case 3:
+            ma.cast(LexicalScope.Four.class);
+            ma.getField(LexicalScope.Four.class, "value3", SephObject.class);
+            break;
+        case 4:
+            ma.cast(LexicalScope.Five.class);
+            ma.getField(LexicalScope.Five.class, "value4", SephObject.class);
+            break;
+        case 5:
+            ma.cast(LexicalScope.Six.class);
+            ma.getField(LexicalScope.Six.class, "value5", SephObject.class);
+            break;
+        default:
+            ma.cast(LexicalScope.Many.class);
+            ma.getField(LexicalScope.Many.class, "values", SephObject[].class);
+            ma.load(index);
+            ma.loadArray();
+            break;
+        }
+    }
+
     private void compileMessageSend(MethodAdapter ma, Message current, boolean activateWith, int plusArity, boolean first, Message last) {
+        ScopeEntry se = null;
+        Label noActivate = null;
+
+        if(first && (se = scope.find(current.name())) != null) {
+            if(current != last) {
+                noActivate = new Label();
+                if(activateWith) {
+                    ma.loadLocal(METHOD_SCOPE + plusArity);
+                } else {
+                    ma.loadLocal(METHOD_SCOPE_ARG);
+                }
+                loadFromDepth(se.depth, se.index, ma);
+                ma.dup();
+                ma.interfaceCall(SephObject.class, "isActivatable", boolean.class);
+                ma.zero();
+                ma.ifEqual(noActivate);
+                ma.swap();
+            }
+        } 
+
         ma.loadLocal(THREAD);
 
         if(activateWith) {
@@ -607,17 +671,9 @@ public class AbstractionCompiler {
             
         final Arity arity = compileArguments(ma, current.arguments(), activateWith, plusArity);
 
-        ScopeEntry se = null;
-        if(first && (se = scope.find(current.name())) != null) {
-            boolean fullPumping = false;
-            String nm = "var";
+        if(first && se != null) {
             if(current == last) {
-                nm = "tailVar";
-                fullPumping = true;
-            }
-
-            ma.dynamicCall("seph:" + nm + ":" + se.depth + ":" + se.index + ":" + encode(current.name()), sigFor(arity), bootstrapNamed("sephBootstrap"));
-            if(fullPumping) {
+                ma.dynamicCall("seph:tailVar:" + se.depth + ":" + se.index + ":" + encode(current.name()), sigFor(arity), bootstrapNamed("sephBootstrap"));
                 if(!activateWith) {
                     Label noPump = new Label();
                     ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
@@ -627,7 +683,16 @@ public class AbstractionCompiler {
                     ma.label(noPump);
                 }
             } else {
+                Label activate = new Label();
+                ma.interfaceCall(SephObject.class, "activateWith", sigFor(arity));
+
                 pumpTailCall(ma);
+                ma.jump(activate);
+                ma.label(noActivate);
+
+                ma.swap();
+                ma.pop();
+                ma.label(activate);
             }
         } else {
             String possibleIntrinsic = "";
