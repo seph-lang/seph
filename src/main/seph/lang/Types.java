@@ -3,10 +3,18 @@
  */
 package seph.lang;
 
+import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import static java.lang.invoke.MethodType.*;
 
 import seph.lang.persistent.IPersistentList;
+
+import static seph.lang.compiler.CompilationHelpers.*;
+import static seph.lang.compiler.Bootstrap.*;
+import seph.lang.compiler.SephCallSite;
+import seph.lang.compiler.Bootstrap;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -14,23 +22,57 @@ import seph.lang.persistent.IPersistentList;
 public final class Types {
     private Types() {}
     
-    public final static MethodType ACTIVATE_METHOD_TYPE   = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_0 = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_1 = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_2 = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_3 = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_4 = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_5 = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class, 
-                                                                                                      MethodHandle.class, MethodHandle.class, MethodHandle.class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_N = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_0 = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_1 = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_2 = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_3 = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_4 = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_5 = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, 
+                                                                                                           MethodHandle.class, MethodHandle.class, MethodHandle.class);
 
-    public final static MethodType ACTIVATE_METHOD_TYPE_K   = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, IPersistentList.class, String[].class, MethodHandle[].class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_0_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, String[].class, MethodHandle[].class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_1_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, String[].class, MethodHandle[].class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_2_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_3_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, 
-                                                                                                      MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_4_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, 
-                                                                                                      MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
-    public final static MethodType ACTIVATE_METHOD_TYPE_5_K = MethodType.methodType(SephObject.class, SThread.class, LexicalScope.class, SephObject.class, MethodHandle.class, 
-                                                                                                      MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_N_K = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class, String[].class, MethodHandle[].class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_0_K = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_1_K = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, String[].class, MethodHandle[].class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_2_K = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_3_K = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, 
+                                                                                                             MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_4_K = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, 
+                                                                                                             MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_5_K = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, 
+                                                                                                             MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+
+    public final static MethodType BOOTSTRAP_SIGNATURE      = methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
+    public final static String     BOOTSTRAP_SIGNATURE_DESC =        sig(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
+
+    public final static MethodType NO_ARGS_SIGNATURE        = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class);
+    public final static MethodType INITIAL_SETUP_TYPE       = methodType(SephObject.class, SephCallSite.class, MethodHandle.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class);
+    public final static MethodType ARGS_3_SIGNATURE         = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
+    public final static MethodType INITIAL_SETUP_3_TYPE     = methodType(SephObject.class, SephCallSite.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, 
+                                                                                                                                                                    MethodHandle.class, MethodHandle.class, MethodHandle.class);
+
+    public final static MethodHandle INTRINSIC_TRUE_MH                = findStatic(Bootstrap.class, "intrinsic_true", NO_ARGS_SIGNATURE);
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_TRUE_MH  = findStatic(Bootstrap.class, "initialSetup_intrinsic_true", INITIAL_SETUP_TYPE);
+    public final static MethodHandle INTRINSIC_FALSE_MH               = findStatic(Bootstrap.class, "intrinsic_false", NO_ARGS_SIGNATURE);
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_FALSE_MH = findStatic(Bootstrap.class, "initialSetup_intrinsic_false", INITIAL_SETUP_TYPE);
+    public final static MethodHandle INTRINSIC_NIL_MH                 = findStatic(Bootstrap.class, "intrinsic_nil", NO_ARGS_SIGNATURE);
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_NIL_MH   = findStatic(Bootstrap.class, "initialSetup_intrinsic_nil", INITIAL_SETUP_TYPE);
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_IF_MH    = findStatic(Bootstrap.class, "initialSetup_intrinsic_if", INITIAL_SETUP_3_TYPE);
+
+    public final static MethodHandle ACTIVATE_WITH_ARG_N = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_N);
+    public final static MethodHandle ACTIVATE_WITH_ARG_0 = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_0);
+    public final static MethodHandle ACTIVATE_WITH_ARG_1 = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_1);
+    public final static MethodHandle ACTIVATE_WITH_ARG_2 = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_2);
+    public final static MethodHandle ACTIVATE_WITH_ARG_3 = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_3);
+    public final static MethodHandle ACTIVATE_WITH_ARG_4 = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_4);
+    public final static MethodHandle ACTIVATE_WITH_ARG_5 = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_5);
+
+    public final static MethodHandle ACTIVATE_WITH_ARG_N_K = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_N_K);
+    public final static MethodHandle ACTIVATE_WITH_ARG_0_K = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_0_K);
+    public final static MethodHandle ACTIVATE_WITH_ARG_1_K = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_1_K);
+    public final static MethodHandle ACTIVATE_WITH_ARG_2_K = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_2_K);
+    public final static MethodHandle ACTIVATE_WITH_ARG_3_K = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_3_K);
+    public final static MethodHandle ACTIVATE_WITH_ARG_4_K = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_4_K);
+    public final static MethodHandle ACTIVATE_WITH_ARG_5_K = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_5_K);
+
 }// Types

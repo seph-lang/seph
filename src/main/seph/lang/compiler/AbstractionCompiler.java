@@ -25,6 +25,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.*;
 import static seph.lang.compiler.CompilationHelpers.*;
+import static seph.lang.Types.*;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -37,7 +38,7 @@ public class AbstractionCompiler {
     public static boolean PRINT_COMPILE = false;
 
     private static org.objectweb.asm.MethodHandle bootstrapNamed(String name) {
-        return new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", name, Bootstrap.BOOTSTRAP_SIGNATURE_DESC);
+        return new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", name, BOOTSTRAP_SIGNATURE_DESC);
     }
 
     private final static AtomicInteger compiledCount = new AtomicInteger(0);

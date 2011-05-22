@@ -12,6 +12,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 
 import static seph.lang.compiler.CompilationHelpers.*;
+import static seph.lang.Types.*;
 
 public class SephCallSite extends MutableCallSite {
     private enum Morphicity {
@@ -271,19 +272,19 @@ public class SephCallSite extends MutableCallSite {
     private static MethodHandle activateWithMH(int num) {
         switch(num) {
         case -1:
-            return Bootstrap.ACTIVATE_WITH_ARGS;
+            return ACTIVATE_WITH_ARG_N;
         case 0:
-            return Bootstrap.ACTIVATE_WITH_ARG0;
+            return ACTIVATE_WITH_ARG_0;
         case 1:
-            return Bootstrap.ACTIVATE_WITH_ARG1;
+            return ACTIVATE_WITH_ARG_1;
         case 2:
-            return Bootstrap.ACTIVATE_WITH_ARG2;
+            return ACTIVATE_WITH_ARG_2;
         case 3:
-            return Bootstrap.ACTIVATE_WITH_ARG3;
+            return ACTIVATE_WITH_ARG_3;
         case 4:
-            return Bootstrap.ACTIVATE_WITH_ARG4;
+            return ACTIVATE_WITH_ARG_4;
         case 5:
-            return Bootstrap.ACTIVATE_WITH_ARG5;
+            return ACTIVATE_WITH_ARG_5;
         default:
             return null;
         }
@@ -313,19 +314,19 @@ public class SephCallSite extends MutableCallSite {
     private static MethodHandle activateWithMHKeywords(int num) {
         switch(num) {
         case -1:
-            return Bootstrap.ACTIVATE_WITH_ARGS_KEYWORDS;
+            return ACTIVATE_WITH_ARG_N_K;
         case 0:
-            return Bootstrap.ACTIVATE_WITH_ARG0_KEYWORDS;
+            return ACTIVATE_WITH_ARG_0_K;
         case 1:
-            return Bootstrap.ACTIVATE_WITH_ARG1_KEYWORDS;
+            return ACTIVATE_WITH_ARG_1_K;
         case 2:
-            return Bootstrap.ACTIVATE_WITH_ARG2_KEYWORDS;
+            return ACTIVATE_WITH_ARG_2_K;
         case 3:
-            return Bootstrap.ACTIVATE_WITH_ARG3_KEYWORDS;
+            return ACTIVATE_WITH_ARG_3_K;
         case 4:
-            return Bootstrap.ACTIVATE_WITH_ARG4_KEYWORDS;
+            return ACTIVATE_WITH_ARG_4_K;
         case 5:
-            return Bootstrap.ACTIVATE_WITH_ARG5_KEYWORDS;
+            return ACTIVATE_WITH_ARG_5_K;
         default:
             return null;
         }

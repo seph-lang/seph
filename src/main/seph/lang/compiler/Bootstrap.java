@@ -17,11 +17,9 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
 import static seph.lang.compiler.CompilationHelpers.*;
+import static seph.lang.Types.*;
 
 public class Bootstrap {
-    public final static MethodType BOOTSTRAP_SIGNATURE      = MethodType.methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
-    public final static String     BOOTSTRAP_SIGNATURE_DESC = sig(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
-
     private static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, String bootstrapType) {
         SephCallSite site = new SephCallSite(type);
         if(name.startsWith("seph:var:") || name.startsWith("seph:tailVar:")) {
@@ -47,11 +45,6 @@ public class Bootstrap {
         }
     }
 
-    public final static MethodType NO_ARGS_SIGNATURE = MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class);
-    public final static MethodType INITIAL_SETUP_TYPE = MethodType.methodType(SephObject.class, SephCallSite.class, MethodHandle.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class);
-    public final static MethodType ARGS_3_SIGNATURE = MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
-    public final static MethodType INITIAL_SETUP_3_TYPE = MethodType.methodType(SephObject.class, SephCallSite.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
-
     private static MethodHandle dropAllArgumentTypes(MethodHandle mh, MethodType type) {
         if(type.equals(NO_ARGS_SIGNATURE)) {
             return mh;
@@ -62,16 +55,6 @@ public class Bootstrap {
         return MethodHandles.dropArguments(mh, 2, newParams);
     }
 
-    public final static MethodHandle INTRINSIC_TRUE_MH = findStatic(Bootstrap.class, "intrinsic_true", NO_ARGS_SIGNATURE);
-    public final static MethodHandle INITIAL_SETUP_INTRINSIC_TRUE_MH = findStatic(Bootstrap.class, "initialSetup_intrinsic_true", INITIAL_SETUP_TYPE);
-
-    public final static MethodHandle INTRINSIC_FALSE_MH = findStatic(Bootstrap.class, "intrinsic_false", NO_ARGS_SIGNATURE);
-    public final static MethodHandle INITIAL_SETUP_INTRINSIC_FALSE_MH = findStatic(Bootstrap.class, "initialSetup_intrinsic_false", INITIAL_SETUP_TYPE);
-
-    public final static MethodHandle INTRINSIC_NIL_MH = findStatic(Bootstrap.class, "intrinsic_nil", NO_ARGS_SIGNATURE);
-    public final static MethodHandle INITIAL_SETUP_INTRINSIC_NIL_MH = findStatic(Bootstrap.class, "initialSetup_intrinsic_nil", INITIAL_SETUP_TYPE);
-
-    public final static MethodHandle INITIAL_SETUP_INTRINSIC_IF_MH = findStatic(Bootstrap.class, "initialSetup_intrinsic_if", INITIAL_SETUP_3_TYPE);
 
     private static CallSite bootstrap_intrinsic_true(MethodHandles.Lookup lookup, String name, MethodType type, String bootstrapType) {
         SephCallSite site = new SephCallSite(type);
@@ -158,22 +141,6 @@ public class Bootstrap {
         return bootstrap_intrinsic_if(lookup, name, type, "tailCallFallback");
     }
 
-    public final static MethodHandle ACTIVATE_WITH_ARGS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class));
-    public final static MethodHandle ACTIVATE_WITH_ARG0 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class));
-    public final static MethodHandle ACTIVATE_WITH_ARG1 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class));
-    public final static MethodHandle ACTIVATE_WITH_ARG2 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class));
-    public final static MethodHandle ACTIVATE_WITH_ARG3 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
-    public final static MethodHandle ACTIVATE_WITH_ARG4 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
-    public final static MethodHandle ACTIVATE_WITH_ARG5 = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
-
-
-    public final static MethodHandle ACTIVATE_WITH_ARGS_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class, String[].class, MethodHandle[].class));
-    public final static MethodHandle ACTIVATE_WITH_ARG0_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class));
-    public final static MethodHandle ACTIVATE_WITH_ARG1_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, String[].class, MethodHandle[].class));
-    public final static MethodHandle ACTIVATE_WITH_ARG2_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
-    public final static MethodHandle ACTIVATE_WITH_ARG3_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
-    public final static MethodHandle ACTIVATE_WITH_ARG4_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
-    public final static MethodHandle ACTIVATE_WITH_ARG5_KEYWORDS = findVirtual(SephObject.class, "activateWith", MethodType.methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
 
 
     public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
@@ -282,7 +249,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARGS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_N.bindTo(value);
             site.installActivatableEntry(receiver, h, -1);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args);
             thread.tail = h;
@@ -299,7 +266,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG0.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_0.bindTo(value);
             site.installActivatableEntry(receiver, h, 0);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope);
             thread.tail = h;
@@ -316,7 +283,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG1.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_1.bindTo(value);
             site.installActivatableEntry(receiver, h, 1);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0);
             thread.tail = h;
@@ -333,7 +300,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG2.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_2.bindTo(value);
             site.installActivatableEntry(receiver, h, 2);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1);
             thread.tail = h;
@@ -350,7 +317,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG3.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_3.bindTo(value);
             site.installActivatableEntry(receiver, h, 3);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2);
             thread.tail = h;
@@ -367,7 +334,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG4.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_4.bindTo(value);
             site.installActivatableEntry(receiver, h, 4);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3);
             thread.tail = h;
@@ -384,7 +351,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG5.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_5.bindTo(value);
             site.installActivatableEntry(receiver, h, 5);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
             thread.tail = h;
@@ -501,7 +468,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARGS_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_N_K.bindTo(value);
             site.installActivatableEntryWithKeywords(receiver, h, -1);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args, keywordNames, keywords);
             thread.tail = h;
@@ -518,7 +485,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG0_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_0_K.bindTo(value);
             site.installActivatableEntryWithKeywords(receiver, h, 0);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, keywordNames, keywords);
             thread.tail = h;
@@ -535,7 +502,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG1_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_1_K.bindTo(value);
             site.installActivatableEntryWithKeywords(receiver, h, 1);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, keywordNames, keywords);
             thread.tail = h;
@@ -552,7 +519,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG2_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_2_K.bindTo(value);
             site.installActivatableEntryWithKeywords(receiver, h, 2);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, keywordNames, keywords);
             thread.tail = h;
@@ -569,7 +536,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG3_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_3_K.bindTo(value);
             site.installActivatableEntryWithKeywords(receiver, h, 3);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, keywordNames, keywords);
             thread.tail = h;
@@ -586,7 +553,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG4_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_4_K.bindTo(value);
             site.installActivatableEntryWithKeywords(receiver, h, 4);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, keywordNames, keywords);
             thread.tail = h;
@@ -603,7 +570,7 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG5_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_5_K.bindTo(value);
             site.installActivatableEntryWithKeywords(receiver, h, 5);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4, keywordNames, keywords);
             thread.tail = h;
@@ -712,7 +679,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARGS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_N.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -723,7 +690,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG0.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_0.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -734,7 +701,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG1.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_1.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -745,7 +712,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG2.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_2.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -756,7 +723,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG3.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_3.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -767,7 +734,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG4.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_4.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -778,7 +745,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG5.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_5.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -847,7 +814,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args, String[] keywordNames, MethodHandle[] keywords) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARGS_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_N_K.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -858,7 +825,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, String[] keywordNames, MethodHandle[] keywords) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG0_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_0_K.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -869,7 +836,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywords) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG1_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_1_K.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -880,7 +847,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywords) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG2_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_2_K.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -891,7 +858,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywords) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG3_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_3_K.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -902,7 +869,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywords) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG4_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_4_K.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -913,7 +880,7 @@ public class Bootstrap {
     public static SephObject fallbackTailVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywords) {
         SephObject value = scope.get(depth, index);
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG5_KEYWORDS.bindTo(value);
+            MethodHandle h = ACTIVATE_WITH_ARG_5_K.bindTo(value);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
