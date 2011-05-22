@@ -60,6 +60,23 @@ public class SephCallSite extends MutableCallSite {
         }
     }
 
+    private static MethodHandle parentScopeGetterFor(int depth) {
+        MethodHandle getter = MethodHandles.identity(LexicalScope.class);;
+        while(depth > 0) {
+            getter = MethodHandles.filterArguments(getter, 0, PARENT_SCOPE_GETTER);
+            depth--;
+        }
+        return getter;
+    }
+
+    void installConstantVarEntry(SephObject receiver, MethodHandle getter, SephObject value, LexicalScope inScope, int depth, int args) {
+        if(newEntry()) {
+            MethodHandle currentEntry = getTarget();
+            MethodHandle parentGetter = parentScopeGetterFor(depth);
+            setTarget(MethodHandles.guardWithTest(eqVar(inScope, parentGetter, args), constantValue(value, args), getVariableValue(getter, parentGetter, args)));
+        }
+    }
+
     void installActivatableEntryWithKeywords(SephObject receiver, SephObject value, int args) {
         if(newEntry()) {
             MethodHandle currentEntry = getTarget();
@@ -84,7 +101,18 @@ public class SephCallSite extends MutableCallSite {
     public static boolean eq(Object first, SephObject receiver) {
         return first == receiver.identity();
     }
+
+    public static boolean eqVarM(LexicalScope scope, int version) {
+        return scope.version == version;
+    }
+
+    public static boolean eqVarParentM(LexicalScope scope, int version, LexicalScope other) {
+        return scope == other && scope.version == version;
+    }
+
     private final static MethodHandle EQ = Bootstrap.findStatic(SephCallSite.class, "eq", MethodType.methodType(boolean.class, Object.class, SephObject.class));
+    private final static MethodHandle EQ_VAR = Bootstrap.findStatic(SephCallSite.class, "eqVarM", MethodType.methodType(boolean.class, LexicalScope.class, int.class));
+    private final static MethodHandle EQ_VAR_PARENT = Bootstrap.findStatic(SephCallSite.class, "eqVarParentM", MethodType.methodType(boolean.class, LexicalScope.class, int.class, LexicalScope.class));
 
     private final static Class[] INDETERMINATE = new Class[]{IPersistentList.class};
     private final static Class[] CLASS_0       = new Class[0];
@@ -149,6 +177,18 @@ public class SephCallSite extends MutableCallSite {
         return MethodHandles.dropArguments(MethodHandles.dropArguments(EQ.bindTo(receiver.identity()), 1, SThread.class, LexicalScope.class), 3, argumentsToDrop);
     }
 
+    private MethodHandle eqVar(LexicalScope inScope, int args) {
+        int version = inScope.version;
+        Class[] argumentsToDrop = dropClasses(args);
+        return MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.insertArguments(EQ_VAR, 0, inScope, version), 0, SephObject.class, SThread.class, LexicalScope.class), 3, argumentsToDrop);
+    }
+
+    private MethodHandle eqVar(LexicalScope inScope, MethodHandle parentGetter, int args) {
+        int version = inScope.version;
+        Class[] argumentsToDrop = dropClasses(args);
+        return MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.filterArguments(MethodHandles.insertArguments(EQ_VAR_PARENT, 0, inScope, version), 0, parentGetter), 0, SephObject.class, SThread.class), 3, argumentsToDrop);
+    }
+
     private MethodHandle eqKeywords(SephObject receiver, int args) {
         Class[] argumentsToDrop = dropClassesKeywords(args);
         return MethodHandles.dropArguments(MethodHandles.dropArguments(EQ.bindTo(receiver.identity()), 1, SThread.class, LexicalScope.class), 3, argumentsToDrop);
@@ -160,6 +200,11 @@ public class SephCallSite extends MutableCallSite {
 
     private MethodHandle invokeActivateWithKeywords(SephObject value, int args) {
         return activateWithMHKeywords(args).bindTo(value);
+    }
+
+    private MethodHandle getVariableValue(MethodHandle getter, MethodHandle parentGetter, int args) {
+        Class[] argumentsToDrop = dropClasses(args);
+        return MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.filterArguments(getter, 0, parentGetter), 0, SephObject.class, SThread.class), 3, argumentsToDrop);
     }
 
     public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {

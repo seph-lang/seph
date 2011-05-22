@@ -29,10 +29,8 @@ public class Bootstrap {
             MethodType fallbackType = type.insertParameterTypes(0, SephCallSite.class, int.class, int.class);
             MethodHandle fallback;
             if(pieces[1].equals("var")) {
-                //                System.err.println("USING fallbackVar( " + fallbackType + ")");
                 fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "fallbackVar", fallbackType), 0, site, depth, index);
             } else {
-                //System.err.println("USING fallbackTailVar( " + fallbackType + ")");
                 fallback = MethodHandles.insertArguments(findStatic(Bootstrap.class, "fallbackTailVar", fallbackType), 0, site, depth, index);
             }
             site.setTarget(fallback);
@@ -626,11 +624,51 @@ public class Bootstrap {
         return value;
     }
 
-    public static SephObject fallbackVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope) {
-        SephObject value = scope.get(depth, index);
-        if(value.isActivatable()) {
-            return value.activateWith(receiver, thread, scope);
+    private static MethodHandle getterFor(int index) {
+        switch(index) {
+        case 0:
+            return SCOPE_0_GETTER;
+        case 1:
+            return SCOPE_1_GETTER;
+        case 2:
+            return SCOPE_2_GETTER;
+        case 3:
+            return SCOPE_3_GETTER;
+        case 4:
+            return SCOPE_4_GETTER;
+        case 5:
+            return SCOPE_5_GETTER;
+        default:
+            return MethodHandles.filterArguments(MethodHandles.insertArguments(SCOPE_N_GETTER, 1, index), 0, SCOPE_VALUES_GETTER);
         }
+    }
+
+    private static LexicalScope scopeFor(int depth, LexicalScope scope) {
+        if(0 == depth) {
+            return scope;
+        } else {
+            return scopeFor(depth - 1, scope.parent);
+        }
+    }
+
+    public static SephObject fallbackVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope) {
+        SephObject value = null;
+        LexicalScope inScope = scopeFor(depth, scope);
+        MethodHandle specificGetter = getterFor(index);
+        try {
+            value = (SephObject)specificGetter.invoke(inScope);
+        } catch(Throwable e) {
+            throw new RuntimeException(e);
+        }
+        
+        if(value.isActivatable()) {
+            //            site.installActivatableVarEntry(receiver, specificGetter, value, inScope, thread, scope, 0);
+            return value.activateWith(receiver, thread, scope);
+        } else {
+            site.installConstantVarEntry(receiver, specificGetter, value, inScope, depth, 0);
+        }
+
+
         return value;
     }
 
@@ -989,6 +1027,24 @@ public class Bootstrap {
         } catch(NoSuchMethodException e) {
             throw new RuntimeException(e);
         } catch(IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static MethodHandle findField(Class target, String name, Class type) {
+        try {
+            return MethodHandles.lookup().findGetter(target, name, type);
+        } catch(NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch(IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static MethodHandle findArrayGetter(Class target) {
+        try {
+            return MethodHandles.arrayElementGetter(target);
+        } catch(IllegalArgumentException e) {
             throw new RuntimeException(e);
         }
     }

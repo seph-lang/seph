@@ -17,8 +17,8 @@ import seph.lang.persistent.ISeq;
  */
 public abstract class LexicalScope {
     public static class Many extends LexicalScope {
-        String[] names;
-        SephObject[] values;
+        public String[] names;
+        public SephObject[] values;
 
         Many(LexicalScope parent, Runtime runtime, String[] names) {
             super(parent, runtime);

@@ -75,4 +75,17 @@ public final class Types {
     public final static MethodHandle ACTIVATE_WITH_ARG_4_K = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_4_K);
     public final static MethodHandle ACTIVATE_WITH_ARG_5_K = findVirtual(SephObject.class, "activateWith", ACTIVATE_METHOD_TYPE_5_K);
 
+    public final static MethodType   SCOPE_GETTER_TYPE = methodType(SephObject.class, LexicalScope.class);
+    public final static MethodType   SCOPE_ARRAY_GETTER_TYPE = methodType(SephObject[].class, LexicalScope.class);
+
+    public final static MethodHandle SCOPE_0_GETTER = findField(LexicalScope.One.class, "value0", SephObject.class).asType(SCOPE_GETTER_TYPE);
+    public final static MethodHandle SCOPE_1_GETTER = findField(LexicalScope.Two.class, "value1", SephObject.class).asType(SCOPE_GETTER_TYPE);
+    public final static MethodHandle SCOPE_2_GETTER = findField(LexicalScope.Three.class, "value2", SephObject.class).asType(SCOPE_GETTER_TYPE);
+    public final static MethodHandle SCOPE_3_GETTER = findField(LexicalScope.Four.class, "value3", SephObject.class).asType(SCOPE_GETTER_TYPE);
+    public final static MethodHandle SCOPE_4_GETTER = findField(LexicalScope.Five.class, "value4", SephObject.class).asType(SCOPE_GETTER_TYPE);
+    public final static MethodHandle SCOPE_5_GETTER = findField(LexicalScope.Six.class, "value5", SephObject.class).asType(SCOPE_GETTER_TYPE);
+    public final static MethodHandle SCOPE_VALUES_GETTER = findField(LexicalScope.Many.class, "values", SephObject[].class).asType(SCOPE_ARRAY_GETTER_TYPE);
+    public final static MethodHandle SCOPE_N_GETTER = findArrayGetter(SephObject[].class);
+
+    public final static MethodHandle PARENT_SCOPE_GETTER = findField(LexicalScope.class, "parent", LexicalScope.class);
 }// Types
