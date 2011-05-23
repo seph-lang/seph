@@ -432,7 +432,19 @@ public class AbstractionCompiler {
         }
     }
 
-    private Arity compileArguments(MethodAdapter ma, IPersistentList arguments, boolean activateWith, int plusArity) {
+    private Arity countArguments(IPersistentList arguments) {
+        final int arity = RT.count(arguments);
+        int keywordArgs = 0;
+        for(ISeq seq = arguments.seq(); seq != null; seq = seq.next()) {
+            Message m = (Message)seq.first();
+            if(m.name().endsWith(":")) {
+                keywordArgs++;
+            }
+        }
+        return new Arity(arity - keywordArgs, keywordArgs);
+    }
+
+    private void compileArguments(MethodAdapter ma, IPersistentList arguments, boolean activateWith, int plusArity) {
         int num = 0;
         final int currentMessageIndex = messageIndex++;
 
@@ -522,8 +534,6 @@ public class AbstractionCompiler {
                 ma.storeArray();
             }
         }
-
-        return new Arity(arity - keywordArguments.size(), keywordArguments.size());
     }
 
     private final static int METHOD_SCOPE_ARG       = 0;
@@ -562,42 +572,46 @@ public class AbstractionCompiler {
         return (arity.keyword > 0 ? 2 : 0) + (arity.positional > 5 ? 1 : arity.positional) + 3;
     }
 
-    private String sigFor(Arity arity) {
+    private Class[] argumentArrayFor(Arity arity) {
         if(arity.keyword > 0) {
             switch(arity.positional) {
             case 0:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class};
             case 1:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, String[].class, MethodHandle[].class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, String[].class, MethodHandle[].class};
             case 2:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
             case 3:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
             case 4:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
             case 5:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
             default:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class, String[].class, MethodHandle[].class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class, String[].class, MethodHandle[].class};
             }
         } else {
             switch(arity.positional) {
             case 0:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class};
             case 1:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class};
             case 2:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class};
             case 3:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class};
             case 4:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class};
             case 5:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class};
             default:
-                return sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class);
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class};
             }
         }
+    }
+
+    private String sigFor(Arity arity) {
+        return sig(SephObject.class, argumentArrayFor(arity));
     }
 
     private void loadFromDepth(int depth, int index, MethodAdapter ma) {
@@ -640,25 +654,91 @@ public class AbstractionCompiler {
         }
     }
 
+    private void getStaticActivateWithFor(Arity arity, MethodAdapter ma) {
+        String name = null;
+        if(arity.keyword > 0) {
+            switch(arity.positional) {
+            case 0:
+                name = "ACTIVATE_WITH_ARG_0_K";
+                break;
+            case 1:
+                name = "ACTIVATE_WITH_ARG_1_K";
+                break;
+            case 2:
+                name = "ACTIVATE_WITH_ARG_2_K";
+                break;
+            case 3:
+                name = "ACTIVATE_WITH_ARG_3_K";
+                break;
+            case 4:
+                name = "ACTIVATE_WITH_ARG_4_K";
+                break;
+            case 5:
+                name = "ACTIVATE_WITH_ARG_5_K";
+                break;
+            default:
+                name = "ACTIVATE_WITH_ARG_N_K";
+                break;
+            }
+        } else {
+            switch(arity.positional) {
+            case 0:
+                name = "ACTIVATE_WITH_ARG_0";
+                break;
+            case 1:
+                name = "ACTIVATE_WITH_ARG_1";
+                break;
+            case 2:
+                name = "ACTIVATE_WITH_ARG_2";
+                break;
+            case 3:
+                name = "ACTIVATE_WITH_ARG_3";
+                break;
+            case 4:
+                name = "ACTIVATE_WITH_ARG_4";
+                break;
+            case 5:
+                name = "ACTIVATE_WITH_ARG_5";
+                break;
+            default:
+                name = "ACTIVATE_WITH_ARG_N";
+                break;
+            }
+        }
+
+        ma.getStatic(Types.class, name, MethodHandle.class);
+    }
+
     private void compileMessageSend(MethodAdapter ma, Message current, boolean activateWith, int plusArity, boolean first, Message last) {
         ScopeEntry se = null;
         Label noActivate = null;
 
+        final Arity arity = countArguments(current.arguments());
+
         if(first && (se = scope.find(current.name())) != null) {
-            if(current != last) {
-                noActivate = new Label();
-                if(activateWith) {
-                    ma.loadLocal(METHOD_SCOPE + plusArity);
-                } else {
-                    ma.loadLocal(METHOD_SCOPE_ARG);
-                }
-                loadFromDepth(se.depth, se.index, ma);
-                ma.dup();
-                ma.interfaceCall(SephObject.class, "isActivatable", boolean.class);
-                ma.zero();
-                ma.ifEqual(noActivate);
-                ma.swap();
+            noActivate = new Label();
+            if(activateWith) {
+                ma.loadLocal(METHOD_SCOPE + plusArity);
+            } else {
+                ma.loadLocal(METHOD_SCOPE_ARG);
             }
+            loadFromDepth(se.depth, se.index, ma);
+            ma.dup();
+            ma.interfaceCall(SephObject.class, "isActivatable", boolean.class);
+            ma.zero();
+            ma.ifEqual(noActivate);
+
+            // [recv, methodObject]
+
+            if(current == last) {
+                getStaticActivateWithFor(arity, ma); // [recv, methodObject, activateWithHandle]
+                ma.swap();  // [recv, activateWithHandle, methodObject]
+                ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);  // [recv, boundActivateWith]
+                ma.swap();
+                ma.load(0);  // [boundActivateWith, recv, 0]
+            }
+
+            ma.swap();
         } 
 
         ma.loadLocal(THREAD);
@@ -669,11 +749,27 @@ public class AbstractionCompiler {
             ma.loadLocal(METHOD_SCOPE_ARG);
         }
             
-        final Arity arity = compileArguments(ma, current.arguments(), activateWith, plusArity);
+        compileArguments(ma, current.arguments(), activateWith, plusArity);
 
         if(first && se != null) {
             if(current == last) {
-                ma.dynamicCall("seph:tailVar:" + se.depth + ":" + se.index + ":" + encode(current.name()), sigFor(arity), bootstrapNamed("sephBootstrap"));
+                Label activate = new Label();
+                int len = argumentArrayFor(arity).length;
+                ma.load(len);
+                ma.newArray(Object.class);
+                for(int i = len - 1; i >= 0; i--) {
+                    ma.dup_x1();
+                    ma.swap();
+                    ma.load(i);
+                    ma.swap();
+                    ma.storeArray();
+                }
+                ma.staticCall(MethodHandles.class, "insertArguments", MethodHandle.class, MethodHandle.class, int.class, Object[].class);
+                ma.loadLocal(THREAD);
+                ma.swap();
+                ma.putField(SThread.class, "tail", MethodHandle.class);
+                ma.getStatic(SThread.class, "TAIL_MARKER", SephObject.class);
+
                 if(!activateWith) {
                     Label noPump = new Label();
                     ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
@@ -682,6 +778,14 @@ public class AbstractionCompiler {
                     pumpTailCall(ma);
                     ma.label(noPump);
                 }
+
+                ma.jump(activate);
+                ma.label(noActivate);
+
+                ma.swap();
+                ma.pop();
+
+                ma.label(activate);
             } else {
                 Label activate = new Label();
                 ma.interfaceCall(SephObject.class, "activateWith", sigFor(arity));

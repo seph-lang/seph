@@ -145,6 +145,12 @@ public class MethodAdapter {
             };
     }
 
+    public void dup_x1() {
+        op();
+        if(TRACE) System.err.println("DUP_X1");
+        mv.visitInsn(DUP_X1);
+    }
+
     private void op() {
         if(next != null) {
             next.execute();
@@ -288,10 +294,18 @@ public class MethodAdapter {
         staticCall(p(on), name, ret, params);
     }
 
+    public void staticCall(Class<?> on, String name, String sig) {
+        staticCall(p(on), name, sig);
+    }
+
     public void staticCall(String on, String name, Class<?> ret, Class<?>... params) {
+        staticCall(on, name, sig(ret, params));
+    }
+
+    public void staticCall(String on, String name, String sig) {
         op();
-        if(TRACE) System.err.println("INVOKESTATIC " + on + " " + name + " " + sig(ret, params));
-        mv.visitMethodInsn(INVOKESTATIC, on, name, sig(ret, params));
+        if(TRACE) System.err.println("INVOKESTATIC " + on + " " + name + " " + sig);
+        mv.visitMethodInsn(INVOKESTATIC, on, name, sig);
     }
 
 

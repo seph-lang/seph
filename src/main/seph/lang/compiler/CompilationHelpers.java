@@ -71,6 +71,19 @@ public class CompilationHelpers {
         return result.toString();
     }
 
+    public static String sigCombine(Class<?> ret, Class<?>[] args, Class<?>[] args2) {
+        StringBuilder result = new StringBuilder("(");
+        for(Class<?> clz : args) {
+            result.append(c(clz));
+        }
+        for(Class<?> clz : args2) {
+            result.append(c(clz));
+        }
+        result.append(")");
+        result.append(c(ret));
+        return result.toString();
+    }
+
     public static void printMessage(String outp, MethodVisitor mv) {
         mv.visitFieldInsn(GETSTATIC, p(System.class), "out", c(PrintStream.class));
         mv.visitLdcInsn(outp);

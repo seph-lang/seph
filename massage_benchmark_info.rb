@@ -87,12 +87,16 @@ STR
 
         plot = ""
         
+        table = "<table border='1'>"
+        
         Tempfile.open("seph_benchmark_data") do |f|
           ix = 0
           groups[group].sort.each do |bname|
             unless collated_results[bname].compact.empty?
+              table << "#{first ? "<tr>" : "</tr><tr>"}"
               entries.zip(collated_results[bname]).each do |timestamp, entry|
                 f.puts "#{timestamp.gsub("_", "-")}\t#{entry}"
+                table << "<td>#{entry}</td>"
               end
               f.puts ""
               f.puts ""
@@ -110,6 +114,7 @@ STR
 
           unless first
             ixh.puts "<img src=\"benchmark_group_#{group_index}.svg\"/>"
+            ixh.puts "#{table}</tr></table>"
             system("cat #{pf.path} | gnuplot")
             group_index += 1
           end
