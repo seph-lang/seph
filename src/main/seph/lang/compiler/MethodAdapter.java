@@ -18,6 +18,8 @@ import static seph.lang.compiler.CompilationHelpers.*;
 public class MethodAdapter {
     private final static boolean TRACE = false;
     private final MethodVisitor mv;
+    private int currentLine = -2;
+
 
     private static interface NextLoadOperation {
         void execute();
@@ -30,6 +32,18 @@ public class MethodAdapter {
         this.mv.visitCode();
 
         if(TRACE) System.err.println("\n--------------------------- " + mv);
+    }
+
+    public void line(int line) {
+        if(line != currentLine) {
+            Label l = new Label();
+            mv.visitLineNumber(line, l);
+            currentLine = line;
+
+            // op();
+            // mv.visitLdcInsn(" LINE: " + line);
+            // mv.visitInsn(POP);
+        }
     }
 
     public void print(final String message) {

@@ -36,7 +36,7 @@ import java.lang.invoke.MethodType;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class AbstractionCompiler {
-    public static boolean PRINT_COMPILE = false;
+    public static boolean PRINT_COMPILE = true;
 
     private static org.objectweb.asm.MethodHandle bootstrapNamed(String name) {
         return new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", name, BOOTSTRAP_SIGNATURE_DESC);
@@ -114,6 +114,9 @@ public class AbstractionCompiler {
         this.abstractionName = name;
         this.className = "seph$gen$abstraction$" + compiledCount.getAndIncrement() + "$" + encode(abstractionName);
         this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        final java.io.File sourceFile = new java.io.File(code.filename());
+        this.cw.visitSource(code.filename(), sourceFile.getAbsolutePath());
+
         List<String> newNames = new LinkedList<>();
         for(String s : scope.getNames()) {
             if(!parentScope.hasName(s)) {
@@ -419,6 +422,7 @@ public class AbstractionCompiler {
         boolean first = true;
 
         while(current != null) {
+            ma.line(current.line());
             if(current.isLiteral()) {
                 compileLiteral(ma, current);
                 first = false;
@@ -825,6 +829,7 @@ public class AbstractionCompiler {
         Message current = _code;
 
         while(current != null) {
+            ma.line(current.line());
             if(current.isLiteral()) {
                 compileLiteral(ma, current);
                 first = false;
