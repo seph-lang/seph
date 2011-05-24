@@ -39,17 +39,14 @@ public class SephCallSite extends MutableCallSite {
         return true;
     }
 
-    void installActivatableEntry(SephObject receiver, SephObject value, int args) {
+    void installActivatableEntry(SephObject receiver, MethodHandle value, int args, boolean tail) {
         if(newEntry()) {
             MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles.guardWithTest(eq(receiver, args), invokeActivateWith(value, args), currentEntry));
-        }
-    }
-
-    void installActivatableEntry(SephObject receiver, MethodHandle value, int args) {
-        if(newEntry()) {
-            MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles.guardWithTest(eq(receiver, args), tailInvokeActivateWith(value, args), currentEntry));
+            if(tail) {
+                setTarget(MethodHandles.guardWithTest(eq(receiver, args), tailInvokeActivateWith(value, args), currentEntry));
+            } else {
+                setTarget(MethodHandles.guardWithTest(eq(receiver, args), value, currentEntry));
+            }
         }
     }
 
@@ -60,42 +57,14 @@ public class SephCallSite extends MutableCallSite {
         }
     }
 
-    private static MethodHandle parentScopeGetterFor(int depth) {
-        MethodHandle getter = MethodHandles.identity(LexicalScope.class);;
-        while(depth > 0) {
-            getter = MethodHandles.filterArguments(getter, 0, PARENT_SCOPE_GETTER);
-            depth--;
-        }
-        return getter;
-    }
-
-    void installActivatableVarEntry(SephObject receiver, SephObject value, LexicalScope inScope, int depth, int args) {
-        if(depth > 0 && newEntry()) {
-            MethodHandle currentEntry = getTarget();
-            MethodHandle parentGetter = parentScopeGetterFor(depth);
-            setTarget(MethodHandles.guardWithTest(eqVar(inScope, parentGetter, args), invokeActivateWith(value, args), currentEntry));
-        }
-    }
-
-    void installConstantVarEntry(SephObject receiver, MethodHandle getter, SephObject value, LexicalScope inScope, int depth, int args) {
-        if(depth > 0 && newEntry()) {
-            MethodHandle currentEntry = getTarget();
-            MethodHandle parentGetter = parentScopeGetterFor(depth);
-            setTarget(MethodHandles.guardWithTest(eqVar(inScope, parentGetter, args), constantValue(value, args), getVariableValue(getter, parentGetter, args)));
-        }
-    }
-
-    void installActivatableEntryWithKeywords(SephObject receiver, SephObject value, int args) {
+    void installActivatableEntryWithKeywords(SephObject receiver, MethodHandle value, int args, boolean tail) {
         if(newEntry()) {
             MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles. guardWithTest(eqKeywords(receiver, args), invokeActivateWithKeywords(value, args), currentEntry));
-        }
-    }
-
-    void installActivatableEntryWithKeywords(SephObject receiver, MethodHandle value, int args) {
-        if(newEntry()) {
-            MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), tailInvokeActivateWithKeywords(value, args), currentEntry));
+            if(tail) {
+                setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), tailInvokeActivateWithKeywords(value, args), currentEntry));
+            } else {
+                setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), value, currentEntry));
+            }
         }
     }
 
@@ -110,17 +79,7 @@ public class SephCallSite extends MutableCallSite {
         return first == receiver.identity();
     }
 
-    public static boolean eqVarM(LexicalScope scope, int version) {
-        return scope.version == version;
-    }
-
-    public static boolean eqVarParentM(LexicalScope scope, int version, LexicalScope other) {
-        return scope == other && scope.version == version;
-    }
-
     private final static MethodHandle EQ = Bootstrap.findStatic(SephCallSite.class, "eq", MethodType.methodType(boolean.class, Object.class, SephObject.class));
-    private final static MethodHandle EQ_VAR = Bootstrap.findStatic(SephCallSite.class, "eqVarM", MethodType.methodType(boolean.class, LexicalScope.class, int.class));
-    private final static MethodHandle EQ_VAR_PARENT = Bootstrap.findStatic(SephCallSite.class, "eqVarParentM", MethodType.methodType(boolean.class, LexicalScope.class, int.class, LexicalScope.class));
 
     private final static Class[] INDETERMINATE = new Class[]{IPersistentList.class};
     private final static Class[] CLASS_0       = new Class[0];
@@ -185,34 +144,10 @@ public class SephCallSite extends MutableCallSite {
         return MethodHandles.dropArguments(MethodHandles.dropArguments(EQ.bindTo(receiver.identity()), 1, SThread.class, LexicalScope.class), 3, argumentsToDrop);
     }
 
-    private MethodHandle eqVar(LexicalScope inScope, int args) {
-        int version = inScope.version;
-        Class[] argumentsToDrop = dropClasses(args);
-        return MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.insertArguments(EQ_VAR, 0, inScope, version), 0, SephObject.class, SThread.class, LexicalScope.class), 3, argumentsToDrop);
-    }
-
-    private MethodHandle eqVar(LexicalScope inScope, MethodHandle parentGetter, int args) {
-        int version = inScope.version;
-        Class[] argumentsToDrop = dropClasses(args);
-        return MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.filterArguments(MethodHandles.insertArguments(EQ_VAR_PARENT, 0, inScope, version), 0, parentGetter), 0, SephObject.class, SThread.class), 3, argumentsToDrop);
-    }
 
     private MethodHandle eqKeywords(SephObject receiver, int args) {
         Class[] argumentsToDrop = dropClassesKeywords(args);
         return MethodHandles.dropArguments(MethodHandles.dropArguments(EQ.bindTo(receiver.identity()), 1, SThread.class, LexicalScope.class), 3, argumentsToDrop);
-    }
-
-    private MethodHandle invokeActivateWith(SephObject value, int args) {
-        return activateWithMH(args).bindTo(value);
-    }
-
-    private MethodHandle invokeActivateWithKeywords(SephObject value, int args) {
-        return activateWithMHKeywords(args).bindTo(value);
-    }
-
-    private MethodHandle getVariableValue(MethodHandle getter, MethodHandle parentGetter, int args) {
-        Class[] argumentsToDrop = dropClasses(args);
-        return MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.filterArguments(getter, 0, parentGetter), 0, SephObject.class, SThread.class), 3, argumentsToDrop);
     }
 
     public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
@@ -322,27 +257,6 @@ public class SephCallSite extends MutableCallSite {
         }
     }
 
-    private static MethodHandle activateWithMH(int num) {
-        switch(num) {
-        case -1:
-            return ACTIVATE_WITH_ARG_N;
-        case 0:
-            return ACTIVATE_WITH_ARG_0;
-        case 1:
-            return ACTIVATE_WITH_ARG_1;
-        case 2:
-            return ACTIVATE_WITH_ARG_2;
-        case 3:
-            return ACTIVATE_WITH_ARG_3;
-        case 4:
-            return ACTIVATE_WITH_ARG_4;
-        case 5:
-            return ACTIVATE_WITH_ARG_5;
-        default:
-            return null;
-        }
-    }
-
     private static MethodHandle methodHandleForTailKeywords(int num) {
         switch(num) {
         case -1:
@@ -359,27 +273,6 @@ public class SephCallSite extends MutableCallSite {
             return INSTALL_METHOD_HANDLE_ARG4_KEYWORDS;
         case 5:
             return INSTALL_METHOD_HANDLE_ARG5_KEYWORDS;
-        default:
-            return null;
-        }
-    }
-
-    private static MethodHandle activateWithMHKeywords(int num) {
-        switch(num) {
-        case -1:
-            return ACTIVATE_WITH_ARG_N_K;
-        case 0:
-            return ACTIVATE_WITH_ARG_0_K;
-        case 1:
-            return ACTIVATE_WITH_ARG_1_K;
-        case 2:
-            return ACTIVATE_WITH_ARG_2_K;
-        case 3:
-            return ACTIVATE_WITH_ARG_3_K;
-        case 4:
-            return ACTIVATE_WITH_ARG_4_K;
-        case 5:
-            return ACTIVATE_WITH_ARG_5_K;
         default:
             return null;
         }

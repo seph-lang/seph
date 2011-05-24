@@ -97,7 +97,9 @@ public class Runtime {
             } else if(name == "if") {
                 INVALIDATE_IF.invoke();
             }
-        } catch(Throwable e) {}
+        } catch(Throwable e) {
+            e.printStackTrace();
+        }
     }
 
     public Text newText(String stringBeforeEscapeMangling) {
@@ -116,10 +118,11 @@ public class Runtime {
         Parser p = new Parser(this, reader, name);
         Message msg = (Message)p.parseFully().seq().first();
         Abstraction amsg = (Abstraction)NamedMessage.create("#", new PersistentList(msg), null, "<init>", -1, -1, p.scope);
-        SephObject so = DefaultAbstraction.createFrom(amsg, LexicalScope.create(null, this, new String[0]));
+        SephObject so = DefaultAbstraction.createFrom(amsg, LexicalScope.create(null, this, new String[0]), "toplevel");
         SThread thread = new SThread(this);
-        SephObject tmp = so.activateWith(Ground.instance, thread, null);
+        SephObject tmp = null;
         try {
+            tmp = (SephObject)so.activationFor(0, false).invoke(Ground.instance, thread, null);
             while(tmp == SThread.TAIL_MARKER) {
                 MethodHandle tail = thread.tail;
                 thread.tail = null;

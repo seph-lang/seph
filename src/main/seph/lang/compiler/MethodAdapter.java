@@ -313,6 +313,10 @@ public class MethodAdapter {
         virtualCall(p(on), name, ret, params);
     }
 
+    public void virtualCall(Class<?> on, String name, String sig) {
+        virtualCall(p(on), name, sig);
+    }
+
     public void virtualCall(String on, String name, Class<?> ret, Class<?>... params) {
         virtualCall(on, name, sig(ret, params));
     }

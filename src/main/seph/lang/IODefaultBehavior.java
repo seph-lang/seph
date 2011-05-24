@@ -19,81 +19,38 @@ public class IODefaultBehavior implements SephObject {
     public final static SephObject println(SThread thread, SephObject receiver) {
         SephObject asText = receiver.get("asText");
         if(asText.isActivatable()) {
-            asText = asText.activateWith(receiver, thread, null);
+            try {
+                asText = (SephObject)asText.activationFor(0, false).invoke(receiver, thread, null);
+            } catch(Throwable e) {
+                e.printStackTrace();
+            }
         }
         System.out.println(((Text)asText).text());
         return Runtime.NIL;
     }
 
+    @Override
     public SephObject get(String cellName) {
         return seph.lang.bim.IODefaultBehaviorBase.get(cellName);
     }
 
+    @Override
     public Object identity() {
         return seph.lang.bim.IODefaultBehaviorBase.IDENTITY;
     }
 
+    @Override
     public boolean isActivatable() {
         return false;
     }
 
+    @Override
     public boolean isTrue() {
         return true;
     }
 
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments, String[] keywordNames, MethodHandle[] keywordArguments) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, String[] keywordNames, MethodHandle[] keywordArguments) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywordArguments) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywordArguments) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywordArguments) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywordArguments) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
-    }
-
-    public SephObject activateWith(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywordArguments) {
-        throw new RuntimeException(" *** couldn't activate: " + this);
+    @Override
+    public MethodHandle activationFor(int arity, boolean keywords) {
+        return ActivationHelpers.noActivateFor(this, arity, keywords);
     }
 }// IODefaultBehavior

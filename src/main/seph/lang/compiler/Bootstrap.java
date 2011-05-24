@@ -126,84 +126,90 @@ public class Bootstrap {
 
 
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, value, -1);
-            return value.activateWith(receiver, thread, scope, args);
+            MethodHandle a = value.activationFor(-1, false);
+            site.installActivatableEntry(receiver, a, -1, false);
+            return (SephObject)a.invoke(receiver, thread, scope, args);
         } else {
             site.installConstantEntry(receiver, value, -1);
         }
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, value, 0);
-            return value.activateWith(receiver, thread, scope);
+            MethodHandle a = value.activationFor(0, false);
+            site.installActivatableEntry(receiver, a, 0, false);
+            return (SephObject)a.invoke(receiver, thread, scope);
         } else {
             site.installConstantEntry(receiver, value, 0);
         }
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, value, 1);
-            return value.activateWith(receiver, thread, scope, arg0);
+            MethodHandle a = value.activationFor(1, false);
+            site.installActivatableEntry(receiver, a, 1, false);
+            return (SephObject)a.invoke(receiver, thread, scope, arg0);
         } else {
             site.installConstantEntry(receiver, value, 1);
         }
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, value, 2);
-            return value.activateWith(receiver, thread, scope, arg0, arg1);
+            MethodHandle a = value.activationFor(2, false);
+            site.installActivatableEntry(receiver, a, 2, false);
+            return (SephObject)a.invoke(receiver, thread, scope, arg0, arg1);
         } else {
             site.installConstantEntry(receiver, value, 2);
         }
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, value, 3);
-            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2);
+            MethodHandle a = value.activationFor(3, false);
+            site.installActivatableEntry(receiver, a, 3, false);
+            return (SephObject)a.invoke(receiver, thread, scope, arg0, arg1, arg2);
         } else {
             site.installConstantEntry(receiver, value, 3);
         }
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, value, 4);
-            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3);
+            MethodHandle a = value.activationFor(4, false);
+            site.installActivatableEntry(receiver, a, 4, false);
+            return (SephObject)a.invoke(receiver, thread, scope, arg0, arg1, arg2, arg3);
         } else {
             site.installConstantEntry(receiver, value, 4);
         }
@@ -211,14 +217,15 @@ public class Bootstrap {
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntry(receiver, value, 5);
-            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
+            MethodHandle a = value.activationFor(5, false);
+            site.installActivatableEntry(receiver, a, 5, false);
+            return (SephObject)a.invoke(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
         } else {
             site.installConstantEntry(receiver, value, 5);
         }
@@ -232,8 +239,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_N.bindTo(value);
-            site.installActivatableEntry(receiver, h, -1);
+            MethodHandle h = value.activationFor(-1, false);
+            site.installActivatableEntry(receiver, h, -1, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -249,8 +256,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_0.bindTo(value);
-            site.installActivatableEntry(receiver, h, 0);
+            MethodHandle h = value.activationFor(0, false);
+            site.installActivatableEntry(receiver, h, 0, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -266,8 +273,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_1.bindTo(value);
-            site.installActivatableEntry(receiver, h, 1);
+            MethodHandle h = value.activationFor(1, false);
+            site.installActivatableEntry(receiver, h, 1, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -283,8 +290,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_2.bindTo(value);
-            site.installActivatableEntry(receiver, h, 2);
+            MethodHandle h = value.activationFor(2, false);
+            site.installActivatableEntry(receiver, h, 2, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -300,8 +307,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_3.bindTo(value);
-            site.installActivatableEntry(receiver, h, 3);
+            MethodHandle h = value.activationFor(3, false);
+            site.installActivatableEntry(receiver, h, 3, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -317,8 +324,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_4.bindTo(value);
-            site.installActivatableEntry(receiver, h, 4);
+            MethodHandle h = value.activationFor(4, false);
+            site.installActivatableEntry(receiver, h, 4, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -334,8 +341,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_5.bindTo(value);
-            site.installActivatableEntry(receiver, h, 5);
+            MethodHandle h = value.activationFor(5, false);
+            site.installActivatableEntry(receiver, h, 5, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -345,84 +352,90 @@ public class Bootstrap {
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args, String[] keywordNames, MethodHandle[] keywords) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args, String[] keywordNames, MethodHandle[] keywords) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntryWithKeywords(receiver, value, -1);
-            return value.activateWith(receiver, thread, scope, args, keywordNames, keywords);
+            MethodHandle a = value.activationFor(-1, true);
+            site.installActivatableEntryWithKeywords(receiver, a, -1, false);
+            return (SephObject)a.invoke(receiver, thread, scope, args, keywordNames, keywords);
         } else {
             site.installConstantEntryWithKeywords(receiver, value, -1);
         }
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, String[] keywordNames, MethodHandle[] keywords) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, String[] keywordNames, MethodHandle[] keywords) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntryWithKeywords(receiver, value, 0);
-            return value.activateWith(receiver, thread, scope, keywordNames, keywords);
+            MethodHandle a = value.activationFor(0, true);
+            site.installActivatableEntryWithKeywords(receiver, a, 0, false);
+            return (SephObject)a.invoke(receiver, thread, scope, keywordNames, keywords);
         } else {
             site.installConstantEntryWithKeywords(receiver, value, 0);
         }
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywords) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywords) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntryWithKeywords(receiver, value, 1);
-            return value.activateWith(receiver, thread, scope, arg0, keywordNames, keywords);
+            MethodHandle a = value.activationFor(1, true);
+            site.installActivatableEntryWithKeywords(receiver, a, 1, false);
+            return (SephObject)a.invoke(receiver, thread, scope, arg0, keywordNames, keywords);
         } else {
             site.installConstantEntryWithKeywords(receiver, value, 1);
         }
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywords) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywords) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntryWithKeywords(receiver, value, 2);
-            return value.activateWith(receiver, thread, scope, arg0, arg1, keywordNames, keywords);
+            MethodHandle a = value.activationFor(2, true);
+            site.installActivatableEntryWithKeywords(receiver, a, 2, false);
+            return (SephObject)a.invoke(receiver, thread, scope, arg0, arg1, keywordNames, keywords);
         } else {
             site.installConstantEntryWithKeywords(receiver, value, 2);
         }
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywords) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywords) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntryWithKeywords(receiver, value, 3);
-            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, keywordNames, keywords);
+            MethodHandle a = value.activationFor(3, true);
+            site.installActivatableEntryWithKeywords(receiver, a, 3, false);
+            return (SephObject)a.invoke(receiver, thread, scope, arg0, arg1, arg2, keywordNames, keywords);
         } else {
             site.installConstantEntryWithKeywords(receiver, value, 3);
         }
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywords) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywords) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntryWithKeywords(receiver, value, 4);
-            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, keywordNames, keywords);
+            MethodHandle a = value.activationFor(4, true);
+            site.installActivatableEntryWithKeywords(receiver, a, 4, false);
+            return (SephObject)a.invoke(receiver, thread, scope, arg0, arg1, arg2, arg3, keywordNames, keywords);
         } else {
             site.installConstantEntryWithKeywords(receiver, value, 4);
         }
@@ -430,14 +443,15 @@ public class Bootstrap {
         return value;
     }
 
-    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywords) {
+    public static SephObject fallback(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywords) throws Throwable {
         SephObject value = receiver.get(name);
         if(null == value) {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            site.installActivatableEntryWithKeywords(receiver, value, 5);
-            return value.activateWith(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4, keywordNames, keywords);
+            MethodHandle a = value.activationFor(5, true);
+            site.installActivatableEntryWithKeywords(receiver, a, 5, false);
+            return (SephObject)a.invoke(receiver, thread, scope, arg0, arg1, arg2, arg3, arg4, keywordNames, keywords);
         } else {
             site.installConstantEntryWithKeywords(receiver, value, 5);
         }
@@ -451,8 +465,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_N_K.bindTo(value);
-            site.installActivatableEntryWithKeywords(receiver, h, -1);
+            MethodHandle h = value.activationFor(-1, true);
+            site.installActivatableEntryWithKeywords(receiver, h, -1, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -468,8 +482,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_0_K.bindTo(value);
-            site.installActivatableEntryWithKeywords(receiver, h, 0);
+            MethodHandle h = value.activationFor(0, true);
+            site.installActivatableEntryWithKeywords(receiver, h, 0, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -485,8 +499,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_1_K.bindTo(value);
-            site.installActivatableEntryWithKeywords(receiver, h, 1);
+            MethodHandle h = value.activationFor(1, true);
+            site.installActivatableEntryWithKeywords(receiver, h, 1, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -502,8 +516,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_2_K.bindTo(value);
-            site.installActivatableEntryWithKeywords(receiver, h, 2);
+            MethodHandle h = value.activationFor(2, true);
+            site.installActivatableEntryWithKeywords(receiver, h, 2, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -519,8 +533,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_3_K.bindTo(value);
-            site.installActivatableEntryWithKeywords(receiver, h, 3);
+            MethodHandle h = value.activationFor(3, true);
+            site.installActivatableEntryWithKeywords(receiver, h, 3, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -536,8 +550,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_4_K.bindTo(value);
-            site.installActivatableEntryWithKeywords(receiver, h, 4);
+            MethodHandle h = value.activationFor(4, true);
+            site.installActivatableEntryWithKeywords(receiver, h, 4, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -553,8 +567,8 @@ public class Bootstrap {
             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
         }
         if(value.isActivatable()) {
-            MethodHandle h = ACTIVATE_WITH_ARG_5_K.bindTo(value);
-            site.installActivatableEntryWithKeywords(receiver, h, 5);
+            MethodHandle h = value.activationFor(5, true);
+            site.installActivatableEntryWithKeywords(receiver, h, 5, true);
             h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4, keywordNames, keywords);
             thread.tail = h;
             return SThread.TAIL_MARKER;
@@ -567,68 +581,6 @@ public class Bootstrap {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public static SephObject fallbackVar(SephCallSite site, int depth, int index, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
-        SephObject value = null;
-        LexicalScope inScope = scopeFor(depth, scope);
-        MethodHandle specificGetter = getterFor(index);
-
-        try {
-            value = (SephObject)specificGetter.invoke(inScope);
-        } catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-        
-        if(value.isActivatable()) {
-            site.installActivatableVarEntry(receiver, value, inScope, depth, -1);
-            return value.activateWith(receiver, thread, scope, args);
-        } else {
-            site.installConstantVarEntry(receiver, specificGetter, value, inScope, depth, -1);
-        }
-
-        return value;
-    }
-
-    private static MethodHandle getterFor(int index) {
-        switch(index) {
-        case 0:
-            return SCOPE_0_GETTER;
-        case 1:
-            return SCOPE_1_GETTER;
-        case 2:
-            return SCOPE_2_GETTER;
-        case 3:
-            return SCOPE_3_GETTER;
-        case 4:
-            return SCOPE_4_GETTER;
-        case 5:
-            return SCOPE_5_GETTER;
-        default:
-            return MethodHandles.filterArguments(MethodHandles.insertArguments(SCOPE_N_GETTER, 1, index), 0, SCOPE_VALUES_GETTER);
-        }
-    }
-
-    private static LexicalScope scopeFor(int depth, LexicalScope scope) {
-        if(0 == depth) {
-            return scope;
-        } else {
-            return scopeFor(depth - 1, scope.parent);
-        }
-    }
 
 
 

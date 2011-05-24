@@ -93,7 +93,7 @@ STR
           ix = 0
           groups[group].sort.each do |bname|
             unless collated_results[bname].compact.empty?
-              table << "#{first ? "<tr>" : "</tr><tr>"}"
+              table << "#{first ? "<tr>#{bname.gsub("&", "&amp;").gsub(">", "&gt;").gsub("<", "&lt;")}</tr><tr>" : "</tr><tr>"}"
               entries.zip(collated_results[bname]).each do |timestamp, entry|
                 f.puts "#{timestamp.gsub("_", "-")}\t#{entry}"
                 table << "<td>#{entry}</td>"
