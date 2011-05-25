@@ -27,6 +27,7 @@ import static org.objectweb.asm.Opcodes.*;
 import static seph.lang.compiler.CompilationHelpers.*;
 import static seph.lang.ActivationHelpers.*;
 import static seph.lang.Types.*;
+import static seph.lang.compiler.Bootstrap.*;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -38,9 +39,7 @@ import java.lang.invoke.MethodType;
 public class AbstractionCompiler {
     public static boolean PRINT_COMPILE = false;
 
-    private static org.objectweb.asm.MethodHandle bootstrapNamed(String name) {
-        return new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", name, BOOTSTRAP_SIGNATURE_DESC);
-    }
+    private final static org.objectweb.asm.MethodHandle BOOTSTRAP_METHOD = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/SephCallSite", "bootstrap", BOOTSTRAP_SIGNATURE_DESC);
 
     private final static AtomicInteger compiledCount = new AtomicInteger(0);
 
@@ -190,18 +189,18 @@ public class AbstractionCompiler {
                 f.setAccessible(true);
                 f.set(null, ae.argumentCode);
 
-                MethodHandle h = Bootstrap.findStatic(abstractionClass, ae.methodName, ARGUMENT_METHOD_TYPE);
+                MethodHandle h = findStatic(abstractionClass, ae.methodName, ARGUMENT_METHOD_TYPE);
                 f = abstractionClass.getDeclaredField(ae.handleName);
                 f.setAccessible(true);
                 f.set(null, h);
             }
 
-            MethodHandle h = Bootstrap.findVirtual(abstractionClass, encode(abstractionName), methodTypeFor(argNames.size(), false));
+            MethodHandle h = findVirtual(abstractionClass, encode(abstractionName), methodTypeFor(argNames.size(), false));
             f = abstractionClass.getDeclaredField("ACTIVATION_SPECIFIC");
             f.setAccessible(true);
             f.set(null, h);
 
-            h = Bootstrap.findVirtual(abstractionClass, encode(abstractionName), methodTypeFor(-1, false));
+            h = findVirtual(abstractionClass, encode(abstractionName), methodTypeFor(-1, false));
             f = abstractionClass.getDeclaredField("ACTIVATION_GENERIC");
             f.setAccessible(true);
             f.set(null, h);
@@ -776,26 +775,23 @@ public class AbstractionCompiler {
             }
         } else {
             String possibleIntrinsic = "";
-
-            if(current.name().equals("true")) {
-                possibleIntrinsic = "_intrinsic_true";
-            } else if(current.name().equals("false")) {
-                possibleIntrinsic = "_intrinsic_false";
-            } else if(current.name().equals("nil")) {
-                possibleIntrinsic = "_intrinsic_nil";
-            } else if(current.name().equals("if")) {
-                possibleIntrinsic = "_intrinsic_if";
+            String name = current.name().intern();
+            if(name == "true" ||
+               name == "false" ||
+               name == "nil" ||
+               name == "if") {
+                possibleIntrinsic = ":intrinsic";
             }
 
-            String bootstrapName = "basicSephBootstrap";
+            String messageType = "message";
             boolean fullPumping = false;
 
             if(current == last) {
-                bootstrapName = "tailCallSephBootstrap";
+                messageType = "tailMessage";
                 fullPumping = true;
             }
 
-            ma.dynamicCall(encode(current.name()), sigFor(arity), bootstrapNamed(bootstrapName + possibleIntrinsic));
+            ma.dynamicCall("seph:" + messageType + ":" + encode(current.name()) + possibleIntrinsic, sigFor(arity), BOOTSTRAP_METHOD);
             if(fullPumping) {
                 if(!activateWith) {
                     Label noPump = new Label();

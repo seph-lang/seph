@@ -3,77 +3,373 @@
  */
 package seph.lang.compiler;
 
+import java.util.*;
+
 import seph.lang.*;
 import seph.lang.persistent.IPersistentList;
 
+import java.lang.invoke.CallSite;
+import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.MutableCallSite;
 import java.lang.invoke.MethodType;
+import static java.lang.invoke.MethodType.*;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 
 import static seph.lang.compiler.CompilationHelpers.*;
 import static seph.lang.Types.*;
+import static seph.lang.compiler.Bootstrap.*;
 
 public class SephCallSite extends MutableCallSite {
-    private enum Morphicity {
-        NILADIC, MONOMORPHIC, POLYMORPHIC, MEGAMORPHIC
-    }        
+    public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type) {
+        return new SephCallSite(lookup, name, type);
+    }
 
-    int numberOfGuards = 0;
-    Morphicity morphicity = Morphicity.NILADIC;
+    private final boolean intrinsic;
+    private final String messageKind;
+    private final String messageName;
+    private final MethodHandle slowPath;
 
-    public SephCallSite(MethodType type) {
+    public SephCallSite(MethodHandles.Lookup lookup, String name, MethodType type) {
         super(type);
+
+        Object[] pieces = kindNameIntrinsic(name.split(":"));
+        this.messageKind = (String)pieces[0];
+        this.messageName = (String)pieces[1];
+        this.intrinsic   = (Boolean)pieces[2];
+        this.slowPath    = computeSlowPath();
+        setNeutral();
     }
 
-    private boolean newEntry() {
-        numberOfGuards++;
-        if(numberOfGuards > 10) {
-            morphicity = Morphicity.MEGAMORPHIC;
-            return false;
-        } else if(numberOfGuards > 1) {
-            morphicity = Morphicity.POLYMORPHIC;
+    private int arity = -2;
+    private boolean keywords = false;;
+    
+    private void computeArity() {
+        int num = type().parameterCount() - 3;
+        if(num == 0) {
+            keywords = false;
+            arity = 0;
         } else {
-            morphicity = Morphicity.MONOMORPHIC;
-        }
-        return true;
-    }
-
-    void installActivatableEntry(SephObject receiver, MethodHandle value, int args, boolean tail) {
-        if(newEntry()) {
-            MethodHandle currentEntry = getTarget();
-            if(tail) {
-                setTarget(MethodHandles.guardWithTest(eq(receiver, args), tailInvokeActivateWith(value, args), currentEntry));
+            Class<?>[] tp = type().parameterArray();
+            int minus = 0;
+            if(tp[tp.length-1] == MethodHandle[].class) {
+                keywords = true;
+                minus = 2;
+            }
+            if(num == 1 && tp[3] == IPersistentList.class) {
+                arity = -1;
             } else {
-                setTarget(MethodHandles.guardWithTest(eq(receiver, args), value, currentEntry));
+                arity = num - minus;
             }
         }
     }
 
-    void installConstantEntry(SephObject receiver, SephObject value, int args) {
-        if(newEntry()) {
-            MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles.guardWithTest(eq(receiver, args), constantValue(value, args), currentEntry));
+    private int arity() {
+        if(arity == -2) {
+            computeArity();
         }
+        return arity;
     }
 
-    void installActivatableEntryWithKeywords(SephObject receiver, MethodHandle value, int args, boolean tail) {
-        if(newEntry()) {
-            MethodHandle currentEntry = getTarget();
-            if(tail) {
-                setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), tailInvokeActivateWithKeywords(value, args), currentEntry));
+    private boolean keywords() {
+        if(arity == -2) {
+            computeArity();
+        }
+        return keywords;
+    }
+
+    private static Object[] kindNameIntrinsic(Object[] nc) {
+        String kind = ((String)nc[1]).intern();
+        String name = decode((String)nc[2]).intern();
+        boolean intrinsic = nc.length == 4;
+        return new Object[] { kind, name, intrinsic };
+    }
+
+    public static SephObject setTail(MethodHandle h, SThread thread) {
+        thread.tail = h;
+        return SThread.TAIL_MARKER;
+    }
+    
+    public final static MethodHandle SET_TAIL_MH = findStatic(SephCallSite.class, "setTail", methodType(SephObject.class, MethodHandle.class, SThread.class));
+    public final static MethodType SLOW_PATH_TYPE    = methodType(SephObject.class, SephCallSite.class, String.class, SephObject.class, SThread.class, LexicalScope.class, Object[].class);
+
+    MethodHandle computeSlowPath() {
+        if(intrinsic) {
+            //            System.err.println("WARNING, not implemented slow path for intrinsics yet");
+        }
+
+            if(messageKind == "message") {
+                MethodHandle _test = MethodHandles.dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
+                MethodHandle _then = MethodHandles.filterArguments(MethodHandles.invoker(type()), 0, MethodHandles.insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords()));
+                MethodHandle _else = MethodHandles.dropArguments(MethodHandles.identity(SephObject.class), 1, type().parameterArray());
+                MethodHandle all = MethodHandles.guardWithTest(_test, _then, _else);
+                // TODO: the call to get here will potentially return null for missing attributes. Do a void returning fold in order to check for exceptions
+                MethodHandle complete = MethodHandles.foldArguments(all, MethodHandles.dropArguments(MethodHandles.insertArguments(findVirtual(SephObject.class, "get", methodType(SephObject.class, String.class)), 1, messageName), 1, type().dropParameterTypes(0, 1).parameterArray()));
+
+                return complete;
+            } else if(messageKind == "tailMessage") {
+                MethodHandle _test = MethodHandles.dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
+                MethodHandle _insertArguments = MethodHandles.insertArguments(findStatic(MethodHandles.class, "insertArguments", methodType(MethodHandle.class, MethodHandle.class, int.class, Object[].class)), 1, 0).asCollector(Object[].class, type().parameterCount()).asType(type().insertParameterTypes(0, MethodHandle.class).changeReturnType(MethodHandle.class));
+                MethodHandle _activationFor = MethodHandles.insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords());
+                MethodHandle _filtered = MethodHandles.filterArguments( _insertArguments, 0 ,_activationFor);
+                MethodHandle _then = MethodHandles.foldArguments(MethodHandles.dropArguments(MethodHandles.dropArguments(SET_TAIL_MH, 1, SephObject.class, SephObject.class), 4, type().dropParameterTypes(0, 2).parameterArray()), 
+                                                                 _filtered);
+                MethodHandle _else = MethodHandles.dropArguments(MethodHandles.identity(SephObject.class), 1, type().parameterArray());
+                MethodHandle all = MethodHandles.guardWithTest(_test, _then, _else);
+                // // TODO: the call to get here will potentially return null for missing attributes. Do a void returning fold in order to check for exceptions
+                MethodHandle complete = MethodHandles.foldArguments(all, MethodHandles.dropArguments(MethodHandles.insertArguments(findVirtual(SephObject.class, "get", methodType(SephObject.class, String.class)), 1, messageName), 1, type().dropParameterTypes(0, 1).parameterArray()));
+
+                return complete;
             } else {
-                setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), value, currentEntry));
+                return null;
             }
-        }
     }
 
-    void installConstantEntryWithKeywords(SephObject receiver, SephObject value, int args) {
-        if(newEntry()) {
-            MethodHandle currentEntry = getTarget();
-            setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), constantValueKeywords(value, args), currentEntry));
-        }
+    public void setNeutral() {
+        specializedMisses = 0;
+        setTarget(MethodHandles.filterArguments(slowPath, 0, computeProfiler(false)));
     }
+
+    public void setMegamorphic() {
+        setTarget(slowPath);
+        resetProfile();
+    }
+
+    TypeProfile typeProfile;
+    int profileCount;
+    int specializedMisses;
+
+    public void resetProfile() {
+        typeProfile = null;
+        specializedMisses = 0;
+    }
+
+    public int incrementProfileCount() {
+        int cc1 = profileCount;
+        int cc2 = cc1 + 1;
+        if(cc2 <= 0)
+            return cc1;
+        profileCount = cc2;
+        return cc2;
+    }
+
+    protected TypeProfile makeTypeProfile(SephObject receiver) {
+        return TypeProfile.forIdentity(receiver);
+    }
+
+    private static final MethodHandle MH_profileReceiver = findVirtual(SephCallSite.class, "profileReceiver", methodType(SephObject.class, SephObject.class));
+    private static final MethodHandle MH_profileReceiverForMiss = findVirtual(SephCallSite.class, "profileReceiverForMiss", methodType(SephObject.class, SephObject.class));
+
+    private static int MONO_TARGET_COUNT = 3;
+    private static int POLY_TARGET_COUNT = 30;
+    private static int MAX_SPECIALIZED_MISSES = MONO_TARGET_COUNT+2;
+    private static int MAX_TOTAL_PROFILES = POLY_TARGET_COUNT*2;
+
+    protected void doPolicy(boolean sawMiss) {
+        TypeProfile prof = typeProfile;
+        if(prof == null) return;
+        int pc = incrementProfileCount();
+        if(pc >= MAX_TOTAL_PROFILES) {
+            setMegamorphic();
+            return;
+        }
+        if(sawMiss) {
+            if(++specializedMisses < MAX_SPECIALIZED_MISSES)
+                return;
+            specializedMisses >>= 1;
+        } else {
+            int targetCount = MONO_TARGET_COUNT;
+            if(prof.isMonomorphic())
+                targetCount = POLY_TARGET_COUNT;
+            if(prof.count() <= targetCount)
+                return;
+        }
+        setSpecialized(prof);
+    }
+
+    public void setSpecialized(TypeProfile allProfiles) {
+        MethodType type = this.type();
+        MethodHandle elsePath = slowPath;
+        elsePath = MethodHandles.filterArguments(elsePath, 0, computeProfiler(true));
+        TypeProfile[] cases = allProfiles.cases();
+        int casesToCode = cases.length;
+        for(int i = casesToCode - 1; i >= 0; i--) {
+            MethodHandle[] guardAndFastPath = computeGuardAndFastPath(cases[i]);
+            if(guardAndFastPath == null) {
+                continue;
+            }
+            MethodHandle guard = guardAndFastPath[0]; 
+            MethodHandle fastPath = guardAndFastPath[1];
+
+            elsePath = MethodHandles.guardWithTest(guard, fastPath, elsePath);
+        }
+        setTarget(elsePath);
+    }
+
+    private Class[] dropClasses() {
+        return type().dropParameterTypes(2, type().parameterCount() - 3).parameterArray();
+    }
+
+    protected MethodHandle[] computeGuardAndFastPath(TypeProfile prof) {
+        if(prof instanceof TypeProfile.ForIdentity) {
+            MethodHandle fastPath = null;
+
+            if(intrinsic || messageKind == "tailMessage") {
+                //                System.err.println("WARNING, not implemented fast path for intrinsic or tailMessages");
+                return null;
+            }
+
+            
+            Class[] argumentsToDrop = type().dropParameterTypes(0, 1).parameterArray();
+            MethodHandle guard = MethodHandles.dropArguments(EQ.bindTo(((TypeProfile.ForIdentity)prof).matchIdentity()), 1, argumentsToDrop);
+            
+            SephObject value = ((TypeProfile.ForIdentity)prof).matchValue();
+            if(value.isActivatable()) {
+                fastPath = value.activationFor(arity(), keywords());
+            } else {
+                fastPath = MethodHandles.dropArguments(MethodHandles.constant(SephObject.class, value), 0, type().parameterArray());
+            }
+
+            return new MethodHandle[] {guard, fastPath};
+        }
+        
+        return null;
+    }
+
+    protected SephObject profileReceiver(SephObject receiver) {
+        return profileReceiver(receiver, false);
+    }
+    
+    protected SephObject profileReceiverForMiss(SephObject receiver) {
+        return profileReceiver(receiver, true);
+    }
+
+    protected SephObject profileReceiver(SephObject receiver, boolean sawMiss) {
+        TypeProfile prof = typeProfile;
+        if(prof == null) {
+            typeProfile = prof = makeTypeProfile(receiver);
+        } else if(!prof.matchAndIncrement(receiver)) {
+            typeProfile = prof = prof.append(makeTypeProfile(receiver));
+        }
+        doPolicy(sawMiss);
+        return receiver;
+    }
+
+    MethodHandle computeProfiler(boolean forMissPath) {
+        MethodHandle profiler = (forMissPath ? MH_profileReceiverForMiss : MH_profileReceiver);
+        profiler = MethodHandles.insertArguments(profiler, 0, this);
+        return profiler;
+    }
+
+
+
+
+
+    // public static SephObject slowMessage(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, Object[] args) throws Throwable {
+    //     SephObject value = receiver.get(name);
+    //     if(null == value) {
+    //         throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+    //     }
+    //     if(value.isActivatable()) {
+    //         MethodHandle a = value.activationFor(site.arity(), site.keywords()).asSpreader(Object[].class, args.length);
+    //         return (SephObject)a.invoke(receiver, thread, scope, args);
+    //     }
+    //     return value;
+    // }
+
+    // public static SephObject slowTailMessage(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, Object[] args) {
+    //     SephObject value = receiver.get(name);
+    //     if(null == value) {
+    //         throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+    //     }
+    //     if(value.isActivatable()) {
+    //         MethodHandle h = value.activationFor(site.arity(), site.keywords()).asSpreader(Object[].class, args.length);
+    //         h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args);
+    //         thread.tail = h;
+    //         return SThread.TAIL_MARKER;
+    //     }
+    //     return value;
+    // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // private boolean newEntry() {
+    //     numberOfGuards++;
+    //     if(numberOfGuards > 10) {
+    //         morphicity = Morphicity.MEGAMORPHIC;
+    //         return false;
+    //     } else if(numberOfGuards > 1) {
+    //         morphicity = Morphicity.POLYMORPHIC;
+    //     } else {
+    //         morphicity = Morphicity.MONOMORPHIC;
+    //     }
+    //     return true;
+    // }
+
+    // void installActivatableEntry(SephObject receiver, MethodHandle value, int args, boolean tail) {
+    //     if(newEntry()) {
+    //         MethodHandle currentEntry = getTarget();
+    //         if(tail) {
+    //             setTarget(MethodHandles.guardWithTest(eq(receiver, args), tailInvokeActivateWith(value, args), currentEntry));
+    //         } else {
+    //             setTarget(MethodHandles.guardWithTest(eq(receiver, args), value, currentEntry));
+    //         }
+    //     }
+    // }
+
+    // void installConstantEntry(SephObject receiver, SephObject value, int args) {
+    //     if(newEntry()) {
+    //         MethodHandle currentEntry = getTarget();
+    //         setTarget(MethodHandles.guardWithTest(eq(receiver, args), constantValue(value, args), currentEntry));
+    //     }
+    // }
+
+    // void installActivatableEntryWithKeywords(SephObject receiver, MethodHandle value, int args, boolean tail) {
+    //     if(newEntry()) {
+    //         MethodHandle currentEntry = getTarget();
+    //         if(tail) {
+    //             setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), tailInvokeActivateWithKeywords(value, args), currentEntry));
+    //         } else {
+    //             setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), value, currentEntry));
+    //         }
+    //     }
+    // }
+
+    // void installConstantEntryWithKeywords(SephObject receiver, SephObject value, int args) {
+    //     if(newEntry()) {
+    //         MethodHandle currentEntry = getTarget();
+    //         setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), constantValueKeywords(value, args), currentEntry));
+    //     }
+    // }
 
     public static boolean eq(Object first, SephObject receiver) {
         return first == receiver.identity();
@@ -143,7 +439,6 @@ public class SephCallSite extends MutableCallSite {
         Class[] argumentsToDrop = dropClasses(args);
         return MethodHandles.dropArguments(MethodHandles.dropArguments(EQ.bindTo(receiver.identity()), 1, SThread.class, LexicalScope.class), 3, argumentsToDrop);
     }
-
 
     private MethodHandle eqKeywords(SephObject receiver, int args) {
         Class[] argumentsToDrop = dropClassesKeywords(args);
