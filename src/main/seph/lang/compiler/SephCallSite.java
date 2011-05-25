@@ -161,7 +161,7 @@ public class SephCallSite extends MutableCallSite {
     private static final MethodHandle MH_profileReceiverForMiss = findVirtual(SephCallSite.class, "profileReceiverForMiss", methodType(SephObject.class, SephObject.class));
 
     private static int MONO_TARGET_COUNT = 3;
-    private static int POLY_TARGET_COUNT = 30;
+    private static int POLY_TARGET_COUNT = 5;
     private static int MAX_SPECIALIZED_MISSES = MONO_TARGET_COUNT+2;
     private static int MAX_TOTAL_PROFILES = POLY_TARGET_COUNT*2;
 
@@ -210,22 +210,34 @@ public class SephCallSite extends MutableCallSite {
         return type().dropParameterTypes(2, type().parameterCount() - 3).parameterArray();
     }
 
+    private final static MethodHandle INSERT_ARGUMENTS_MH = findStatic(MethodHandles.class, "insertArguments", methodType(MethodHandle.class, MethodHandle.class, int.class, Object[].class));
+
     protected MethodHandle[] computeGuardAndFastPath(TypeProfile prof) {
         if(prof instanceof TypeProfile.ForIdentity) {
             MethodHandle fastPath = null;
 
-            if(intrinsic || messageKind == "tailMessage") {
+            if(intrinsic) {
                 //                System.err.println("WARNING, not implemented fast path for intrinsic or tailMessages");
-                return null;
             }
-
             
             Class[] argumentsToDrop = type().dropParameterTypes(0, 1).parameterArray();
             MethodHandle guard = MethodHandles.dropArguments(EQ.bindTo(((TypeProfile.ForIdentity)prof).matchIdentity()), 1, argumentsToDrop);
             
-            SephObject value = ((TypeProfile.ForIdentity)prof).matchValue();
+            SephObject receiver = ((TypeProfile.ForIdentity)prof).matchValue();
+            SephObject value = receiver.get(messageName);
+
             if(value.isActivatable()) {
-                fastPath = value.activationFor(arity(), keywords());
+                MethodHandle activation = value.activationFor(arity(), keywords());
+                if(messageKind == "message") {
+                    fastPath = activation;
+                } else {
+                    MethodHandle one = MethodHandles.insertArguments(INSERT_ARGUMENTS_MH, 0, activation, 0);
+                    MethodHandle two = one.asCollector(Object[].class, type().parameterCount());
+                    MethodHandle three = two.asType(type().changeReturnType(MethodHandle.class));
+                    MethodHandle four = MethodHandles.dropArguments(MethodHandles.dropArguments(SET_TAIL_MH, 1, SephObject.class), 3, type().dropParameterTypes(0, 2).parameterArray());
+                    MethodHandle folded = MethodHandles.foldArguments(four, three);
+                    fastPath = folded;
+                }
             } else {
                 fastPath = MethodHandles.dropArguments(MethodHandles.constant(SephObject.class, value), 0, type().parameterArray());
             }
