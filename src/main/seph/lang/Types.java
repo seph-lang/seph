@@ -12,9 +12,8 @@ import static java.lang.invoke.MethodType.*;
 import seph.lang.persistent.IPersistentList;
 
 import static seph.lang.compiler.CompilationHelpers.*;
-import static seph.lang.compiler.Bootstrap.*;
+import static seph.lang.compiler.SephCallSite.*;
 import seph.lang.compiler.SephCallSite;
-import seph.lang.compiler.Bootstrap;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>

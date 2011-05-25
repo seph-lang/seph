@@ -17,7 +17,7 @@ import seph.lang.ast.Message;
 import seph.lang.ast.NamedMessage;
 import seph.lang.parser.Parser;
 import seph.lang.parser.StringUtils;
-import seph.lang.compiler.Bootstrap;
+import seph.lang.compiler.SephCallSite;
 import seph.lang.persistent.PersistentList;
 
 import java.lang.invoke.SwitchPoint;
@@ -72,8 +72,8 @@ public class Runtime {
         SwitchPoint.invalidateAll(new SwitchPoint[] {sp});
     }
 
-    public final static MethodHandle INVALIDATE_MH = Bootstrap.findStatic(seph.lang.Runtime.class, "invalidate", MethodType.methodType(void.class, SwitchPoint.class));
-    public final static MethodHandle EMPTY_MH      = Bootstrap.findStatic(seph.lang.Runtime.class, "empty", MethodType.methodType(void.class));
+    public final static MethodHandle INVALIDATE_MH = SephCallSite.findStatic(seph.lang.Runtime.class, "invalidate", MethodType.methodType(void.class, SwitchPoint.class));
+    public final static MethodHandle EMPTY_MH      = SephCallSite.findStatic(seph.lang.Runtime.class, "empty", MethodType.methodType(void.class));
 
     public final SwitchPoint INTRINSIC_TRUE_SP = new SwitchPoint();
     public final SwitchPoint INTRINSIC_FALSE_SP = new SwitchPoint();

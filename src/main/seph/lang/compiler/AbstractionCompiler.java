@@ -27,7 +27,7 @@ import static org.objectweb.asm.Opcodes.*;
 import static seph.lang.compiler.CompilationHelpers.*;
 import static seph.lang.ActivationHelpers.*;
 import static seph.lang.Types.*;
-import static seph.lang.compiler.Bootstrap.*;
+import static seph.lang.compiler.SephCallSite.*;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

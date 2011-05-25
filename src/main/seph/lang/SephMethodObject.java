@@ -15,7 +15,6 @@ import seph.lang.persistent.ISeq;
 
 import seph.lang.ast.Message;
 import static seph.lang.SimpleSephObject.activatable;
-import seph.lang.compiler.Bootstrap;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

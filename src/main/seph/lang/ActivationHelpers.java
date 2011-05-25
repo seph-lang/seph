@@ -11,7 +11,7 @@ import static java.lang.invoke.MethodType.*;
 
 import seph.lang.persistent.IPersistentList;
 import static seph.lang.compiler.CompilationHelpers.*;
-import static seph.lang.compiler.Bootstrap.*;
+import static seph.lang.compiler.SephCallSite.*;
 import static seph.lang.Types.*;
 
 /**

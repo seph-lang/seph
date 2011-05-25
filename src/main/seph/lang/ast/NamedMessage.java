@@ -12,7 +12,6 @@ import seph.lang.parser.StaticScope;
 import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.ISeq;
-import seph.lang.compiler.Bootstrap;
 import seph.lang.ActivationHelpers;
 
 import java.lang.invoke.MethodHandle;

@@ -16,9 +16,16 @@ import static java.lang.invoke.MethodType.*;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 
+import static java.lang.invoke.MethodHandles.invoker;
+import static java.lang.invoke.MethodHandles.dropArguments;
+import static java.lang.invoke.MethodHandles.insertArguments;
+import static java.lang.invoke.MethodHandles.filterArguments;
+import static java.lang.invoke.MethodHandles.foldArguments;
+import static java.lang.invoke.MethodHandles.constant;
+import static java.lang.invoke.MethodHandles.identity;
+import static java.lang.invoke.MethodHandles.guardWithTest;
 import static seph.lang.compiler.CompilationHelpers.*;
 import static seph.lang.Types.*;
-import static seph.lang.compiler.Bootstrap.*;
 
 public class SephCallSite extends MutableCallSite {
     public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type) {
@@ -47,27 +54,27 @@ public class SephCallSite extends MutableCallSite {
         }
     }
     
-    private final static MethodHandle INTRINSIC_TRUE_MH = MethodHandles.constant(SephObject.class, seph.lang.Runtime.TRUE);
-    private final static MethodHandle INTRINSIC_FALSE_MH = MethodHandles.constant(SephObject.class, seph.lang.Runtime.FALSE);
-    private final static MethodHandle INTRINSIC_NIL_MH = MethodHandles.constant(SephObject.class, seph.lang.Runtime.NIL);
+    private final static MethodHandle INTRINSIC_TRUE_MH =  constant(SephObject.class, seph.lang.Runtime.TRUE);
+    private final static MethodHandle INTRINSIC_FALSE_MH = constant(SephObject.class, seph.lang.Runtime.FALSE);
+    private final static MethodHandle INTRINSIC_NIL_MH =   constant(SephObject.class, seph.lang.Runtime.NIL);
 
     private MethodHandle computeIntrinsicPath() {
         Class<?>[] argParts = type().dropParameterTypes(0, 3).parameterArray();
         MethodHandle fallback = getTarget();
         if(messageName == "true") {
-            MethodHandle intrinsicMH =  MethodHandles.dropArguments(INTRINSIC_TRUE_MH, 0, type().parameterArray());
-            MethodHandle initialSetup = MethodHandles.dropArguments(MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_TRUE_MH, 0, this, intrinsicMH, fallback), 2, argParts);
+            MethodHandle intrinsicMH =  dropArguments(INTRINSIC_TRUE_MH, 0, type().parameterArray());
+            MethodHandle initialSetup = dropArguments(insertArguments(INITIAL_SETUP_INTRINSIC_TRUE_MH, 0, this, intrinsicMH, fallback), 2, argParts);
             return initialSetup;
         } else if(messageName == "false") {
-            MethodHandle intrinsicMH =  MethodHandles.dropArguments(INTRINSIC_FALSE_MH, 0, type().parameterArray());
-            MethodHandle initialSetup = MethodHandles.dropArguments(MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_FALSE_MH, 0, this, intrinsicMH, fallback), 2, argParts);
+            MethodHandle intrinsicMH =  dropArguments(INTRINSIC_FALSE_MH, 0, type().parameterArray());
+            MethodHandle initialSetup = dropArguments(insertArguments(INITIAL_SETUP_INTRINSIC_FALSE_MH, 0, this, intrinsicMH, fallback), 2, argParts);
             return initialSetup;
         } else if(messageName == "nil") {
-            MethodHandle intrinsicMH =  MethodHandles.dropArguments(INTRINSIC_NIL_MH, 0, type().parameterArray());
-            MethodHandle initialSetup = MethodHandles.dropArguments(MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_NIL_MH, 0, this, intrinsicMH, fallback), 2, argParts);
+            MethodHandle intrinsicMH =  dropArguments(INTRINSIC_NIL_MH, 0, type().parameterArray());
+            MethodHandle initialSetup = dropArguments(insertArguments(INITIAL_SETUP_INTRINSIC_NIL_MH, 0, this, intrinsicMH, fallback), 2, argParts);
             return initialSetup;
         } else if(messageName == "if") {
-            MethodHandle initialSetup = MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_IF_MH, 0, this, fallback);
+            MethodHandle initialSetup = insertArguments(INITIAL_SETUP_INTRINSIC_IF_MH, 0, this, fallback);
             return initialSetup;
         } else {
             return null;
@@ -127,28 +134,47 @@ public class SephCallSite extends MutableCallSite {
     public final static MethodHandle SET_TAIL_MH = findStatic(SephCallSite.class, "setTail", methodType(SephObject.class, MethodHandle.class, SThread.class));
     public final static MethodType SLOW_PATH_TYPE    = methodType(SephObject.class, SephCallSite.class, String.class, SephObject.class, SThread.class, LexicalScope.class, Object[].class);
 
+    public static void checkForNull(String name, SephObject value, SephObject receiver) {
+         if(null == value) {
+             throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
+         }
+    }
+
+    public final static MethodHandle CHECK_FOR_NULL_MH = findStatic(SephCallSite.class, "checkForNull", methodType(void.class, String.class, SephObject.class, SephObject.class));
+
     MethodHandle computeSlowPath() {
             if(messageKind == "message") {
-                MethodHandle _test = MethodHandles.dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
-                MethodHandle _then = MethodHandles.filterArguments(MethodHandles.invoker(type()), 0, MethodHandles.insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords()));
-                MethodHandle _else = MethodHandles.dropArguments(MethodHandles.identity(SephObject.class), 1, type().parameterArray());
-                MethodHandle all = MethodHandles.guardWithTest(_test, _then, _else);
-                // TODO: the call to get here will potentially return null for missing attributes. Do a void returning fold in order to check for exceptions
-                MethodHandle complete = MethodHandles.foldArguments(all, MethodHandles.dropArguments(MethodHandles.insertArguments(findVirtual(SephObject.class, "get", methodType(SephObject.class, String.class)), 1, messageName), 1, type().dropParameterTypes(0, 1).parameterArray()));
+                MethodHandle _test = dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
+                MethodHandle _then = filterArguments(invoker(type()), 0, insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords()));
+                MethodHandle _else = dropArguments(identity(SephObject.class), 1, type().parameterArray());
+                MethodHandle all = guardWithTest(_test, _then, _else);
+
+                MethodHandle _nullCheck = dropArguments(insertArguments(CHECK_FOR_NULL_MH, 0, messageName), 
+                                                        2, 
+                                                        type().dropParameterTypes(0, 1).parameterArray());
+                MethodHandle complete = foldArguments(
+                                                      foldArguments(all, _nullCheck),
+                                                      dropArguments(insertArguments(findVirtual(SephObject.class, "get", methodType(SephObject.class, String.class)), 1, messageName), 1, type().dropParameterTypes(0, 1).parameterArray()));
 
                 return complete;
             } else if(messageKind == "tailMessage") {
-                MethodHandle _test = MethodHandles.dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
-                MethodHandle _insertArguments = MethodHandles.insertArguments(findStatic(MethodHandles.class, "insertArguments", methodType(MethodHandle.class, MethodHandle.class, int.class, Object[].class)), 1, 0).asCollector(Object[].class, type().parameterCount()).asType(type().insertParameterTypes(0, MethodHandle.class).changeReturnType(MethodHandle.class));
-                MethodHandle _activationFor = MethodHandles.insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords());
-                MethodHandle _filtered = MethodHandles.filterArguments( _insertArguments, 0 ,_activationFor);
-                MethodHandle _then = MethodHandles.foldArguments(MethodHandles.dropArguments(MethodHandles.dropArguments(SET_TAIL_MH, 1, SephObject.class, SephObject.class), 4, type().dropParameterTypes(0, 2).parameterArray()), 
-                                                                 _filtered);
-                MethodHandle _else = MethodHandles.dropArguments(MethodHandles.identity(SephObject.class), 1, type().parameterArray());
-                MethodHandle all = MethodHandles.guardWithTest(_test, _then, _else);
-                // // TODO: the call to get here will potentially return null for missing attributes. Do a void returning fold in order to check for exceptions
+                MethodHandle _test = dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
+                MethodHandle _insertArguments = insertArguments(findStatic(MethodHandles.class, "insertArguments", methodType(MethodHandle.class, MethodHandle.class, int.class, Object[].class)), 1, 0).asCollector(Object[].class, type().parameterCount()).asType(type().insertParameterTypes(0, MethodHandle.class).changeReturnType(MethodHandle.class));
+                MethodHandle _activationFor = insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords());
+                MethodHandle _filtered = filterArguments( _insertArguments, 0 ,_activationFor);
+                MethodHandle _then = foldArguments(dropArguments(dropArguments(SET_TAIL_MH, 1, SephObject.class, SephObject.class), 4, type().dropParameterTypes(0, 2).parameterArray()), 
+                                                   _filtered);
+                MethodHandle _else = dropArguments(identity(SephObject.class), 1, type().parameterArray());
+                MethodHandle all = guardWithTest(_test, _then, _else);
 
-                MethodHandle complete = MethodHandles.foldArguments(all, MethodHandles.dropArguments(MethodHandles.insertArguments(findVirtual(SephObject.class, "get", methodType(SephObject.class, String.class)), 1, messageName), 1, type().dropParameterTypes(0, 1).parameterArray()));
+                MethodHandle _nullCheck = dropArguments(
+                                                        insertArguments(CHECK_FOR_NULL_MH, 0, messageName), 
+                                                        2, 
+                                                        type().dropParameterTypes(0, 1).parameterArray());
+
+                MethodHandle complete = foldArguments(
+                                                      foldArguments(all, _nullCheck), 
+                                                      dropArguments(insertArguments(findVirtual(SephObject.class, "get", methodType(SephObject.class, String.class)), 1, messageName), 1, type().dropParameterTypes(0, 1).parameterArray()));
 
                 return complete;
             } else {
@@ -158,7 +184,7 @@ public class SephCallSite extends MutableCallSite {
 
     public void setNeutral() {
         specializedMisses = 0;
-        setTarget(MethodHandles.filterArguments(slowPath, 0, computeProfiler(false)));
+        setTarget(filterArguments(slowPath, 0, computeProfiler(false)));
     }
 
     public void setMegamorphic() {
@@ -221,7 +247,7 @@ public class SephCallSite extends MutableCallSite {
     public void setSpecialized(TypeProfile allProfiles) {
         MethodType type = this.type();
         MethodHandle elsePath = slowPath;
-        elsePath = MethodHandles.filterArguments(elsePath, 0, computeProfiler(true));
+        elsePath = filterArguments(elsePath, 0, computeProfiler(true));
         TypeProfile[] cases = allProfiles.cases();
         int casesToCode = cases.length;
         for(int i = casesToCode - 1; i >= 0; i--) {
@@ -232,7 +258,7 @@ public class SephCallSite extends MutableCallSite {
             MethodHandle guard = guardAndFastPath[0]; 
             MethodHandle fastPath = guardAndFastPath[1];
 
-            elsePath = MethodHandles.guardWithTest(guard, fastPath, elsePath);
+            elsePath = guardWithTest(guard, fastPath, elsePath);
         }
         setTarget(elsePath);
     }
@@ -248,7 +274,7 @@ public class SephCallSite extends MutableCallSite {
             MethodHandle fastPath = null;
 
             Class[] argumentsToDrop = type().dropParameterTypes(0, 1).parameterArray();
-            MethodHandle guard = MethodHandles.dropArguments(EQ.bindTo(((TypeProfile.ForIdentity)prof).matchIdentity()), 1, argumentsToDrop);
+            MethodHandle guard = dropArguments(EQ.bindTo(((TypeProfile.ForIdentity)prof).matchIdentity()), 1, argumentsToDrop);
             
             SephObject receiver = ((TypeProfile.ForIdentity)prof).matchValue();
             SephObject value = receiver.get(messageName);
@@ -258,15 +284,15 @@ public class SephCallSite extends MutableCallSite {
                 if(messageKind == "message") {
                     fastPath = activation;
                 } else {
-                    MethodHandle one = MethodHandles.insertArguments(INSERT_ARGUMENTS_MH, 0, activation, 0);
+                    MethodHandle one = insertArguments(INSERT_ARGUMENTS_MH, 0, activation, 0);
                     MethodHandle two = one.asCollector(Object[].class, type().parameterCount());
                     MethodHandle three = two.asType(type().changeReturnType(MethodHandle.class));
-                    MethodHandle four = MethodHandles.dropArguments(MethodHandles.dropArguments(SET_TAIL_MH, 1, SephObject.class), 3, type().dropParameterTypes(0, 2).parameterArray());
-                    MethodHandle folded = MethodHandles.foldArguments(four, three);
+                    MethodHandle four = dropArguments(dropArguments(SET_TAIL_MH, 1, SephObject.class), 3, type().dropParameterTypes(0, 2).parameterArray());
+                    MethodHandle folded = foldArguments(four, three);
                     fastPath = folded;
                 }
             } else {
-                fastPath = MethodHandles.dropArguments(MethodHandles.constant(SephObject.class, value), 0, type().parameterArray());
+                fastPath = dropArguments(constant(SephObject.class, value), 0, type().parameterArray());
             }
 
             return new MethodHandle[] {guard, fastPath};
@@ -296,63 +322,9 @@ public class SephCallSite extends MutableCallSite {
 
     MethodHandle computeProfiler(boolean forMissPath) {
         MethodHandle profiler = (forMissPath ? MH_profileReceiverForMiss : MH_profileReceiver);
-        profiler = MethodHandles.insertArguments(profiler, 0, this);
+        profiler = insertArguments(profiler, 0, this);
         return profiler;
     }
-
-
-
-
-
-    // public static SephObject slowMessage(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, Object[] args) throws Throwable {
-    //     SephObject value = receiver.get(name);
-    //     if(null == value) {
-    //         throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
-    //     }
-    //     if(value.isActivatable()) {
-    //         MethodHandle a = value.activationFor(site.arity(), site.keywords()).asSpreader(Object[].class, args.length);
-    //         return (SephObject)a.invoke(receiver, thread, scope, args);
-    //     }
-    //     return value;
-    // }
-
-    // public static SephObject slowTailMessage(SephCallSite site, String name, SephObject receiver, SThread thread, LexicalScope scope, Object[] args) {
-    //     SephObject value = receiver.get(name);
-    //     if(null == value) {
-    //         throw new RuntimeException(" *** couldn't find: " + name + " on " + receiver);
-    //     }
-    //     if(value.isActivatable()) {
-    //         MethodHandle h = value.activationFor(site.arity(), site.keywords()).asSpreader(Object[].class, args.length);
-    //         h = MethodHandles.insertArguments(h, 0, receiver, thread, scope, args);
-    //         thread.tail = h;
-    //         return SThread.TAIL_MARKER;
-    //     }
-    //     return value;
-    // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     public static SephObject initialSetup_intrinsic_true(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
@@ -388,283 +360,42 @@ public class SephCallSite extends MutableCallSite {
         return (SephObject)guarded.invoke(receiver, thread, scope, test, then, _else);
     }
 
-
-
-
-
-
-
-
-
-    // private boolean newEntry() {
-    //     numberOfGuards++;
-    //     if(numberOfGuards > 10) {
-    //         morphicity = Morphicity.MEGAMORPHIC;
-    //         return false;
-    //     } else if(numberOfGuards > 1) {
-    //         morphicity = Morphicity.POLYMORPHIC;
-    //     } else {
-    //         morphicity = Morphicity.MONOMORPHIC;
-    //     }
-    //     return true;
-    // }
-
-    // void installActivatableEntry(SephObject receiver, MethodHandle value, int args, boolean tail) {
-    //     if(newEntry()) {
-    //         MethodHandle currentEntry = getTarget();
-    //         if(tail) {
-    //             setTarget(MethodHandles.guardWithTest(eq(receiver, args), tailInvokeActivateWith(value, args), currentEntry));
-    //         } else {
-    //             setTarget(MethodHandles.guardWithTest(eq(receiver, args), value, currentEntry));
-    //         }
-    //     }
-    // }
-
-    // void installConstantEntry(SephObject receiver, SephObject value, int args) {
-    //     if(newEntry()) {
-    //         MethodHandle currentEntry = getTarget();
-    //         setTarget(MethodHandles.guardWithTest(eq(receiver, args), constantValue(value, args), currentEntry));
-    //     }
-    // }
-
-    // void installActivatableEntryWithKeywords(SephObject receiver, MethodHandle value, int args, boolean tail) {
-    //     if(newEntry()) {
-    //         MethodHandle currentEntry = getTarget();
-    //         if(tail) {
-    //             setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), tailInvokeActivateWithKeywords(value, args), currentEntry));
-    //         } else {
-    //             setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), value, currentEntry));
-    //         }
-    //     }
-    // }
-
-    // void installConstantEntryWithKeywords(SephObject receiver, SephObject value, int args) {
-    //     if(newEntry()) {
-    //         MethodHandle currentEntry = getTarget();
-    //         setTarget(MethodHandles.guardWithTest(eqKeywords(receiver, args), constantValueKeywords(value, args), currentEntry));
-    //     }
-    // }
-
     public static boolean eq(Object first, SephObject receiver) {
         return first == receiver.identity();
     }
 
-    private final static MethodHandle EQ = Bootstrap.findStatic(SephCallSite.class, "eq", MethodType.methodType(boolean.class, Object.class, SephObject.class));
+    private final static MethodHandle EQ = findStatic(SephCallSite.class, "eq", MethodType.methodType(boolean.class, Object.class, SephObject.class));
 
-    private final static Class[] INDETERMINATE = new Class[]{IPersistentList.class};
-    private final static Class[] CLASS_0       = new Class[0];
-    private final static Class[] CLASS_1       = new Class[]{MethodHandle.class};
-    private final static Class[] CLASS_2       = new Class[]{MethodHandle.class, MethodHandle.class};
-    private final static Class[] CLASS_3       = new Class[]{MethodHandle.class, MethodHandle.class, MethodHandle.class};
-    private final static Class[] CLASS_4       = new Class[]{MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class};
-    private final static Class[] CLASS_5       = new Class[]{MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class};
-
-    private final static Class[] INDETERMINATE_K = new Class[]{IPersistentList.class, String[].class, MethodHandle[].class};
-    private final static Class[] CLASS_0_K       = new Class[]{String[].class, MethodHandle[].class};
-    private final static Class[] CLASS_1_K       = new Class[]{MethodHandle.class, String[].class, MethodHandle[].class};
-    private final static Class[] CLASS_2_K       = new Class[]{MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
-    private final static Class[] CLASS_3_K       = new Class[]{MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
-    private final static Class[] CLASS_4_K       = new Class[]{MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
-    private final static Class[] CLASS_5_K       = new Class[]{MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
-
-    private static Class[] dropClasses(int num) {
-        switch(num) {
-        case -1:
-            return INDETERMINATE;
-        case 0:
-            return CLASS_0;
-        case 1:
-            return CLASS_1;
-        case 2:
-            return CLASS_2;
-        case 3:
-            return CLASS_3;
-        case 4:
-            return CLASS_4;
-        case 5:
-            return CLASS_5;
-        default:
-            return null;
+    public static MethodHandle findStatic(Class target, String name, MethodType type) {
+        try {
+            return MethodHandles.lookup().findStatic(target, name, type);
+        } catch(NoSuchMethodException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private static Class[] dropClassesKeywords(int num) {
-        switch(num) {
-        case -1:
-            return INDETERMINATE_K;
-        case 0:
-            return CLASS_0_K;
-        case 1:
-            return CLASS_1_K;
-        case 2:
-            return CLASS_2_K;
-        case 3:
-            return CLASS_3_K;
-        case 4:
-            return CLASS_4_K;
-        case 5:
-            return CLASS_5_K;
-        default:
-            return null;
+    public static MethodHandle findVirtual(Class target, String name, MethodType type) {
+        try {
+            return MethodHandles.lookup().findVirtual(target, name, type);
+        } catch(NoSuchMethodException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private MethodHandle eq(SephObject receiver, int args) {
-        Class[] argumentsToDrop = dropClasses(args);
-        return MethodHandles.dropArguments(MethodHandles.dropArguments(EQ.bindTo(receiver.identity()), 1, SThread.class, LexicalScope.class), 3, argumentsToDrop);
-    }
-
-    private MethodHandle eqKeywords(SephObject receiver, int args) {
-        Class[] argumentsToDrop = dropClassesKeywords(args);
-        return MethodHandles.dropArguments(MethodHandles.dropArguments(EQ.bindTo(receiver.identity()), 1, SThread.class, LexicalScope.class), 3, argumentsToDrop);
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, args);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, arg0);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, arg0, arg1);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, arg0, arg1, arg2);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, arg0, arg1, arg2, arg3);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, IPersistentList args, String[] keywordNames, MethodHandle[] keywordArguments) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, args, keywordNames, keywordArguments);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, String[] keywordNames, MethodHandle[] keywordArguments) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, keywordNames, keywordArguments);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, String[] keywordNames, MethodHandle[] keywordArguments) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, arg0, keywordNames, keywordArguments);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, String[] keywordNames, MethodHandle[] keywordArguments) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, arg0, arg1, keywordNames, keywordArguments);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, String[] keywordNames, MethodHandle[] keywordArguments) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, arg0, arg1, arg2, keywordNames, keywordArguments);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, String[] keywordNames, MethodHandle[] keywordArguments) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, keywordNames, keywordArguments);
-        return SThread.TAIL_MARKER;
-    }
-
-    public static SephObject installMethodHandle(MethodHandle mh, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle arg0, MethodHandle arg1, MethodHandle arg2, MethodHandle arg3, MethodHandle arg4, String[] keywordNames, MethodHandle[] keywordArguments) {
-        thread.tail = MethodHandles.insertArguments(mh, 0, receiver, thread, scope, arg0, arg1, arg2, arg3, arg4, keywordNames, keywordArguments);
-        return SThread.TAIL_MARKER;
-    }
-
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARGS = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG0 = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG1 = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG2 = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG3 = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG4 = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG5 = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class));
-
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARGS_KEYWORDS = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class, String[].class, MethodHandle[].class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG0_KEYWORDS = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG1_KEYWORDS = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, String[].class, MethodHandle[].class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG2_KEYWORDS = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG3_KEYWORDS = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG4_KEYWORDS = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
-    private final static MethodHandle INSTALL_METHOD_HANDLE_ARG5_KEYWORDS = Bootstrap.findStatic(SephCallSite.class, "installMethodHandle", MethodType.methodType(SephObject.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class));
-
-    private static MethodHandle methodHandleForTail(int num) {
-        switch(num) {
-        case -1:
-            return INSTALL_METHOD_HANDLE_ARGS;
-        case 0:
-            return INSTALL_METHOD_HANDLE_ARG0;
-        case 1:
-            return INSTALL_METHOD_HANDLE_ARG1;
-        case 2:
-            return INSTALL_METHOD_HANDLE_ARG2;
-        case 3:
-            return INSTALL_METHOD_HANDLE_ARG3;
-        case 4:
-            return INSTALL_METHOD_HANDLE_ARG4;
-        case 5:
-            return INSTALL_METHOD_HANDLE_ARG5;
-        default:
-            return null;
+    public static MethodHandle findField(Class target, String name, Class type) {
+        try {
+            return MethodHandles.lookup().findGetter(target, name, type);
+        } catch(NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private static MethodHandle methodHandleForTailKeywords(int num) {
-        switch(num) {
-        case -1:
-            return INSTALL_METHOD_HANDLE_ARGS_KEYWORDS;
-        case 0:
-            return INSTALL_METHOD_HANDLE_ARG0_KEYWORDS;
-        case 1:
-            return INSTALL_METHOD_HANDLE_ARG1_KEYWORDS;
-        case 2:
-            return INSTALL_METHOD_HANDLE_ARG2_KEYWORDS;
-        case 3:
-            return INSTALL_METHOD_HANDLE_ARG3_KEYWORDS;
-        case 4:
-            return INSTALL_METHOD_HANDLE_ARG4_KEYWORDS;
-        case 5:
-            return INSTALL_METHOD_HANDLE_ARG5_KEYWORDS;
-        default:
-            return null;
+    public static MethodHandle findArrayGetter(Class target) {
+        try {
+            return MethodHandles.arrayElementGetter(target);
+        } catch(IllegalArgumentException e) {
+            throw new RuntimeException(e);
         }
-    }
-
-    private MethodHandle tailInvokeActivateWith(MethodHandle value, int args) {
-        MethodHandle mh = methodHandleForTail(args);
-        return mh.bindTo(value);
-    }
-
-    private MethodHandle tailInvokeActivateWithKeywords(MethodHandle value, int args) {
-        MethodHandle mh = methodHandleForTailKeywords(args);
-        return mh.bindTo(value);
-    }
-
-    private MethodHandle constantValue(SephObject value, int args) {
-        Class[] argumentsToDrop = dropClasses(args);
-        return MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.constant(SephObject.class, value), 0, SephObject.class, SThread.class, LexicalScope.class), 0, argumentsToDrop);
-    }
-
-    private MethodHandle constantValueKeywords(SephObject value, int args) {
-        Class[] argumentsToDrop = dropClassesKeywords(args);
-        return MethodHandles.dropArguments(MethodHandles.dropArguments(MethodHandles.constant(SephObject.class, value), 0, SephObject.class, SThread.class, LexicalScope.class), 0, argumentsToDrop);
     }
 }// SephCallSite
 
