@@ -679,7 +679,7 @@ public class AbstractionCompiler {
         default:
             ma.cast(LexicalScope.Many.class);
             ma.getField(LexicalScope.Many.class, "values", SephObject[].class);
-            ma.load(index);
+            ma.load(index-6);
             ma.loadArray();
             break;
         }

@@ -16,21 +16,37 @@ import seph.lang.persistent.ISeq;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public abstract class LexicalScope {
-    public static class Many extends LexicalScope {
+    public static class Many extends Six {
         public String[] names;
         public SephObject[] values;
 
         Many(LexicalScope parent, Runtime runtime, String[] names) {
-            super(parent, runtime);
-            this.names = names;
-            this.values = new SephObject[names.length];
+            super(parent, runtime, names[0], names[1], names[2], names[3], names[4], names[5]);
+            String[] newNames = new String[names.length-6];
+            System.arraycopy(names, 5, newNames, 0, newNames.length);
+            this.names = newNames;
+            this.values = new SephObject[this.names.length];
         }
 
         @Override
         public void assign(int depth, int index, SephObject value) {
             if(depth == 0) {
                 version++;
-                values[index] = value;
+                if(index == 0) {
+                    value0 = value;
+                } else if(index == 1) {
+                    value1 = value;
+                } else if(index == 2) {
+                    value2 = value;
+                } else if(index == 3) {
+                    value3 = value;
+                } else if(index == 4) {
+                    value4 = value;
+                } else if(index == 5) {
+                    value5 = value;
+                } else {
+                    values[index-6] = value;
+                }
             } else {
                 parent.assign(depth - 1, index, value);
             }
@@ -39,7 +55,21 @@ public abstract class LexicalScope {
         @Override
         public SephObject get(int depth, int index) {
             if(depth == 0) {
-                return values[index];
+                if(index == 0) {
+                    return value0;
+                } else if(index == 1) {
+                    return value1;
+                } else if(index == 2) {
+                    return value2;
+                } else if(index == 3) {
+                    return value3;
+                } else if(index == 4) {
+                    return value4;
+                } else if(index == 5) {
+                    return value5;
+                } else {
+                    return values[index-6];
+                }
             } else {
                 return parent.get(depth - 1, index);
             }
