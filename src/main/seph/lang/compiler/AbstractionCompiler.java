@@ -36,7 +36,7 @@ import java.lang.invoke.MethodType;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class AbstractionCompiler {
-    public static boolean PRINT_COMPILE = true;
+    public static boolean PRINT_COMPILE = false;
 
     private static org.objectweb.asm.MethodHandle bootstrapNamed(String name) {
         return new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/Bootstrap", name, BOOTSTRAP_SIGNATURE_DESC);
