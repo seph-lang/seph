@@ -47,13 +47,10 @@ public final class Types {
     public final static MethodType INITIAL_SETUP_3_TYPE     = methodType(SephObject.class, SephCallSite.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class, 
                                                                                                                                                                     MethodHandle.class, MethodHandle.class, MethodHandle.class);
 
-    public final static MethodHandle INTRINSIC_TRUE_MH                = findStatic(Bootstrap.class, "intrinsic_true", NO_ARGS_SIGNATURE);
-    public final static MethodHandle INITIAL_SETUP_INTRINSIC_TRUE_MH  = findStatic(Bootstrap.class, "initialSetup_intrinsic_true", INITIAL_SETUP_TYPE);
-    public final static MethodHandle INTRINSIC_FALSE_MH               = findStatic(Bootstrap.class, "intrinsic_false", NO_ARGS_SIGNATURE);
-    public final static MethodHandle INITIAL_SETUP_INTRINSIC_FALSE_MH = findStatic(Bootstrap.class, "initialSetup_intrinsic_false", INITIAL_SETUP_TYPE);
-    public final static MethodHandle INTRINSIC_NIL_MH                 = findStatic(Bootstrap.class, "intrinsic_nil", NO_ARGS_SIGNATURE);
-    public final static MethodHandle INITIAL_SETUP_INTRINSIC_NIL_MH   = findStatic(Bootstrap.class, "initialSetup_intrinsic_nil", INITIAL_SETUP_TYPE);
-    public final static MethodHandle INITIAL_SETUP_INTRINSIC_IF_MH    = findStatic(Bootstrap.class, "initialSetup_intrinsic_if", INITIAL_SETUP_3_TYPE);
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_TRUE_MH  = findStatic(SephCallSite.class, "initialSetup_intrinsic_true", INITIAL_SETUP_TYPE);
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_FALSE_MH = findStatic(SephCallSite.class, "initialSetup_intrinsic_false", INITIAL_SETUP_TYPE);
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_NIL_MH   = findStatic(SephCallSite.class, "initialSetup_intrinsic_nil", INITIAL_SETUP_TYPE);
+    public final static MethodHandle INITIAL_SETUP_INTRINSIC_IF_MH    = findStatic(SephCallSite.class, "initialSetup_intrinsic_if", INITIAL_SETUP_3_TYPE);
 
     public final static MethodType   SCOPE_GETTER_TYPE = methodType(SephObject.class, LexicalScope.class);
     public final static MethodType   SCOPE_ARRAY_GETTER_TYPE = methodType(SephObject[].class, LexicalScope.class);

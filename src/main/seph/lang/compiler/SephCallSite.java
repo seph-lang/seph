@@ -38,8 +38,42 @@ public class SephCallSite extends MutableCallSite {
         this.messageName = (String)pieces[1];
         this.intrinsic   = (Boolean)pieces[2];
         this.slowPath    = computeSlowPath();
-        setNeutral();
+
+        if(intrinsic) {
+            setNeutral();
+            setTarget(computeIntrinsicPath());
+        } else {
+            setNeutral();
+        }
     }
+    
+    private final static MethodHandle INTRINSIC_TRUE_MH = MethodHandles.constant(SephObject.class, seph.lang.Runtime.TRUE);
+    private final static MethodHandle INTRINSIC_FALSE_MH = MethodHandles.constant(SephObject.class, seph.lang.Runtime.FALSE);
+    private final static MethodHandle INTRINSIC_NIL_MH = MethodHandles.constant(SephObject.class, seph.lang.Runtime.NIL);
+
+    private MethodHandle computeIntrinsicPath() {
+        Class<?>[] argParts = type().dropParameterTypes(0, 3).parameterArray();
+        MethodHandle fallback = getTarget();
+        if(messageName == "true") {
+            MethodHandle intrinsicMH =  MethodHandles.dropArguments(INTRINSIC_TRUE_MH, 0, type().parameterArray());
+            MethodHandle initialSetup = MethodHandles.dropArguments(MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_TRUE_MH, 0, this, intrinsicMH, fallback), 2, argParts);
+            return initialSetup;
+        } else if(messageName == "false") {
+            MethodHandle intrinsicMH =  MethodHandles.dropArguments(INTRINSIC_FALSE_MH, 0, type().parameterArray());
+            MethodHandle initialSetup = MethodHandles.dropArguments(MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_FALSE_MH, 0, this, intrinsicMH, fallback), 2, argParts);
+            return initialSetup;
+        } else if(messageName == "nil") {
+            MethodHandle intrinsicMH =  MethodHandles.dropArguments(INTRINSIC_NIL_MH, 0, type().parameterArray());
+            MethodHandle initialSetup = MethodHandles.dropArguments(MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_NIL_MH, 0, this, intrinsicMH, fallback), 2, argParts);
+            return initialSetup;
+        } else if(messageName == "if") {
+            MethodHandle initialSetup = MethodHandles.insertArguments(INITIAL_SETUP_INTRINSIC_IF_MH, 0, this, fallback);
+            return initialSetup;
+        } else {
+            return null;
+        }
+    }
+
 
     private int arity = -2;
     private boolean keywords = false;;
@@ -94,10 +128,6 @@ public class SephCallSite extends MutableCallSite {
     public final static MethodType SLOW_PATH_TYPE    = methodType(SephObject.class, SephCallSite.class, String.class, SephObject.class, SThread.class, LexicalScope.class, Object[].class);
 
     MethodHandle computeSlowPath() {
-        if(intrinsic) {
-            //            System.err.println("WARNING, not implemented slow path for intrinsics yet");
-        }
-
             if(messageKind == "message") {
                 MethodHandle _test = MethodHandles.dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
                 MethodHandle _then = MethodHandles.filterArguments(MethodHandles.invoker(type()), 0, MethodHandles.insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords()));
@@ -117,6 +147,7 @@ public class SephCallSite extends MutableCallSite {
                 MethodHandle _else = MethodHandles.dropArguments(MethodHandles.identity(SephObject.class), 1, type().parameterArray());
                 MethodHandle all = MethodHandles.guardWithTest(_test, _then, _else);
                 // // TODO: the call to get here will potentially return null for missing attributes. Do a void returning fold in order to check for exceptions
+
                 MethodHandle complete = MethodHandles.foldArguments(all, MethodHandles.dropArguments(MethodHandles.insertArguments(findVirtual(SephObject.class, "get", methodType(SephObject.class, String.class)), 1, messageName), 1, type().dropParameterTypes(0, 1).parameterArray()));
 
                 return complete;
@@ -216,10 +247,6 @@ public class SephCallSite extends MutableCallSite {
         if(prof instanceof TypeProfile.ForIdentity) {
             MethodHandle fastPath = null;
 
-            if(intrinsic) {
-                //                System.err.println("WARNING, not implemented fast path for intrinsic or tailMessages");
-            }
-            
             Class[] argumentsToDrop = type().dropParameterTypes(0, 1).parameterArray();
             MethodHandle guard = MethodHandles.dropArguments(EQ.bindTo(((TypeProfile.ForIdentity)prof).matchIdentity()), 1, argumentsToDrop);
             
@@ -325,6 +352,41 @@ public class SephCallSite extends MutableCallSite {
 
 
 
+
+
+
+    public static SephObject initialSetup_intrinsic_true(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
+        MethodHandle guarded = thread.runtime.INTRINSIC_TRUE_SP.guardWithTest(fast, slow);
+        site.setTarget(guarded);
+        return (SephObject)guarded.invoke(receiver, thread, scope);
+    }
+
+    public static SephObject initialSetup_intrinsic_false(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
+        MethodHandle guarded = thread.runtime.INTRINSIC_FALSE_SP.guardWithTest(fast, slow);
+        site.setTarget(guarded);
+        return (SephObject)guarded.invoke(receiver, thread, scope);
+    }
+
+    public static SephObject initialSetup_intrinsic_nil(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
+        MethodHandle guarded = thread.runtime.INTRINSIC_NIL_SP.guardWithTest(fast, slow);
+        site.setTarget(guarded);
+        return (SephObject)guarded.invoke(receiver, thread, scope);
+    }
+
+    public static SephObject intrinsic_if(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle test, MethodHandle then, MethodHandle _else) throws Throwable {
+        if(((SephObject)test.invoke(thread, scope, true, true)).isTrue()) {
+            return (SephObject)then.invoke(thread, scope, true, false);
+        } else {
+            return (SephObject)_else.invoke(thread, scope, true, false);
+        }
+    }
+
+    public final static MethodHandle INTRINSIC_IF_MH = findStatic(SephCallSite.class, "intrinsic_if", ARGS_3_SIGNATURE);
+    public static SephObject initialSetup_intrinsic_if(SephCallSite site, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle test, MethodHandle then, MethodHandle _else) throws Throwable {
+        MethodHandle guarded = thread.runtime.INTRINSIC_IF_SP.guardWithTest(INTRINSIC_IF_MH, slow);
+        site.setTarget(guarded);
+        return (SephObject)guarded.invoke(receiver, thread, scope, test, then, _else);
+    }
 
 
 
