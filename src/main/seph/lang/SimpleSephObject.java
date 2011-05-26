@@ -4,7 +4,6 @@
 package seph.lang;
 
 import seph.lang.persistent.PersistentArrayMap;
-import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.IPersistentMap;
 
 import java.lang.invoke.MethodHandle;

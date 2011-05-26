@@ -230,10 +230,10 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                     } else if(tname.equals("java.lang.String[]")) {
                         sb.append("args.restKeywordNames");
                         hasRestKeywords = true;
-                    } else if(tname.equals("java.lang.invoke.MethodHandle[]")) {
+                    } else if(hasRestKeywords && tname.equals("java.lang.invoke.MethodHandle[]")) {
                         sb.append("args.restKeywordMHs");
                         hasRestKeywords = true;
-                    } else if(tname.equals("seph.lang.persistent.IPersistentList")) {
+                    } else if(tname.equals("seph.lang.SephObject[]")) {
                         sb.append("args.restPositional");
                         hasRestPositional = true;
                     }
@@ -262,7 +262,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                         sb.append("receiver");
                     } else if(tname.equals("seph.lang.SThread")) {
                         sb.append("thread");
-                    } else if(tname.equals("seph.lang.persistent.IPersistentList")) {
+                    } else if(tname.equals("java.lang.invoke.MethodHandle[]")) {
                         sb.append("arguments");
                         restArgs = true;
                     } else if(tname.equals("java.lang.invoke.MethodHandle")) {
@@ -326,7 +326,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                         String tname = pd.getType().toString();
                         if(tname.equals("seph.lang.LexicalScope")) {
                             sb.append("scope");
-                        } else if(tname.equals("seph.lang.persistent.IPersistentList")) {
+                        } else if(!createArgs && tname.equals("java.lang.invoke.MethodHandle[]")) {
                             sb.append("arguments");
                             createArgs = true;
                         } else if(tname.equals("seph.lang.SephObject")) {
@@ -352,9 +352,9 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                         sep = ", ";
                     }
                     if(createArgs) {
-                        out.println("        IPersistentList arguments = PersistentList.EMPTY;");
-                        for(int i = currentArity-1; i >= 0; i--) {
-                            out.println("        arguments = (IPersistentList)arguments.cons(arg" + i + ");");
+                        out.println("        MethodHandle[] arguments = new MethodHandle[" + currentArity + "];");
+                        for(int i = 0; i < currentArity; i++) {
+                            out.println("        arguments[" + i + "] = arg" + i + ";");
                         }
                     }
                     out.println("        return " + cd.getQualifiedName() + "." + md.getSimpleName() + "(" + sb + ");");
@@ -364,7 +364,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
             }
 
             private void generateMethod(ClassDeclaration cd, String name, MethodDeclaration md) throws IOException {
-                out.println("    public static SephObject " + name + "(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments) {");
+                out.println("    public static SephObject " + name + "(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle[] arguments) {");
 
                 SephMethod sm = md.getAnnotation(SephMethod.class);
 
@@ -410,7 +410,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
 
 
 
-                out.println("    public static SephObject " + name + "(SephObject receiver, SThread thread, LexicalScope scope, IPersistentList arguments, String[] keywordNames, MethodHandle[] keywordArguments) {");
+                out.println("    public static SephObject " + name + "(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle[] arguments, String[] keywordNames, MethodHandle[] keywordArguments) {");
 
                 sb = new StringBuilder();
 

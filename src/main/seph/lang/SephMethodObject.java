@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import java.util.ArrayList;
 
 import seph.lang.persistent.PersistentArrayMap;
-import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.IPersistentMap;
 import seph.lang.persistent.ISeq;
@@ -46,23 +45,18 @@ public abstract class SephMethodObject implements SephObject {
         return true;
     }
 
-    public static ArgumentResult parseAndEvaluateArguments(SThread thread, LexicalScope scope, IPersistentList arguments, int posArity, boolean restPos, boolean restKey) {
-        List restp = restPos ? new ArrayList(arguments.count() - posArity) : (List)null;
+    public static ArgumentResult parseAndEvaluateArguments(SThread thread, LexicalScope scope, MethodHandle[] arguments, int posArity, boolean restPos, boolean restKey) {
+        List<SephObject> restp = restPos ? new ArrayList<SephObject>(arguments.length - posArity) : (List<SephObject>)null;
         List<String> namesk = restKey ? new LinkedList<String>() : (List<String>)null;
         List<MethodHandle> valuesk = restKey ? new LinkedList<MethodHandle>() : (List<MethodHandle>)null;
-        ISeq argsLeft = arguments.seq();
         int currentArg = 0;
         String name;
         boolean collectingRestp = restPos && currentArg > posArity;
         ArgumentResult result = new ArgumentResult();
         
         try {
-            while(argsLeft != null) {
-                Object o = argsLeft.first();
-                Message current;
-                MethodHandle toEvaluate = null;
-                toEvaluate = (MethodHandle)o;
-                current = (Message)((SephObject)toEvaluate.invoke((SThread)null, (LexicalScope)null, false, true));
+            for(MethodHandle toEvaluate : arguments) {
+                Message current = (Message)((SephObject)toEvaluate.invoke((SThread)null, (LexicalScope)null, false, true));
 
                 if(restKey && (name = current.name()).endsWith(":")) {
                     name = name.substring(0, name.length()-1);
@@ -80,14 +74,13 @@ public abstract class SephMethodObject implements SephObject {
                         collectingRestp = restPos && currentArg > posArity;
                     }
                 }
-                argsLeft = argsLeft.next();
             }
         } catch(Throwable e) {
             e.printStackTrace();
         }
 
         if(restPos) {
-            result.restPositional = PersistentList.create(restp);
+            result.restPositional = restp.toArray(new SephObject[0]);
         }
 
         if(restKey) {
@@ -98,20 +91,15 @@ public abstract class SephMethodObject implements SephObject {
         return result;
     }
 
-    public static ArgumentResult parseAndEvaluateArgumentsUneval(SThread thread, LexicalScope scope, IPersistentList arguments, int posArity) {
-        ISeq argsLeft = arguments.seq();
+    public static ArgumentResult parseAndEvaluateArgumentsUneval(SThread thread, LexicalScope scope, MethodHandle[] arguments, int posArity) {
         int currentArg = 0;
         String name;
         ArgumentResult result = new ArgumentResult();
         
         try {
-            while(argsLeft != null) {
-                Object o = argsLeft.first();
-                MethodHandle xx = (MethodHandle)o;
-
+            for(MethodHandle xx : arguments) {
                 result.assign(currentArg, xx);
                 currentArg++;
-                argsLeft = argsLeft.next();
             }
         } catch(Throwable e) {
             e.printStackTrace();
@@ -131,7 +119,7 @@ public abstract class SephMethodObject implements SephObject {
         public MethodHandle argMH2;
         public MethodHandle argMH3;
         public MethodHandle argMH4;
-        public IPersistentList restPositional;
+        public SephObject[] restPositional;
         public String[] restKeywordNames;
         public MethodHandle[] restKeywordMHs;
 

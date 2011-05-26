@@ -9,8 +9,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import static java.lang.invoke.MethodType.*;
 
-import seph.lang.persistent.IPersistentList;
-
 import static seph.lang.compiler.CompilationHelpers.*;
 import static seph.lang.compiler.SephCallSite.*;
 import seph.lang.compiler.SephCallSite;
@@ -20,7 +18,7 @@ import seph.lang.compiler.SephCallSite;
  */
 public final class Types {
     private Types() {}
-    public final static MethodType ACTIVATE_METHOD_TYPE_N    = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_N    = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class);
     public final static MethodType ACTIVATE_METHOD_TYPE_0    = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class);
     public final static MethodType ACTIVATE_METHOD_TYPE_1    = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class);
     public final static MethodType ACTIVATE_METHOD_TYPE_2    = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class);
@@ -28,7 +26,7 @@ public final class Types {
     public final static MethodType ACTIVATE_METHOD_TYPE_4    = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
     public final static MethodType ACTIVATE_METHOD_TYPE_5    = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class);
 
-    public final static MethodType ACTIVATE_METHOD_TYPE_N_K  = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class, String[].class, MethodHandle[].class);
+    public final static MethodType ACTIVATE_METHOD_TYPE_N_K  = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class, String[].class, MethodHandle[].class);
     public final static MethodType ACTIVATE_METHOD_TYPE_0_K  = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class);
     public final static MethodType ACTIVATE_METHOD_TYPE_1_K  = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, String[].class, MethodHandle[].class);
     public final static MethodType ACTIVATE_METHOD_TYPE_2_K  = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);

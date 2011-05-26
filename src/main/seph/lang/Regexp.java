@@ -5,8 +5,6 @@ package seph.lang;
 
 import org.jregex.Pattern;
 
-import seph.lang.persistent.IPersistentList;
-
 import java.lang.invoke.MethodHandle;
 
 /**

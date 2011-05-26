@@ -3,8 +3,6 @@
  */
 package seph.lang;
 
-import seph.lang.persistent.IPersistentList;
-
 import java.lang.invoke.MethodHandle;
 
 /**

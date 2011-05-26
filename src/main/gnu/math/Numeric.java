@@ -4,7 +4,6 @@
 package gnu.math;
 
 import seph.lang.*;
-import seph.lang.persistent.IPersistentList;
 
 import java.lang.invoke.MethodHandle;
 

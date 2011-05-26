@@ -10,7 +10,6 @@ import seph.lang.ast.Abstraction;
 import seph.lang.ast.Message;
 import seph.lang.compiler.AbstractionCompiler;
 import seph.lang.compiler.CompilationAborted;
-import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.PersistentList;
 import seph.lang.persistent.PersistentArrayMap;
 import seph.lang.persistent.ISeq;

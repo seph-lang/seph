@@ -5,7 +5,6 @@ package seph.lang;
 
 import seph.lang.ast.Message;
 import seph.lang.ast.NamedMessage;
-import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.RT;
 import seph.lang.persistent.ISeq;
 

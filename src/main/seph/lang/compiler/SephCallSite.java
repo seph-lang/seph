@@ -6,7 +6,6 @@ package seph.lang.compiler;
 import java.util.*;
 
 import seph.lang.*;
-import seph.lang.persistent.IPersistentList;
 
 import java.lang.invoke.CallSite;
 import java.lang.invoke.ConstantCallSite;
@@ -93,11 +92,11 @@ public class SephCallSite extends MutableCallSite {
         } else {
             Class<?>[] tp = type().parameterArray();
             int minus = 0;
-            if(tp[tp.length-1] == MethodHandle[].class) {
+            if(tp[tp.length-2] == String[].class) {
                 keywords = true;
                 minus = 2;
             }
-            if(num == 1 && tp[3] == IPersistentList.class) {
+            if(num == 1 && tp[3] == MethodHandle[].class) {
                 arity = -1;
             } else {
                 arity = num - minus;

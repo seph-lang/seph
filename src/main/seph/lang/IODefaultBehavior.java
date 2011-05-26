@@ -4,8 +4,6 @@
 package seph.lang;
 
 import seph.lang.ast.NamedMessage;
-import seph.lang.persistent.IPersistentList;
-
 import java.lang.invoke.MethodHandle;
 
 /**

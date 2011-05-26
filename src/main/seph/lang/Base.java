@@ -4,7 +4,6 @@
 package seph.lang;
 
 import seph.lang.structure.SephObjectFactory;
-import seph.lang.persistent.IPersistentList;
 import seph.lang.persistent.IPersistentMap;
 import seph.lang.persistent.ISeq;
 import seph.lang.persistent.MapEntry;
@@ -74,26 +73,23 @@ public class Base implements SephObject {
     //    benchmark(42, 2, code_to_bench)                ; repetitions = 42, loops = 2
     //    benchmark("code one", 42, 2, code_to_bench)    ; repetitions = 42, loops = 2, label "code one"
     @SephMethod(evaluateArguments=false)
-    public final static SephObject benchmark(SThread thread, LexicalScope scope, IPersistentList args) {
-        int count = args.count();
+    public final static SephObject benchmark(SThread thread, LexicalScope scope, MethodHandle[] args) {
+        int count = args.length;
         int repetitions = 10;
         int iterations = 1;
         String label = null;
-        ISeq argsLeft = args.seq();
+        int argsLeft = 0;
         Object code = null;
         if(count == 4) {
-            label = ((Text)ControlDefaultBehavior.evaluateArgument(argsLeft.first(), scope, thread, true)).text();
-            argsLeft = argsLeft.next();
+            label = ((Text)ControlDefaultBehavior.evaluateArgument(args[argsLeft++], scope, thread, true)).text();
         }
         if(count > 1) {
-            repetitions = ((gnu.math.IntNum)ControlDefaultBehavior.evaluateArgument(argsLeft.first(), scope, thread, true)).intValue();
-            argsLeft = argsLeft.next();
+            repetitions = ((gnu.math.IntNum)ControlDefaultBehavior.evaluateArgument(args[argsLeft++], scope, thread, true)).intValue();
         }
         if(count > 2) {
-            iterations = ((gnu.math.IntNum)ControlDefaultBehavior.evaluateArgument(argsLeft.first(), scope, thread, true)).intValue();
-            argsLeft = argsLeft.next();
+            iterations = ((gnu.math.IntNum)ControlDefaultBehavior.evaluateArgument(args[argsLeft++], scope, thread, true)).intValue();
         }
-        code = argsLeft.first();
+        code = args[argsLeft];
 
         String separatorType = System.getProperty("seph.benchmark.format");
         if(separatorType == null || separatorType.equals("")) {

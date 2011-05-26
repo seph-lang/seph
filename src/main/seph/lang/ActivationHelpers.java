@@ -9,7 +9,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import static java.lang.invoke.MethodType.*;
 
-import seph.lang.persistent.IPersistentList;
 import static seph.lang.compiler.CompilationHelpers.*;
 import static seph.lang.compiler.SephCallSite.*;
 import static seph.lang.Types.*;
@@ -26,7 +25,7 @@ public final class ActivationHelpers {
 
     public final static MethodHandle NO_ACTIVATE_FOR    = findStatic(ActivationHelpers.class, "noActivateForMH", methodType(SephObject.class, SephObject.class));
 
-    public final static Class[] ARGUMENT_CLASSES_N_K = new Class[]{SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class, String[].class, MethodHandle[].class};
+    public final static Class[] ARGUMENT_CLASSES_N_K = new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class, String[].class, MethodHandle[].class};
     public final static Class[] ARGUMENT_CLASSES_0_K = new Class[]{SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class};
     public final static Class[] ARGUMENT_CLASSES_1_K = new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, String[].class, MethodHandle[].class};
     public final static Class[] ARGUMENT_CLASSES_2_K = new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
@@ -34,7 +33,7 @@ public final class ActivationHelpers {
     public final static Class[] ARGUMENT_CLASSES_4_K = new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
     public final static Class[] ARGUMENT_CLASSES_5_K = new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
 
-    public final static Class[] ARGUMENT_CLASSES_N   = new Class[]{SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class};
+    public final static Class[] ARGUMENT_CLASSES_N   = new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class};
     public final static Class[] ARGUMENT_CLASSES_0   = new Class[]{SephObject.class, SThread.class, LexicalScope.class};
     public final static Class[] ARGUMENT_CLASSES_1   = new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class};
     public final static Class[] ARGUMENT_CLASSES_2   = new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class};

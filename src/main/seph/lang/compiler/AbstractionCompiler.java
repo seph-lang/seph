@@ -480,7 +480,7 @@ public class AbstractionCompiler {
         final int currentMessageIndex = messageIndex++;
 
         final int arity = RT.count(arguments);
-        final LinkedList<ArgumentEntry> currentArguments = new LinkedList<>();
+        final List<ArgumentEntry> currentArguments = new ArrayList<>();
         final List<Message> keywordArguments = new LinkedList<>();
         final List<String> keywordArgumentNames = new LinkedList<>();
 
@@ -500,22 +500,24 @@ public class AbstractionCompiler {
         }
 
         if((arity - keywordArguments.size()) > 5) {
-            ma.getStatic(PersistentList.class, "EMPTY", "Lseph/lang/persistent/PersistentList$EmptyList;");
-            for(final Iterator<ArgumentEntry> iter = currentArguments.descendingIterator(); iter.hasNext();) {
-                ArgumentEntry ae = iter.next();
+            ma.load(arity - keywordArguments.size());
+            ma.newArray(MethodHandle.class);
+            int i = 0;
+            for(ArgumentEntry ae : keywordCurrentArguments) {
+                ma.dup();
+                ma.load(i++);
                 
                 ma.getStatic(className, ae.handleName, MethodHandle.class);
-
                 if(activateWith) {
                     ma.loadLocal(METHOD_SCOPE + plusArity); 
                 } else {
                     ma.loadLocal(METHOD_SCOPE_ARG);
                 }
-
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
                 ma.loadLocal(RECEIVER);
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-                ma.interfaceCall(IPersistentCollection.class, "cons", IPersistentCollection.class, Object.class);
+
+                ma.storeArray();
             }
         } else {
             for(ArgumentEntry ae : currentArguments) {
@@ -619,7 +621,7 @@ public class AbstractionCompiler {
             case 5:
                 return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
             default:
-                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class, String[].class, MethodHandle[].class};
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class, String[].class, MethodHandle[].class};
             }
         } else {
             switch(arity.positional) {
@@ -636,7 +638,7 @@ public class AbstractionCompiler {
             case 5:
                 return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class};
             default:
-                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class};
+                return new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class};
             }
         }
     }
@@ -901,7 +903,7 @@ public class AbstractionCompiler {
 
 
     private void activateWithMethodCollectedArgs() {
-        MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC, encode(abstractionName), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), null, null));
+        MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC, encode(abstractionName), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class), null, null));
 
         ma.loadThis();
         ma.getField(className, "capture", LexicalScope.class);
@@ -919,13 +921,13 @@ public class AbstractionCompiler {
         ma.loadLocal(METHOD_SCOPE);
 
         ma.loadLocal(ARGUMENTS);
-        ma.interfaceCall(Seqable.class, "seq", ISeq.class);
-
+        ix = 0;
         for(String arg : argNames) {
             ma.dup();
             ma.loadLocal(METHOD_SCOPE);
             ma.swap();
-            ma.interfaceCall(ISeq.class, "first", Object.class);
+            ma.load(ix++);
+            ma.loadArray();
             ma.loadLocal(SCOPE);
             ma.loadLocal(THREAD);
             ma.one();
@@ -933,7 +935,6 @@ public class AbstractionCompiler {
             ma.load(arg);
             ma.swap();
             ma.virtualCall(LexicalScope.class, "directlyAssign", void.class, String.class, SephObject.class);
-            ma.interfaceCall(ISeq.class, "next", ISeq.class);
         }
 
         ma.pop();
@@ -942,7 +943,7 @@ public class AbstractionCompiler {
     }
 
     private void activateWithMethodPassArgs(final int arity) {
-        MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC, encode(abstractionName), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, IPersistentList.class), null, null));
+        MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC, encode(abstractionName), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class), null, null));
 
         ma.loadThis();
         ma.loadLocal(RECEIVER);
@@ -951,16 +952,14 @@ public class AbstractionCompiler {
 
         if(arity > 0) {
             ma.loadLocal(ARGUMENTS);
-            ma.interfaceCall(Seqable.class, "seq", ISeq.class);
 
             for(int i = 0; i < arity; i++) {
                 ma.dup();
-                ma.interfaceCall(ISeq.class, "first", Object.class);
-                ma.staticCall(SephMethodObject.class, "ensureMH", MethodHandle.class, Object.class);
+                ma.load(i);
+                ma.loadArray();
                 ma.swap();
-                ma.interfaceCall(ISeq.class, "next", ISeq.class);
             }
-
+            
             ma.pop();
         }
 
