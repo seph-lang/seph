@@ -28,7 +28,7 @@ public class ControlDefaultBehavior implements SephObject {
     }
 
     @SephMethod(name="if", evaluateArguments=false)
-    public final static SephObject _if(SThread thread, LexicalScope scope, MethodHandle condition, MethodHandle then, MethodHandle _else) {
+    public final static SephObject _if(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle condition, MethodHandle then, MethodHandle _else) {
         // new Exception().printStackTrace();
         SephObject result = evaluateArgument(condition, scope, thread, true);
 

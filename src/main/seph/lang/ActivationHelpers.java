@@ -23,7 +23,12 @@ public final class ActivationHelpers {
         throw new RuntimeException(" *** couldn't activate: " + self);
     }
 
+    public static SephObject arityErrorMH(int expected, int got, String name) {
+        throw new RuntimeException(name + " - expected " + expected + " arguments, got " + got + " arguments");
+    }
+
     public final static MethodHandle NO_ACTIVATE_FOR    = findStatic(ActivationHelpers.class, "noActivateForMH", methodType(SephObject.class, SephObject.class));
+    public final static MethodHandle ARITY_ERROR        = findStatic(ActivationHelpers.class, "arityErrorMH", methodType(SephObject.class, int.class, int.class, String.class));
 
     public final static Class[] ARGUMENT_CLASSES_N_K = new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class, String[].class, MethodHandle[].class};
     public final static Class[] ARGUMENT_CLASSES_0_K = new Class[]{SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class};
@@ -81,5 +86,18 @@ public final class ActivationHelpers {
     
     public static MethodHandle noActivateFor(SephObject self, int arity, boolean keywords) {
         return MethodHandles.dropArguments(NO_ACTIVATE_FOR.bindTo(self), 0, argumentClassesFor(arity, keywords));
+    }
+
+    public static MethodHandle arityError(int expected, int got, String name, boolean keywords) {
+        return MethodHandles.dropArguments(MethodHandles.insertArguments(ARITY_ERROR, 0, expected, got, name), 0, argumentClassesFor(got, keywords));
+    }
+
+    public static SephObject invoke(MethodHandle mh, SThread thread, LexicalScope scope) {
+        try {
+            return (SephObject)mh.invoke(thread, scope, true, true);
+        } catch(Throwable e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 }// ActivationHelpers
