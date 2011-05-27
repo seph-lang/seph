@@ -144,7 +144,10 @@ public class SephCallSite extends MutableCallSite {
     MethodHandle computeSlowPath() {
             if(messageKind == "message") {
                 MethodHandle _test = dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
-                MethodHandle _then = filterArguments(invoker(type()), 0, insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords()));
+                
+                MethodHandle invoker = findVirtual(MethodHandle.class, "invoke", type());
+                System.err.println("invoker.type()" + invoker.type());
+                MethodHandle _then = filterArguments(invoker, 0, insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords()));
                 MethodHandle _else = dropArguments(identity(SephObject.class), 1, type().parameterArray());
                 MethodHandle all = guardWithTest(_test, _then, _else);
 
