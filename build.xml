@@ -124,7 +124,6 @@
   <target name="test" depends="compile-tests" description="Runs all Seph tests">
     <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
-      <jvmarg value="-Xint"/>
       <!-- <jvmarg value="-XX:+UnlockDiagnosticVMOptions"/> -->
       <!-- <jvmarg value="-XX:-UseRicochetFrames"/> -->
       <jvmarg value="-ea"/>
@@ -144,7 +143,6 @@
   <target name="ci-test" depends="ci-compile-tests" description="Runs all Seph tests with XML output for the CI">
     <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
-      <jvmarg value="-Xint"/>
       <jvmarg value="-ea"/>
       <classpath refid="test.classpath"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
@@ -191,7 +189,6 @@
     <sequential>
       <java classname="seph.lang.Main" fork="true" failonerror="true" maxmemory="256m">
         <jvmarg value="-server"/>
-        <jvmarg value="-Xint"/>
 
         <sysproperty key="seph.benchmark.format" value="human"/>
         <sysproperty key="file.encoding" value="UTF-8"/>
@@ -210,7 +207,6 @@
       <echo>Benchmark: @{file}</echo>
       <java classname="seph.lang.Main" fork="true" failonerror="true" output="${build.dir}/all_bench_results" logError="true" append="@{append}" maxmemory="256m">
         <jvmarg value="-server"/>
-        <jvmarg value="-Xint"/>
 
         <sysproperty key="seph.benchmark.format" value="robot"/>
         <sysproperty key="file.encoding" value="UTF-8"/>
