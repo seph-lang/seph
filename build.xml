@@ -121,6 +121,21 @@
     </javac>
   </target>
 
+  <target name="buster" depends="compile-tests" description="Runs only the buster tests">
+    <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="false" timeout="1800000">
+      <jvmarg value="-server"/>
+      <!-- <jvmarg value="-XX:+UnlockDiagnosticVMOptions"/> -->
+      <!-- <jvmarg value="-XX:-UseRicochetFrames"/> -->
+      <jvmarg value="-ea"/>
+      <classpath refid="test.classpath"/>
+      <sysproperty key="file.encoding" value="UTF-8"/>
+      <formatter type="brief" usefile="false" />
+
+      <test name="seph.lang.code.Buster" fork="true"/>
+    </junit>
+    <fail if="junit.failure" message="Test(s) failed."/>
+  </target>
+
   <target name="test" depends="compile-tests" description="Runs all Seph tests">
     <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
