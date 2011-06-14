@@ -26,6 +26,18 @@ public class BasicSanityTest {
     }
 
     @Test
+    public void buster() throws Throwable {
+        seph.lang.compiler.AbstractionCompiler.PRINT_COMPILE = true;
+        seph.lang.Runtime runtime = new seph.lang.Runtime();
+        SephObject result = (SephObject)runtime.evaluateString("#(1 + 1)");
+        java.lang.invoke.MethodHandle mh = result.activationFor(0, false);
+        SThread thread = new SThread(runtime);
+        for(int i = 0; i<20000; i++) {
+            mh.invoke(Ground.instance, thread, null);
+        }
+    }
+
+    @Test
     public void evaluate_text() throws Exception, ControlFlow {
         assertThat((Text)new seph.lang.Runtime().evaluateString("\"hello world\""), is(equalTo(new Text("hello world"))));
     }
