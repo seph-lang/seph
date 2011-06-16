@@ -145,7 +145,7 @@
       <!-- <jvmarg value="-XX:+UnlockDiagnosticVMOptions"/> -->
       <!-- <jvmarg value="-XX:-UseRicochetFrames"/> -->
       <jvmarg value="-ea"/>
-      <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:${test.classes.dir}:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar:lib/build/junit-4.8.2.jar"/>
+      <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:${test.classes.dir}:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar:lib/build/junit-4.8.2.jar:lib/build/jakarta-oro-2.0.8.jar:lib/build/log4j-1.2.9.jar"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
       <formatter type="brief" usefile="false" />
 
@@ -162,7 +162,7 @@
     <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
       <jvmarg value="-ea"/>
-      <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:${test.classes.dir}:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar:lib/build/junit-4.8.2.jar"/>
+      <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:${test.classes.dir}:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar:lib/build/junit-4.8.2.jar:lib/build/jakarta-oro-2.0.8.jar:lib/build/log4j-1.2.9.jar"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
       <formatter type="brief" usefile="false" />
       <formatter type="xml"/>
