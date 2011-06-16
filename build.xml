@@ -16,9 +16,10 @@
 
   <path id="test.classpath">
     <fileset dir="${lib.build.dir}" includes="*.jar"/>
-    <fileset dir="${lib.release.dir}" includes="*.jar"/>
+  </path>
+
+  <path id="main.classpath">
     <pathelement path="${main.classes.dir}"/>
-    <pathelement path="${test.classes.dir}"/>
   </path>
 
   <path id="run.classpath">
@@ -108,6 +109,7 @@
   <target name="compile-tests" depends="compile" description="Compile the test source files for the project.">
     <javac destdir="${test.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" encoding="UTF-8">
       <classpath refid="test.classpath"/>
+      <classpath refid="main.classpath"/>
       <src path="${src.test.dir}"/>
       <include name="**/*.java"/>
     </javac>
@@ -116,6 +118,7 @@
   <target name="ci-compile-tests" depends="prepare" description="Compile the test source files for the CI.">
     <javac destdir="${test.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" encoding="UTF-8">
       <classpath refid="test.classpath"/>
+      <classpath refid="main.classpath"/>
       <src path="${src.test.dir}"/>
       <include name="**/*.java"/>
     </javac>
@@ -142,7 +145,7 @@
       <!-- <jvmarg value="-XX:+UnlockDiagnosticVMOptions"/> -->
       <!-- <jvmarg value="-XX:-UseRicochetFrames"/> -->
       <jvmarg value="-ea"/>
-      <classpath refid="test.classpath"/>
+      <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:${test.classes.dir}:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar:lib/build/junit-4.8.2.jar"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
       <formatter type="brief" usefile="false" />
 
@@ -159,7 +162,7 @@
     <junit fork="yes" forkMode="once" failureproperty="junit.failure" showoutput="true" timeout="1800000">
       <jvmarg value="-server"/>
       <jvmarg value="-ea"/>
-      <classpath refid="test.classpath"/>
+      <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:${test.classes.dir}:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar:lib/build/junit-4.8.2.jar"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
       <formatter type="brief" usefile="false" />
       <formatter type="xml"/>
@@ -208,7 +211,7 @@
         <sysproperty key="seph.benchmark.format" value="human"/>
         <sysproperty key="file.encoding" value="UTF-8"/>
 
-        <classpath refid="run.classpath"/>
+        <jvmarg value="-Xbootclasspath/a:lib/seph.jar:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar"/>
 
         <arg line="@{file}"/>
       </java>
@@ -226,7 +229,7 @@
         <sysproperty key="seph.benchmark.format" value="robot"/>
         <sysproperty key="file.encoding" value="UTF-8"/>
 
-        <classpath refid="run.classpath"/>
+        <jvmarg value="-Xbootclasspath/a:lib/seph.jar:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar"/>
 
         <arg line="@{file}"/>
       </java>
