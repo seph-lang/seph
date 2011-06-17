@@ -213,7 +213,7 @@
         <sysproperty key="seph.benchmark.format" value="human"/>
         <sysproperty key="file.encoding" value="UTF-8"/>
 
-        <jvmarg value="-Xbootclasspath/a:lib/seph.jar:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar"/>
+        <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:lib/seph.jar:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar"/>
 
         <arg line="@{file}"/>
       </java>
@@ -231,7 +231,7 @@
         <sysproperty key="seph.benchmark.format" value="robot"/>
         <sysproperty key="file.encoding" value="UTF-8"/>
 
-        <jvmarg value="-Xbootclasspath/a:lib/seph.jar:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar"/>
+        <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:lib/seph.jar:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar"/>
 
         <arg line="@{file}"/>
       </java>
