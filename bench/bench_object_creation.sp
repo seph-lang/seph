@@ -90,4 +90,4 @@ large_objects = #(
 
 benchmark("create small sized objects", 10, 1000, small_objects)
 benchmark("create medium sized objects", 10, 1000, medium_objects)
-benchmark("create large sized objects", 10, 100, large_objects)
+benchmark("create large sized objects", 10, 1000, large_objects)

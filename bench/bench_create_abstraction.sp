@@ -13,4 +13,4 @@ hundred_abstractions = #(
   #(x). #(x). #(x). #(x). #(x). #(x). #(x). #(x). #(x). #(x)
 )
 
-benchmark("create abstraction (with closure)", 10, 10, hundred_abstractions)
+benchmark("create abstraction (with closure)", 10, 1000000, hundred_abstractions)
