@@ -275,8 +275,8 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                             outputTypes.add("seph.lang.LexicalScope");
                         } else if(tname.equals("seph.lang.SephObject")) {
                             if(haveReceiver) {
-                                sb.append("invoke(arg" + (args++)).append(", thread, scope)");;
-                                outputTypes.add("invoke(SephObject)");
+                                sb.append("invokeExact(arg" + (args++)).append(", thread, scope)");;
+                                outputTypes.add("invokeExact(SephObject)");
                             } else {
                                 haveReceiver = true;
                                 sb.append("receiver");
@@ -322,7 +322,7 @@ public class AnnotationBimCreator implements AnnotationProcessorFactory {
                             createArgs = true;
                         } else if(tname.equals("seph.lang.SephObject")) {
                             if(haveReceiver) {
-                                sb.append("invoke(arg" + (args++)).append(", thread, scope)");;
+                                sb.append("invokeExact(arg" + (args++)).append(", thread, scope)");;
                             } else {
                                 haveReceiver = true;
                                 sb.append("receiver");

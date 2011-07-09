@@ -596,7 +596,7 @@ public class AbstractionCompiler {
         ma.swap();
         ma.nul();
         ma.putField(SThread.class, "tail", MethodHandle.class);
-        ma.virtualCall(MethodHandle.class, "invoke", SephObject.class);
+        ma.virtualCall(MethodHandle.class, "invokeExact", SephObject.class);
         ma.jump(loop);
         ma.label(done);
     }
@@ -765,7 +765,7 @@ public class AbstractionCompiler {
                 ma.label(activate);
             } else {
                 Label activate = new Label();
-                ma.virtualCall(MethodHandle.class, "invoke", sigFor(arity));
+                ma.virtualCall(MethodHandle.class, "invokeExact", sigFor(arity));
 
                 pumpTailCall(ma);
                 ma.jump(activate);

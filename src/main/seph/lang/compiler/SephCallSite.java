@@ -145,7 +145,7 @@ public class SephCallSite extends MutableCallSite {
             if(messageKind == "message") {
                 MethodHandle _test = dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
                 
-                MethodHandle invoker = findVirtual(MethodHandle.class, "invoke", type());
+                MethodHandle invoker = findVirtual(MethodHandle.class, "invokeExact", type());
                 MethodHandle _then = filterArguments(invoker, 0, insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords()));
                 MethodHandle _else = dropArguments(identity(SephObject.class), 1, type().parameterArray());
                 MethodHandle all = guardWithTest(_test, _then, _else);
@@ -331,26 +331,26 @@ public class SephCallSite extends MutableCallSite {
     public static SephObject initialSetup_intrinsic_true(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
         MethodHandle guarded = thread.runtime.INTRINSIC_TRUE_SP.guardWithTest(fast, slow);
         site.setTarget(guarded);
-        return (SephObject)guarded.invoke(receiver, thread, scope);
+        return (SephObject)guarded.invokeExact(receiver, thread, scope);
     }
 
     public static SephObject initialSetup_intrinsic_false(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
         MethodHandle guarded = thread.runtime.INTRINSIC_FALSE_SP.guardWithTest(fast, slow);
         site.setTarget(guarded);
-        return (SephObject)guarded.invoke(receiver, thread, scope);
+        return (SephObject)guarded.invokeExact(receiver, thread, scope);
     }
 
     public static SephObject initialSetup_intrinsic_nil(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
         MethodHandle guarded = thread.runtime.INTRINSIC_NIL_SP.guardWithTest(fast, slow);
         site.setTarget(guarded);
-        return (SephObject)guarded.invoke(receiver, thread, scope);
+        return (SephObject)guarded.invokeExact(receiver, thread, scope);
     }
 
     public static SephObject intrinsic_if(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle test, MethodHandle then, MethodHandle _else) throws Throwable {
-        if(((SephObject)test.invoke(thread, scope, true, true)).isTrue()) {
-            return (SephObject)then.invoke(thread, scope, true, false);
+        if(((SephObject)test.invokeExact(thread, scope, true, true)).isTrue()) {
+            return (SephObject)then.invokeExact(thread, scope, true, false);
         } else {
-            return (SephObject)_else.invoke(thread, scope, true, false);
+            return (SephObject)_else.invokeExact(thread, scope, true, false);
         }
     }
 
@@ -358,7 +358,7 @@ public class SephCallSite extends MutableCallSite {
     public static SephObject initialSetup_intrinsic_if(SephCallSite site, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle test, MethodHandle then, MethodHandle _else) throws Throwable {
         MethodHandle guarded = thread.runtime.INTRINSIC_IF_SP.guardWithTest(INTRINSIC_IF_MH, slow);
         site.setTarget(guarded);
-        return (SephObject)guarded.invoke(receiver, thread, scope, test, then, _else);
+        return (SephObject)guarded.invokeExact(receiver, thread, scope, test, then, _else);
     }
 
     public static boolean eq(Object first, SephObject receiver) {

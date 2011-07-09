@@ -33,7 +33,7 @@ public class Buster {
         java.lang.invoke.MethodHandle mh = result.activationFor(0, false);
         SThread thread = new SThread(runtime);
         for(int i = 0; i<20000; i++) {
-            mh.invoke(Ground.instance, thread, null);
+            mh.invokeExact((SephObject)Ground.instance, thread, (LexicalScope)null);
         }
     }
 }

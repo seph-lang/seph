@@ -56,15 +56,15 @@ public abstract class SephMethodObject implements SephObject {
         
         try {
             for(MethodHandle toEvaluate : arguments) {
-                Message current = (Message)((SephObject)toEvaluate.invoke((SThread)null, (LexicalScope)null, false, true));
+                Message current = (Message)((SephObject)toEvaluate.invokeExact((SThread)null, (LexicalScope)null, false, true));
 
                 if(restKey && (name = current.name()).endsWith(":")) {
                     name = name.substring(0, name.length()-1);
-                    SephObject part = (SephObject)toEvaluate.invoke(thread, scope, true, true);
+                    SephObject part = (SephObject)toEvaluate.invokeExact(thread, scope, true, true);
                     namesk.add(name);
                     valuesk.add(MethodHandles.dropArguments(MethodHandles.constant(SephObject.class, part), 0, SThread.class, LexicalScope.class, boolean.class, boolean.class));
                 } else {
-                    SephObject part = (SephObject)toEvaluate.invoke(thread, scope, true, true);
+                    SephObject part = (SephObject)toEvaluate.invokeExact(thread, scope, true, true);
 
                     if(collectingRestp) {
                         restp.add(part);

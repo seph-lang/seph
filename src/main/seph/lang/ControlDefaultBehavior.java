@@ -20,7 +20,7 @@ public class ControlDefaultBehavior implements SephObject {
     public static SephObject evaluateArgument(Object possibleArgument, LexicalScope scope, SThread thread, boolean fully) {
         try {
             MethodHandle mh = (MethodHandle)possibleArgument;
-            return (SephObject)mh.invoke(thread, scope, true, fully);
+            return (SephObject)mh.invokeExact(thread, scope, true, fully);
         } catch(Throwable e) {
             e.printStackTrace();
             return null;

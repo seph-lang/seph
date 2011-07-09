@@ -18,7 +18,7 @@ public class IODefaultBehavior implements SephObject {
         SephObject asText = receiver.get("asText");
         if(asText.isActivatable()) {
             try {
-                asText = (SephObject)asText.activationFor(0, false).invoke(receiver, thread, null);
+                asText = (SephObject)asText.activationFor(0, false).invokeExact(receiver, thread, (LexicalScope)null);
             } catch(Throwable e) {
                 e.printStackTrace();
             }

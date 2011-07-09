@@ -89,13 +89,13 @@ public class Runtime {
         name = name.intern();
         try {
             if(name == "true") {
-                INVALIDATE_TRUE.invoke();
+                INVALIDATE_TRUE.invokeExact();
             } else if(name == "false") {
-                INVALIDATE_FALSE.invoke();
+                INVALIDATE_FALSE.invokeExact();
             } else if(name == "nil") {
-                INVALIDATE_NIL.invoke();
+                INVALIDATE_NIL.invokeExact();
             } else if(name == "if") {
-                INVALIDATE_IF.invoke();
+                INVALIDATE_IF.invokeExact();
             }
         } catch(Throwable e) {
             e.printStackTrace();
@@ -122,11 +122,11 @@ public class Runtime {
         SThread thread = new SThread(this);
         SephObject tmp = null;
         try {
-            tmp = (SephObject)so.activationFor(0, false).invoke(Ground.instance, thread, null);
+            tmp = (SephObject)so.activationFor(0, false).invokeExact((SephObject)Ground.instance, thread, (LexicalScope)null);
             while(tmp == SThread.TAIL_MARKER) {
                 MethodHandle tail = thread.tail;
                 thread.tail = null;
-                tmp = (SephObject)tail.invoke();
+                tmp = (SephObject)tail.invokeExact();
             }
         } catch(Throwable e) {
             throw new RuntimeException(e);

@@ -55,7 +55,7 @@ public class Base implements SephObject {
             IPersistentMap args = PersistentArrayMap.EMPTY;
             try {
                 for(int i = 0; i < keywordNames.length; i++) {
-                    args = args.associate(keywordNames[i], keywordArguments[i].invoke(thread, scope, true, true));
+                    args = args.associate(keywordNames[i], (SephObject)keywordArguments[i].invokeExact(thread, scope, true, true));
                 }
             } catch(Throwable e) {
                 e.printStackTrace();

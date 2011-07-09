@@ -92,9 +92,9 @@ public final class ActivationHelpers {
         return MethodHandles.dropArguments(MethodHandles.insertArguments(ARITY_ERROR, 0, expected, got, name), 0, argumentClassesFor(got, keywords));
     }
 
-    public static SephObject invoke(MethodHandle mh, SThread thread, LexicalScope scope) {
+    public static SephObject invokeExact(MethodHandle mh, SThread thread, LexicalScope scope) {
         try {
-            return (SephObject)mh.invoke(thread, scope, true, true);
+            return (SephObject)mh.invokeExact(thread, scope, true, true);
         } catch(Throwable e) {
             e.printStackTrace();
             throw new RuntimeException(e);
