@@ -16,9 +16,6 @@
 
   <path id="test.classpath">
     <fileset dir="${lib.build.dir}" includes="*.jar"/>
-    <fileset dir="${lib.release.dir}" includes="*.jar"/>
-    <pathelement path="${main.classes.dir}"/>
-    <pathelement path="${test.classes.dir}"/>
   </path>
 
   <path id="main.classpath">
@@ -148,7 +145,7 @@
       <!-- <jvmarg value="-XX:+UnlockDiagnosticVMOptions"/> -->
       <!-- <jvmarg value="-XX:-UseRicochetFrames"/> -->
       <jvmarg value="-ea"/>
-      <!-- <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:${test.classes.dir}:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar:lib/build/junit-4.8.2.jar:lib/build/jakarta-oro-2.0.8.jar:lib/build/log4j-1.2.9.jar"/> -->
+      <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:${test.classes.dir}:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar:lib/build/junit-4.8.2.jar:lib/build/jakarta-oro-2.0.8.jar:lib/build/log4j-1.2.9.jar"/>
       <classpath refid="test.classpath"/>
       <sysproperty key="file.encoding" value="UTF-8"/>
       <formatter type="brief" usefile="false" />
@@ -216,7 +213,7 @@
         <sysproperty key="seph.benchmark.format" value="human"/>
         <sysproperty key="file.encoding" value="UTF-8"/>
 
-        <classpath refid="run.classpath"/>
+        <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:lib/seph.jar:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar"/>
 
         <arg line="@{file}"/>
       </java>
@@ -234,7 +231,7 @@
         <sysproperty key="seph.benchmark.format" value="robot"/>
         <sysproperty key="file.encoding" value="UTF-8"/>
 
-        <classpath refid="run.classpath"/>
+        <jvmarg value="-Xbootclasspath/a:${main.classes.dir}:lib/seph.jar:lib/release/asm-all-4.0.jar:lib/release/jline-0.9.93.jar"/>
 
         <arg line="@{file}"/>
       </java>
