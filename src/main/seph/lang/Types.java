@@ -47,7 +47,6 @@ public final class Types {
     public final static MethodHandle INITIAL_SETUP_INTRINSIC_TRUE_MH  = findStatic(SephCallSite.class, "initialSetup_intrinsic_true", INITIAL_SETUP_TYPE);
     public final static MethodHandle INITIAL_SETUP_INTRINSIC_FALSE_MH = findStatic(SephCallSite.class, "initialSetup_intrinsic_false", INITIAL_SETUP_TYPE);
     public final static MethodHandle INITIAL_SETUP_INTRINSIC_NIL_MH   = findStatic(SephCallSite.class, "initialSetup_intrinsic_nil", INITIAL_SETUP_TYPE);
-    public final static MethodHandle INITIAL_SETUP_INTRINSIC_IF_MH    = findStatic(SephCallSite.class, "initialSetup_intrinsic_if", INITIAL_SETUP_3_TYPE);
 
     public final static MethodType   SCOPE_GETTER_TYPE = methodType(SephObject.class, LexicalScope.class);
     public final static MethodType   SCOPE_ARRAY_GETTER_TYPE = methodType(SephObject[].class, LexicalScope.class);

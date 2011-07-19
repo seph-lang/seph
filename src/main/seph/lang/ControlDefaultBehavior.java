@@ -27,26 +27,6 @@ public class ControlDefaultBehavior implements SephObject {
         }
     }
 
-    @SephMethod(name="if", evaluateArguments=false)
-    public final static SephObject _if(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle condition, MethodHandle then, MethodHandle _else) {
-        // new Exception().printStackTrace();
-        SephObject result = evaluateArgument(condition, scope, thread, true);
-
-        if(result.isTrue()) {
-            if(null != then) {
-                return evaluateArgument(then, scope, thread, false);
-            } else {
-                return Runtime.NIL;
-            }
-        } else {
-            if(null != _else) {
-                return evaluateArgument(_else, scope, thread, false);
-            } else {
-                return Runtime.NIL;
-            }
-        }
-    }
-
     @Override
     public SephObject get(String cellName) {
         return seph.lang.bim.ControlDefaultBehaviorBase.get(cellName);

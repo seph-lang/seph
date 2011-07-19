@@ -381,7 +381,7 @@ public class AbstractionCompiler {
         currentAssignment = oldAssignment;
     }
 
-    private void compileArgument(Message argument, int currentMessageIndex, int argIndex, List<ArgumentEntry> currentArguments) {
+    private void compileArgument(Message argument, int currentMessageIndex, int argIndex, List<ArgumentEntry> currentArguments, Message last) {
         //               printThisClass = true;
         String keyword = null;
         Message argumentToCompile = argument;
@@ -414,7 +414,6 @@ public class AbstractionCompiler {
         ma.label(els);
 
         Message current = argumentToCompile;
-        Message last = findLast(current);
 
         ma.loadLocal(RECEIVER);
 
@@ -475,7 +474,7 @@ public class AbstractionCompiler {
         return new Arity(arity - keywordArgs, keywordArgs);
     }
 
-    private void compileArguments(MethodAdapter ma, IPersistentList arguments, boolean activateWith, int plusArity) {
+    private void compileArguments(MethodAdapter ma, IPersistentList arguments, boolean activateWith, int plusArity, Message last) {
         int num = 0;
         final int currentMessageIndex = messageIndex++;
 
@@ -490,13 +489,13 @@ public class AbstractionCompiler {
                 keywordArgumentNames.add(m.name().substring(0, m.name().length() - 1));
                 keywordArguments.add(m);
             } else {
-                compileArgument((Message)seq.first(), currentMessageIndex, num++, currentArguments);
+                compileArgument((Message)seq.first(), currentMessageIndex, num++, currentArguments, last);
             }
         }
 
         final LinkedList<ArgumentEntry> keywordCurrentArguments = new LinkedList<>();
         for(Message m : keywordArguments) {
-            compileArgument(m, currentMessageIndex, num++, keywordCurrentArguments);
+            compileArgument(m, currentMessageIndex, num++, keywordCurrentArguments, last);
         }
 
         if((arity - keywordArguments.size()) > 5) {
@@ -692,120 +691,164 @@ public class AbstractionCompiler {
         Label noActivate = null;
 
         final Arity arity = countArguments(current.arguments());
+        final String name = current.name().intern();
+        if(name == "if" && arity.positional > 0 && arity.positional < 4) {
+            ISeq seq = current.arguments().seq();
+            Message conditional = (Message)seq.first();
+            Message _then = null;
+            Message _else = null;
+            if((seq = seq.next()) != null) {
+                _then = (Message)seq.first();
+                if((seq = seq.next()) != null) {
+                    _else = (Message)seq.first();
+                }
+            }
 
-        if(first && (se = scope.find(current.name())) != null) {
-            noActivate = new Label();
+            compileCode(ma, plusArity, conditional, SENTINEL, activateWith);
+            ma.interfaceCall(SephObject.class, "isTrue", boolean.class);
+            Label elseBranch = new Label();
+            Label endIf = new Label();
+            ma.zero();
+
+            ma.ifEqual(elseBranch);
+
+            if(_then != null) {
+                ma.loadLocal(RECEIVER);
+                Message newLast = current == last ? findLast(_then) : SENTINEL;
+                compileCode(ma, plusArity, _then, newLast, activateWith);
+                if(current != last) {
+                    pumpTailCall(ma);
+                }
+            } else {
+                ma.getStatic(seph.lang.Runtime.class, "NIL", SephObject.class);
+            }
+            ma.jump(endIf);
+            ma.label(elseBranch);
+            if(_else != null) {
+                ma.loadLocal(RECEIVER);
+                Message newLast = current == last ? findLast(_else) : SENTINEL;
+                compileCode(ma, plusArity, _else, newLast, activateWith);
+                if(current != last) {
+                    pumpTailCall(ma);
+                }
+            } else {
+                ma.getStatic(seph.lang.Runtime.class, "NIL", SephObject.class);
+            }
+            ma.label(endIf);
+        } else {
+            if(first && (se = scope.find(name)) != null) {
+                noActivate = new Label();
+                if(activateWith) {
+                    ma.loadLocal(METHOD_SCOPE + plusArity);
+                } else {
+                    ma.loadLocal(METHOD_SCOPE_ARG);
+                }
+                loadFromDepth(se.depth, se.index, ma);
+                ma.dup();
+                ma.interfaceCall(SephObject.class, "isActivatable", boolean.class);
+                ma.zero();
+                ma.ifEqual(noActivate);
+
+                ma.load(arity.positional);
+                ma.load(arity.keyword == 0 ? 0 : 1);
+                ma.interfaceCall(SephObject.class, "activationFor", MethodHandle.class, int.class, boolean.class);
+
+                if(current == last) {
+                    ma.swap();
+                    ma.load(0);  // [boundActivateWith, recv, 0]
+                }
+
+                ma.swap();
+            } 
+
+            ma.loadLocal(THREAD);
+
             if(activateWith) {
                 ma.loadLocal(METHOD_SCOPE + plusArity);
             } else {
                 ma.loadLocal(METHOD_SCOPE_ARG);
             }
-            loadFromDepth(se.depth, se.index, ma);
-            ma.dup();
-            ma.interfaceCall(SephObject.class, "isActivatable", boolean.class);
-            ma.zero();
-            ma.ifEqual(noActivate);
-
-            ma.load(arity.positional);
-            ma.load(arity.keyword == 0 ? 0 : 1);
-            ma.interfaceCall(SephObject.class, "activationFor", MethodHandle.class, int.class, boolean.class);
-
-            if(current == last) {
-                ma.swap();
-                ma.load(0);  // [boundActivateWith, recv, 0]
-            }
-
-            ma.swap();
-        } 
-
-        ma.loadLocal(THREAD);
-
-        if(activateWith) {
-            ma.loadLocal(METHOD_SCOPE + plusArity);
-        } else {
-            ma.loadLocal(METHOD_SCOPE_ARG);
-        }
             
-        compileArguments(ma, current.arguments(), activateWith, plusArity);
+            compileArguments(ma, current.arguments(), activateWith, plusArity, last);
 
-        if(first && se != null) {
-            if(current == last) {
-                Label activate = new Label();
-                int len = argumentArrayFor(arity).length;
-                ma.load(len);
-                ma.newArray(Object.class);
-                for(int i = len - 1; i >= 0; i--) {
-                    ma.dup_x1();
+            if(first && se != null) {
+                if(current == last) {
+                    Label activate = new Label();
+                    int len = argumentArrayFor(arity).length;
+                    ma.load(len);
+                    ma.newArray(Object.class);
+                    for(int i = len - 1; i >= 0; i--) {
+                        ma.dup_x1();
+                        ma.swap();
+                        ma.load(i);
+                        ma.swap();
+                        ma.storeArray();
+                    }
+                    ma.staticCall(MethodHandles.class, "insertArguments", MethodHandle.class, MethodHandle.class, int.class, Object[].class);
+                    ma.loadLocal(THREAD);
                     ma.swap();
-                    ma.load(i);
+                    ma.putField(SThread.class, "tail", MethodHandle.class);
+                    ma.getStatic(SThread.class, "TAIL_MARKER", SephObject.class);
+
+                    if(!activateWith) {
+                        Label noPump = new Label();
+                        ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
+                        ma.zero();
+                        ma.ifEqual(noPump);
+                        pumpTailCall(ma);
+                        ma.label(noPump);
+                    }
+
+                    ma.jump(activate);
+                    ma.label(noActivate);
+
                     ma.swap();
-                    ma.storeArray();
-                }
-                ma.staticCall(MethodHandles.class, "insertArguments", MethodHandle.class, MethodHandle.class, int.class, Object[].class);
-                ma.loadLocal(THREAD);
-                ma.swap();
-                ma.putField(SThread.class, "tail", MethodHandle.class);
-                ma.getStatic(SThread.class, "TAIL_MARKER", SephObject.class);
+                    ma.pop();
 
-                if(!activateWith) {
-                    Label noPump = new Label();
-                    ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
-                    ma.zero();
-                    ma.ifEqual(noPump);
+                    ma.label(activate);
+                } else {
+                    Label activate = new Label();
+                    ma.virtualCall(MethodHandle.class, "invokeExact", sigFor(arity));
+
                     pumpTailCall(ma);
-                    ma.label(noPump);
-                }
+                    ma.jump(activate);
+                    ma.label(noActivate);
 
-                ma.jump(activate);
-                ma.label(noActivate);
-
-                ma.swap();
-                ma.pop();
-
-                ma.label(activate);
-            } else {
-                Label activate = new Label();
-                ma.virtualCall(MethodHandle.class, "invokeExact", sigFor(arity));
-
-                pumpTailCall(ma);
-                ma.jump(activate);
-                ma.label(noActivate);
-
-                ma.swap();
-                ma.pop();
-                ma.label(activate);
-            }
-        } else {
-            String possibleIntrinsic = "";
-            String name = current.name().intern();
-            if(name == "true" ||
-               name == "false" ||
-               name == "nil" ||
-               name == "if") {
-                possibleIntrinsic = ":intrinsic";
-            }
-
-            String messageType = "message";
-            boolean fullPumping = false;
-
-            if(current == last) {
-                messageType = "tailMessage";
-                fullPumping = true;
-            }
-
-            ma.dynamicCall("seph:" + messageType + ":" + encode(current.name()) + possibleIntrinsic, sigFor(arity), BOOTSTRAP_METHOD);
-            if(fullPumping) {
-                if(!activateWith) {
-                    Label noPump = new Label();
-                    ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
-                    ma.zero();
-                    ma.ifEqual(noPump);
-                    pumpTailCall(ma);
-                    ma.label(noPump);
+                    ma.swap();
+                    ma.pop();
+                    ma.label(activate);
                 }
             } else {
-                pumpTailCall(ma);
+                String possibleIntrinsic = "";
+                if(name == "true" ||
+                   name == "false" ||
+                   name == "nil") {
+                    possibleIntrinsic = ":intrinsic";
+                }
+
+                String messageType = "message";
+                boolean fullPumping = false;
+
+                if(current == last) {
+                    messageType = "tailMessage";
+                    fullPumping = true;
+                }
+
+                ma.dynamicCall("seph:" + messageType + ":" + encode(name) + possibleIntrinsic, sigFor(arity), BOOTSTRAP_METHOD);
+                if(fullPumping) {
+                    if(!activateWith) {
+                        Label noPump = new Label();
+                        ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
+                        ma.zero();
+                        ma.ifEqual(noPump);
+                        pumpTailCall(ma);
+                        ma.label(noPump);
+                    }
+                } else {
+                    pumpTailCall(ma);
+                }
             }
+
         }
     }
 

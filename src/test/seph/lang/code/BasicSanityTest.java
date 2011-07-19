@@ -427,56 +427,5 @@ public class BasicSanityTest {
                                                 "f\n" 
                                                 ), is(seph.lang.Runtime.NIL));
     }
-
-
-    @Test
-    public void if_value_in_abstraction_with_redefinitions() throws Exception, ControlFlow {
-        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
-                                                                      "f = #(if(true, 42, 43))\n" +
-                                                                      "f\n" +
-                                                                      "f\n" +
-                                                                      "f\n" 
-                                                                      ), is(equalTo(IntNum.valueOf("42"))));
-
-        assertThat((IntNum)new seph.lang.Runtime().evaluateString(
-                                                                      "f = #(if(false, 42, 43))\n" +
-                                                                      "f\n" +
-                                                                      "f\n" +
-                                                                      "f\n" 
-                                                                      ), is(equalTo(IntNum.valueOf("43"))));
-
-        seph.lang.Runtime r = new seph.lang.Runtime();
-        assertThat((IntNum)r.evaluateString(
-                                                "f = #(if(true, 42, 43))\n" +
-                                                "f\n" +
-                                                "f\n" +
-                                                "f\n" 
-                                                ), is(equalTo(IntNum.valueOf("42"))));
-
-        SwitchPoint.invalidateAll(new SwitchPoint[]{r.INTRINSIC_IF_SP});
-
-        assertThat((IntNum)r.evaluateString(
-                                                "f = #(if(true, 42, 43))\n" +
-                                                "f\n" +
-                                                "f\n" +
-                                                "f\n" 
-                                                ), is(equalTo(IntNum.valueOf("42"))));
-        r = new seph.lang.Runtime();
-        assertThat((IntNum)r.evaluateString(
-                                                "f = #(if(true, 42, 43))\n" +
-                                                "f\n" +
-                                                "x = #(if = \"bar\")\n" +
-                                                "x\n" +
-                                                "f\n" 
-                                                ), is(equalTo(IntNum.valueOf("42"))));
-
-        r = new seph.lang.Runtime();
-        assertThat((IntNum)r.evaluateString(
-                                                "f = #(if(true, 42, 43))\n" +
-                                                "f\n" +
-                                                "x = Something with(if: 42)\n" +
-                                                "f\n" 
-                                                ), is(equalTo(IntNum.valueOf("42"))));
-    }
 }// RuntimeTest
 

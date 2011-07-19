@@ -78,12 +78,10 @@ public class Runtime {
     public final SwitchPoint INTRINSIC_TRUE_SP = new SwitchPoint();
     public final SwitchPoint INTRINSIC_FALSE_SP = new SwitchPoint();
     public final SwitchPoint INTRINSIC_NIL_SP = new SwitchPoint();
-    public final SwitchPoint INTRINSIC_IF_SP = new SwitchPoint();
 
     public final MethodHandle INVALIDATE_TRUE  = INTRINSIC_TRUE_SP.guardWithTest(INVALIDATE_MH.bindTo(INTRINSIC_TRUE_SP), EMPTY_MH);
     public final MethodHandle INVALIDATE_FALSE = INTRINSIC_FALSE_SP.guardWithTest(INVALIDATE_MH.bindTo(INTRINSIC_FALSE_SP), EMPTY_MH);
     public final MethodHandle INVALIDATE_NIL = INTRINSIC_NIL_SP.guardWithTest(INVALIDATE_MH.bindTo(INTRINSIC_NIL_SP), EMPTY_MH);
-    public final MethodHandle INVALIDATE_IF = INTRINSIC_IF_SP.guardWithTest(INVALIDATE_MH.bindTo(INTRINSIC_IF_SP), EMPTY_MH);
 
     public void checkIntrinsicAssignment(String name) {
         name = name.intern();
@@ -94,8 +92,6 @@ public class Runtime {
                 INVALIDATE_FALSE.invokeExact();
             } else if(name == "nil") {
                 INVALIDATE_NIL.invokeExact();
-            } else if(name == "if") {
-                INVALIDATE_IF.invokeExact();
             }
         } catch(Throwable e) {
             e.printStackTrace();

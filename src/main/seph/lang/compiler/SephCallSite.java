@@ -72,9 +72,6 @@ public class SephCallSite extends MutableCallSite {
             MethodHandle intrinsicMH =  dropArguments(INTRINSIC_NIL_MH, 0, type().parameterArray());
             MethodHandle initialSetup = dropArguments(insertArguments(INITIAL_SETUP_INTRINSIC_NIL_MH, 0, this, intrinsicMH, fallback), 2, argParts);
             return initialSetup;
-        } else if(messageName == "if") {
-            MethodHandle initialSetup = insertArguments(INITIAL_SETUP_INTRINSIC_IF_MH, 0, this, fallback);
-            return initialSetup;
         } else {
             return null;
         }
@@ -344,21 +341,6 @@ public class SephCallSite extends MutableCallSite {
         MethodHandle guarded = thread.runtime.INTRINSIC_NIL_SP.guardWithTest(fast, slow);
         site.setTarget(guarded);
         return (SephObject)guarded.invokeExact(receiver, thread, scope);
-    }
-
-    public static SephObject intrinsic_if(SephObject receiver, SThread thread, LexicalScope scope, MethodHandle test, MethodHandle then, MethodHandle _else) throws Throwable {
-        if(((SephObject)test.invokeExact(thread, scope, true, true)).isTrue()) {
-            return (SephObject)then.invokeExact(thread, scope, true, false);
-        } else {
-            return (SephObject)_else.invokeExact(thread, scope, true, false);
-        }
-    }
-
-    public final static MethodHandle INTRINSIC_IF_MH = findStatic(SephCallSite.class, "intrinsic_if", ARGS_3_SIGNATURE);
-    public static SephObject initialSetup_intrinsic_if(SephCallSite site, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope, MethodHandle test, MethodHandle then, MethodHandle _else) throws Throwable {
-        MethodHandle guarded = thread.runtime.INTRINSIC_IF_SP.guardWithTest(INTRINSIC_IF_MH, slow);
-        site.setTarget(guarded);
-        return (SephObject)guarded.invokeExact(receiver, thread, scope, test, then, _else);
     }
 
     public static boolean eq(Object first, SephObject receiver) {
