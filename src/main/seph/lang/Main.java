@@ -15,6 +15,7 @@ public class Main {
     private final static String HELP =
         "Usage: seph [switches] -- [programfile] [arguments]\n" +
         " -h, --help      help, this message\n" +
+        " --notco         turn off tail call optimization\n" +
         " --copyright     print the copyright\n" +
         " --version       print current version\n";
 
@@ -22,6 +23,8 @@ public class Main {
         int start = 0;
         boolean done = false;
         boolean printedSomething = false;
+        boolean tco = true;
+
 
         for(;!done && start<args.length;start++) {
             String arg = args[start];
@@ -41,7 +44,13 @@ public class Main {
                     } else if(arg.equals("--copyright")) {
                         System.err.print(COPYRIGHT);
                         printedSomething = true;
+                    } else if(arg.equals("--notco")) {
+                        tco = false;
+                    } else {
+                        System.err.println("Couldn't understand option: " + arg);
+                        return;
                     }
+
                 }
             }
         }
@@ -56,7 +65,14 @@ public class Main {
                 file = file.substring(0, file.length()-1);
             }
 
-            Runtime r = new Runtime();
+            SephConfig config = new SephConfig();
+            if(tco) {
+                config = config.withTailCallOptimization();
+            } else {
+                config = config.withoutTailCallOptimization();
+            }
+
+            Runtime r = new Runtime(config);
             r.evaluateFile(file);
         }
     }

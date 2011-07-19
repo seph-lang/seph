@@ -63,6 +63,8 @@ public class AbstractionCompiler {
 
     private final String abstractionName;
 
+    private final seph.lang.Runtime runtime;
+
     private static class ScopeEntry {
         public final int depth;
         public final int index;
@@ -106,11 +108,12 @@ public class AbstractionCompiler {
         }
     }
 
-    private AbstractionCompiler(Message code, List<String> argNames, LexicalScope capture, StaticScope scope, SemiStaticScope parentScope, String name) {
+    private AbstractionCompiler(seph.lang.Runtime runtime, Message code, List<String> argNames, LexicalScope capture, StaticScope scope, SemiStaticScope parentScope, String name) {
         this.code = code;
         this.argNames = argNames;
         this.capture = capture;
         this.abstractionName = name;
+        this.runtime = runtime;
         this.className = "seph$gen$abstraction$" + compiledCount.getAndIncrement() + "$" + encode(abstractionName);
         this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         final java.io.File sourceFile = new java.io.File(code.filename());
@@ -239,38 +242,38 @@ public class AbstractionCompiler {
         ma.end();
     }
 
-    public static SephObject compile(Message code, List<String> argNames, LexicalScope capture, StaticScope scope, SemiStaticScope parent, String name) {
-        AbstractionCompiler c = new AbstractionCompiler(code, argNames, capture, scope, parent, name);
+    public static SephObject compile(seph.lang.Runtime runtime, Message code, List<String> argNames, LexicalScope capture, StaticScope scope, SemiStaticScope parent, String name) {
+        AbstractionCompiler c = new AbstractionCompiler(runtime, code, argNames, capture, scope, parent, name);
         c.generateAbstractionClass();
         c.setStaticValues();
         return c.instantiateAbstraction();
     }
 
-    public static String compile(Message code, List<String> argNames, StaticScope scope, SemiStaticScope parent, String name) {
-        AbstractionCompiler c = new AbstractionCompiler(code, argNames, null, scope, parent, name);
+    public static String compile(seph.lang.Runtime runtime, Message code, List<String> argNames, StaticScope scope, SemiStaticScope parent, String name) {
+        AbstractionCompiler c = new AbstractionCompiler(runtime, code, argNames, null, scope, parent, name);
         c.generateAbstractionClass();
         c.setStaticValues();
         return c.className;
     }
 
-    public static SephObject compile(ISeq argumentsAndCode, LexicalScope capture, StaticScope scope, SemiStaticScope parent, String name) {
+    public static SephObject compile(seph.lang.Runtime runtime, ISeq argumentsAndCode, LexicalScope capture, StaticScope scope, SemiStaticScope parent, String name) {
         final List<String> argNames = new ArrayList<>();
         if(argumentsAndCode != null) {
             for(;RT.next(argumentsAndCode) != null; argumentsAndCode = RT.next(argumentsAndCode)) {
                 argNames.add(((Message)RT.first(argumentsAndCode)).name());
             }
         }
-        return compile((Message)RT.first(argumentsAndCode), argNames, capture, scope, parent, name);
+        return compile(runtime, (Message)RT.first(argumentsAndCode), argNames, capture, scope, parent, name);
     }
 
-    public static String compile(ISeq argumentsAndCode, StaticScope scope, SemiStaticScope parent, String name) {
+    public static String compile(seph.lang.Runtime runtime, ISeq argumentsAndCode, StaticScope scope, SemiStaticScope parent, String name) {
         final List<String> argNames = new ArrayList<>();
         if(argumentsAndCode != null) {
             for(;RT.next(argumentsAndCode) != null; argumentsAndCode = RT.next(argumentsAndCode)) {
                 argNames.add(((Message)RT.first(argumentsAndCode)).name());
             }
         }
-        return compile((Message)RT.first(argumentsAndCode), argNames, scope, parent, name);
+        return compile(runtime, (Message)RT.first(argumentsAndCode), argNames, scope, parent, name);
     }
 
     private static class LiteralEntry {
@@ -433,7 +436,7 @@ public class AbstractionCompiler {
                 if(aname == null) {
                     aname = "__inline__";
                 }
-                String newName = AbstractionCompiler.compile(RT.seq(current.arguments()), ((Abstraction)current).scope, scope, aname);
+                String newName = AbstractionCompiler.compile(this.runtime, RT.seq(current.arguments()), ((Abstraction)current).scope, scope, aname);
                 ma.create(newName);
                 ma.dup();
                 ma.loadLocal(0);
@@ -578,26 +581,28 @@ public class AbstractionCompiler {
     private final static int SHOULD_EVALUATE_FULLY  = 5;
 
     private void pumpTailCall(MethodAdapter ma) {
-        Label done = new Label();
-        Label loop = new Label();
-        ma.label(loop);
-        ma.dup();
-        if (SThread.TAIL_MARKER == null) {
-            ma.ifNonNull(done);
-        } else {
-            ma.getStatic(SThread.class, "TAIL_MARKER", SephObject.class);
-            ma.ifRefNotEqual(done);
+        if(runtime.configuration().doTailCallOptimization()) {
+            Label done = new Label();
+            Label loop = new Label();
+            ma.label(loop);
+            ma.dup();
+            if (SThread.TAIL_MARKER == null) {
+                ma.ifNonNull(done);
+            } else {
+                ma.getStatic(SThread.class, "TAIL_MARKER", SephObject.class);
+                ma.ifRefNotEqual(done);
+            }
+            ma.pop();
+            ma.loadLocal(THREAD);
+            ma.dup();
+            ma.getField(SThread.class, "tail", MethodHandle.class);
+            ma.swap();
+            ma.nul();
+            ma.putField(SThread.class, "tail", MethodHandle.class);
+            ma.virtualCall(MethodHandle.class, "invokeExact", SephObject.class);
+            ma.jump(loop);
+            ma.label(done);
         }
-        ma.pop();
-        ma.loadLocal(THREAD);
-        ma.dup();
-        ma.getField(SThread.class, "tail", MethodHandle.class);
-        ma.swap();
-        ma.nul();
-        ma.putField(SThread.class, "tail", MethodHandle.class);
-        ma.virtualCall(MethodHandle.class, "invokeExact", SephObject.class);
-        ma.jump(loop);
-        ma.label(done);
     }
 
     private int dropFor(Arity arity) {
@@ -753,7 +758,7 @@ public class AbstractionCompiler {
                 ma.load(arity.keyword == 0 ? 0 : 1);
                 ma.interfaceCall(SephObject.class, "activationFor", MethodHandle.class, int.class, boolean.class);
 
-                if(current == last) {
+                if(runtime.configuration().doTailCallOptimization() && current == last) {
                     ma.swap();
                     ma.load(0);  // [boundActivateWith, recv, 0]
                 }
@@ -772,7 +777,7 @@ public class AbstractionCompiler {
             compileArguments(ma, current.arguments(), activateWith, plusArity, last);
 
             if(first && se != null) {
-                if(current == last) {
+                if(runtime.configuration().doTailCallOptimization() && current == last) {
                     Label activate = new Label();
                     int len = argumentArrayFor(arity).length;
                     ma.load(len);
@@ -829,26 +834,27 @@ public class AbstractionCompiler {
                 String messageType = "message";
                 boolean fullPumping = false;
 
-                if(current == last) {
+                if(runtime.configuration().doTailCallOptimization() && current == last) {
                     messageType = "tailMessage";
                     fullPumping = true;
                 }
 
                 ma.dynamicCall("seph:" + messageType + ":" + encode(name) + possibleIntrinsic, sigFor(arity), BOOTSTRAP_METHOD);
-                if(fullPumping) {
-                    if(!activateWith) {
-                        Label noPump = new Label();
-                        ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
-                        ma.zero();
-                        ma.ifEqual(noPump);
+                if(runtime.configuration().doTailCallOptimization()) {
+                    if(fullPumping) {
+                        if(!activateWith) {
+                            Label noPump = new Label();
+                            ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
+                            ma.zero();
+                            ma.ifEqual(noPump);
+                            pumpTailCall(ma);
+                            ma.label(noPump);
+                        }
+                    } else {
                         pumpTailCall(ma);
-                        ma.label(noPump);
                     }
-                } else {
-                    pumpTailCall(ma);
                 }
             }
-
         }
     }
 
@@ -883,7 +889,7 @@ public class AbstractionCompiler {
                 if(aname == null) {
                     aname = "__inline__";
                 }
-                String newName = AbstractionCompiler.compile(RT.seq(current.arguments()), ((Abstraction)current).scope, scope, aname);
+                String newName = AbstractionCompiler.compile(this.runtime, RT.seq(current.arguments()), ((Abstraction)current).scope, scope, aname);
                 ma.create(newName);
                 ma.dup();
                 ma.loadLocal(METHOD_SCOPE + plusArity);

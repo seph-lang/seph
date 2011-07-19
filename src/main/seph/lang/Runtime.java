@@ -141,4 +141,18 @@ public class Runtime {
     public Object evaluateString(String string) throws ControlFlow, IOException {
         return evaluateStream("<eval>", new StringReader(string));
     }
+
+    public SephConfig configuration() {
+        return config;
+    }
+
+    private final SephConfig config;
+
+    public Runtime() {
+        this(new SephConfig());
+    }
+
+    public Runtime(SephConfig config) {
+        this.config = config;
+    }
 }// Runtime

@@ -389,6 +389,7 @@ public abstract class LexicalScope {
 
     private LexicalScope(LexicalScope parent, Runtime runtime) {
         this.parent = parent;
+        assert runtime != null;
         this.runtime = runtime;
     }
 
