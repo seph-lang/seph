@@ -83,7 +83,7 @@ if [ -z "$JAVA_STACK" ] ; then
   JAVA_STACK=-Xss512k
 fi
 
-JAVA_VM=-client
+JAVA_VM=-server
 
 # Split out any -J argument for passing to the JVM.
 # Scanning for args is aborted by '--'.
