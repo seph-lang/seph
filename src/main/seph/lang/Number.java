@@ -38,4 +38,19 @@ public class Number {
             return Runtime.FALSE;
         }
     }
+
+    @SephMethod(name=">")
+    public final static SephObject gt(SephObject receiver, SephObject other) {
+        int res = ((Numeric)receiver).compare(other);
+        switch(res) {
+        case -3:
+        case -2:
+            return Runtime.NIL;
+        case -1:
+        case 0:
+            return Runtime.FALSE;
+        default:
+            return Runtime.TRUE;
+        }
+    }
 }// Number

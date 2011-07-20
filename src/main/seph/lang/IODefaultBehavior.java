@@ -27,6 +27,20 @@ public class IODefaultBehavior implements SephObject {
         return Runtime.NIL;
     }
 
+    @SephMethod
+    public final static SephObject print(SThread thread, SephObject receiver) {
+        SephObject asText = receiver.get("asText");
+        if(asText.isActivatable()) {
+            try {
+                asText = (SephObject)asText.activationFor(0, false).invokeExact(receiver, thread, (LexicalScope)null);
+            } catch(Throwable e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.print(((Text)asText).text());
+        return Runtime.NIL;
+    }
+
     @Override
     public SephObject get(String cellName) {
         return seph.lang.bim.IODefaultBehaviorBase.get(cellName);
