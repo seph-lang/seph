@@ -27,16 +27,18 @@ import static seph.lang.compiler.CompilationHelpers.*;
 import static seph.lang.Types.*;
 
 public class SephCallSite extends MutableCallSite {
-    public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type) {
-        return new SephCallSite(lookup, name, type);
+    public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Object... arguments) {
+        assert arguments.length % 2 == 0;
+        return new SephCallSite(lookup, name, type, arguments);
     }
 
     private final boolean intrinsic;
     private final String messageKind;
     private final String messageName;
     private final MethodHandle slowPath;
+    private final Object[] argumentMHs;
 
-    public SephCallSite(MethodHandles.Lookup lookup, String name, MethodType type) {
+    private SephCallSite(MethodHandles.Lookup lookup, String name, MethodType type, Object[] argumentMHs) {
         super(type);
 
         Object[] pieces = kindNameIntrinsic(name.split(":"));
@@ -44,6 +46,7 @@ public class SephCallSite extends MutableCallSite {
         this.messageName = (String)pieces[1];
         this.intrinsic   = (Boolean)pieces[2];
         this.slowPath    = computeSlowPath();
+        this.argumentMHs = argumentMHs;
 
         if(intrinsic) {
             setNeutral();

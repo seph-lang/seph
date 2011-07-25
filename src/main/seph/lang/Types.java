@@ -35,8 +35,8 @@ public final class Types {
     public final static MethodType ACTIVATE_METHOD_TYPE_5_K  = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class);
     
 
-    public final static MethodType BOOTSTRAP_SIGNATURE      = methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
-    public final static String     BOOTSTRAP_SIGNATURE_DESC =        sig(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
+    public final static MethodType BOOTSTRAP_SIGNATURE      = methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class, Object[].class);
+    public final static String     BOOTSTRAP_SIGNATURE_DESC =        sig(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class, Object[].class);
 
     public final static MethodType NO_ARGS_SIGNATURE        = methodType(SephObject.class, SephObject.class, SThread.class, LexicalScope.class);
     public final static MethodType INITIAL_SETUP_TYPE       = methodType(SephObject.class, SephCallSite.class, MethodHandle.class, MethodHandle.class, SephObject.class, SThread.class, LexicalScope.class);

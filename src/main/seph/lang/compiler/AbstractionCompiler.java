@@ -384,7 +384,7 @@ public class AbstractionCompiler {
         currentAssignment = oldAssignment;
     }
 
-    private void compileArgument(Message argument, int currentMessageIndex, int argIndex, List<ArgumentEntry> currentArguments, Message last) {
+    private void compileArgument(Message argument, int currentMessageIndex, int argIndex, List<ArgumentEntry> currentArguments, Message last, List<org.objectweb.asm.MethodHandle> mhsAndAsts) {
         //               printThisClass = true;
         String keyword = null;
         Message argumentToCompile = argument;
@@ -398,6 +398,9 @@ public class AbstractionCompiler {
         final String handleName = "handle_arg_" + currentMessageIndex + "_" + argIndex;
         final String methodName = "argument_" + currentMessageIndex + "_" + argIndex;
         ArgumentEntry ae = new ArgumentEntry(codeName, handleName, methodName, argument, keyword);
+        mhsAndAsts.add(new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC,  className, methodName, sig(SephObject.class, LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class)));
+        mhsAndAsts.add(new org.objectweb.asm.MethodHandle(MH_GETSTATIC,     className, codeName, c(SephObject.class)));
+
         arguments.add(ae);
         currentArguments.add(ae);
         
@@ -477,7 +480,7 @@ public class AbstractionCompiler {
         return new Arity(arity - keywordArgs, keywordArgs);
     }
 
-    private void compileArguments(MethodAdapter ma, IPersistentList arguments, boolean activateWith, int plusArity, Message last) {
+    private org.objectweb.asm.MethodHandle[] compileArguments(MethodAdapter ma, IPersistentList arguments, boolean activateWith, int plusArity, Message last) {
         int num = 0;
         final int currentMessageIndex = messageIndex++;
 
@@ -485,6 +488,8 @@ public class AbstractionCompiler {
         final List<ArgumentEntry> currentArguments = new ArrayList<>();
         final List<Message> keywordArguments = new LinkedList<>();
         final List<String> keywordArgumentNames = new LinkedList<>();
+        final List<org.objectweb.asm.MethodHandle> mhsAndAsts = new LinkedList<>();
+
 
         for(ISeq seq = arguments.seq(); seq != null; seq = seq.next()) {
             Message m = (Message)seq.first();
@@ -492,13 +497,13 @@ public class AbstractionCompiler {
                 keywordArgumentNames.add(m.name().substring(0, m.name().length() - 1));
                 keywordArguments.add(m);
             } else {
-                compileArgument((Message)seq.first(), currentMessageIndex, num++, currentArguments, last);
+                compileArgument((Message)seq.first(), currentMessageIndex, num++, currentArguments, last, mhsAndAsts);
             }
         }
 
         final LinkedList<ArgumentEntry> keywordCurrentArguments = new LinkedList<>();
         for(Message m : keywordArguments) {
-            compileArgument(m, currentMessageIndex, num++, keywordCurrentArguments, last);
+            compileArgument(m, currentMessageIndex, num++, keywordCurrentArguments, last, mhsAndAsts);
         }
 
         if((arity - keywordArguments.size()) > 5) {
@@ -569,6 +574,8 @@ public class AbstractionCompiler {
                 ma.storeArray();
             }
         }
+
+        return mhsAndAsts.toArray(new org.objectweb.asm.MethodHandle[0]);
     }
 
     private final static int METHOD_SCOPE_ARG       = 0;
@@ -774,7 +781,7 @@ public class AbstractionCompiler {
                 ma.loadLocal(METHOD_SCOPE_ARG);
             }
             
-            compileArguments(ma, current.arguments(), activateWith, plusArity, last);
+            org.objectweb.asm.MethodHandle[] argMHrefs = compileArguments(ma, current.arguments(), activateWith, plusArity, last);
 
             if(first && se != null) {
                 if(runtime.configuration().doTailCallOptimization() && current == last) {
@@ -839,7 +846,7 @@ public class AbstractionCompiler {
                     fullPumping = true;
                 }
 
-                ma.dynamicCall("seph:" + messageType + ":" + encode(name) + possibleIntrinsic, sigFor(arity), BOOTSTRAP_METHOD);
+                ma.dynamicCall("seph:" + messageType + ":" + encode(name) + possibleIntrinsic, sigFor(arity), BOOTSTRAP_METHOD, argMHrefs);
                 if(runtime.configuration().doTailCallOptimization()) {
                     if(fullPumping) {
                         if(!activateWith) {

@@ -363,10 +363,10 @@ public class MethodAdapter {
     }
 
     private final static Object[] EMPTY = new Object[0];
-    public void dynamicCall(String name, String sig, org.objectweb.asm.MethodHandle bootstrap) {
+    public void dynamicCall(String name, String sig, org.objectweb.asm.MethodHandle bootstrap, org.objectweb.asm.MethodHandle... arguments) {
         op();
         if(TRACE) System.err.println("INVOKEDYNAMIC " + name + " " + sig + " " + bootstrap);
-        mv.visitInvokeDynamicInsn(name, sig, bootstrap, EMPTY);
+        mv.visitInvokeDynamicInsn(name, sig, bootstrap, arguments);
     }
 
     public void init(Class<?> on, Class<?> ret, Class<?>... params) {
