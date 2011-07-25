@@ -28,6 +28,7 @@ import static seph.lang.compiler.CompilationHelpers.*;
 import static seph.lang.ActivationHelpers.*;
 import static seph.lang.Types.*;
 import static seph.lang.compiler.SephCallSite.*;
+import static seph.lang.compiler.MethodAdapter.EMPTY;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -589,26 +590,8 @@ public class AbstractionCompiler {
 
     private void pumpTailCall(MethodAdapter ma) {
         if(runtime.configuration().doTailCallOptimization()) {
-            Label done = new Label();
-            Label loop = new Label();
-            ma.label(loop);
-            ma.dup();
-            if (SThread.TAIL_MARKER == null) {
-                ma.ifNonNull(done);
-            } else {
-                ma.getStatic(SThread.class, "TAIL_MARKER", SephObject.class);
-                ma.ifRefNotEqual(done);
-            }
-            ma.pop();
             ma.loadLocal(THREAD);
-            ma.dup();
-            ma.getField(SThread.class, "tail", MethodHandle.class);
-            ma.swap();
-            ma.nul();
-            ma.putField(SThread.class, "tail", MethodHandle.class);
-            ma.virtualCall(MethodHandle.class, "invokeExact", SephObject.class);
-            ma.jump(loop);
-            ma.label(done);
+            ma.dynamicCall("seph:pumpTailCall", sig(SephObject.class, SephObject.class, SThread.class), BOOTSTRAP_METHOD);
         }
     }
 

@@ -362,7 +362,7 @@ public class MethodAdapter {
         mv.visitMethodInsn(INVOKEINTERFACE, on, name, s);
     }
 
-    private final static Object[] EMPTY = new Object[0];
+    public final static Object[] EMPTY = new Object[0];
     public void dynamicCall(String name, String sig, org.objectweb.asm.MethodHandle bootstrap, org.objectweb.asm.MethodHandle... arguments) {
         op();
         if(TRACE) System.err.println("INVOKEDYNAMIC " + name + " " + sig + " " + bootstrap);

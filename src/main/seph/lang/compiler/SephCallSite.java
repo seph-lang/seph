@@ -16,6 +16,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 
 import static java.lang.invoke.MethodHandles.invoker;
+import static java.lang.invoke.MethodHandles.exactInvoker;
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodHandles.insertArguments;
 import static java.lang.invoke.MethodHandles.filterArguments;
@@ -23,14 +24,50 @@ import static java.lang.invoke.MethodHandles.foldArguments;
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.identity;
 import static java.lang.invoke.MethodHandles.guardWithTest;
+import static java.lang.invoke.MethodHandles.filterReturnValue;
 import static seph.lang.compiler.CompilationHelpers.*;
 import static seph.lang.Types.*;
 
 public class SephCallSite extends MutableCallSite {
     public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Object... arguments) {
         assert arguments.length % 2 == 0;
-        return new SephCallSite(lookup, name, type, arguments);
+        if(name.intern() == "seph:pumpTailCall") {
+            return new ConstantCallSite(PUMP_MH.bindTo(SThread.TAIL_MARKER));
+            // return genMH(SThread.TAIL_MARKER);
+        } else {
+            return new SephCallSite(lookup, name, type, arguments);
+        }
     }
+
+
+
+
+
+
+
+    public static SephObject pump(SephObject marker, SephObject receiver, SThread thread) throws Throwable {
+        SephObject result = receiver;
+        while(marker == result) {
+            MethodHandle mh = thread.tail;
+            result = (SephObject)mh.invokeExact();
+        }
+        return result;
+    }
+
+    public static CallSite genMH(SephObject marker) {
+        MutableCallSite mcs = new MutableCallSite(methodType(SephObject.class, SephObject.class, SThread.class));
+        MethodHandle _test = dropArguments(REF_EQ.bindTo(marker), 1, SThread.class);
+        MethodHandle combiner = filterReturnValue(dropArguments(findField(SThread.class, "tail", MethodHandle.class), 0, SephObject.class), exactInvoker(methodType(SephObject.class)));
+        MethodHandle _then = foldArguments(dropArguments(mcs.dynamicInvoker(), 1, SephObject.class), combiner);
+        MethodHandle _else = dropArguments(identity(SephObject.class), 1, SThread.class);
+        MethodHandle pumper = guardWithTest(_test,
+                                            _then,
+                                            _else);
+        mcs.setTarget(pumper);
+        return mcs;
+    }
+
+    private final static MethodHandle PUMP_MH = findStatic(SephCallSite.class, "pump", methodType(SephObject.class, SephObject.class, SephObject.class, SThread.class));
 
     private final boolean intrinsic;
     private final String messageKind;
@@ -350,7 +387,12 @@ public class SephCallSite extends MutableCallSite {
         return first == receiver.identity();
     }
 
+    public static boolean ref_eq(SephObject first, SephObject second) {
+        return first == second;
+    }
+
     private final static MethodHandle EQ = findStatic(SephCallSite.class, "eq", MethodType.methodType(boolean.class, Object.class, SephObject.class));
+    private final static MethodHandle REF_EQ = findStatic(SephCallSite.class, "ref_eq", MethodType.methodType(boolean.class, SephObject.class, SephObject.class));
 
     public static MethodHandle findStatic(Class target, String name, MethodType type) {
         try {
