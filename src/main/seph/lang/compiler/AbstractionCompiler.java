@@ -198,16 +198,6 @@ public class AbstractionCompiler {
                 f.setAccessible(true);
                 f.set(null, h);
             }
-
-            MethodHandle h = findVirtual(abstractionClass, encode(abstractionName), methodTypeFor(argNames.size(), false));
-            f = abstractionClass.getDeclaredField("ACTIVATION_SPECIFIC");
-            f.setAccessible(true);
-            f.set(null, h);
-
-            h = findVirtual(abstractionClass, encode(abstractionName), methodTypeFor(-1, false));
-            f = abstractionClass.getDeclaredField("ACTIVATION_GENERIC");
-            f.setAccessible(true);
-            f.set(null, h);
         } catch(Exception e) {
             System.err.println(e);
             e.printStackTrace();
@@ -218,8 +208,6 @@ public class AbstractionCompiler {
     private void abstractionFields() {
         cw.visitField(ACC_PRIVATE + ACC_STATIC, "fullMsg", c(Message.class), null, null);
         cw.visitField(ACC_PRIVATE + ACC_FINAL, "capture", c(LexicalScope.class), null, null);
-        cw.visitField(ACC_PRIVATE + ACC_STATIC, "ACTIVATION_SPECIFIC", c(MethodHandle.class), null, null);
-        cw.visitField(ACC_PRIVATE + ACC_STATIC, "ACTIVATION_GENERIC", c(MethodHandle.class), null, null);
     }
 
     private void constructor(Class<?> superClass) {
@@ -1021,40 +1009,14 @@ public class AbstractionCompiler {
 
     private void activationForMethod() {
         MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC, "activationFor", sig(MethodHandle.class, int.class, boolean.class), null, null));
-        Label wrongArity = new Label();
-        Label genericArity = new Label();
-        Label ret = new Label();
 
-        ma.load(0);
-        ma.loadLocalInt(2);
-        ma.ifNotEqual(wrongArity);
+        org.objectweb.asm.MethodHandle specific = new org.objectweb.asm.MethodHandle(MH_INVOKEVIRTUAL,  className, encode(abstractionName), sig(SephObject.class, argumentClassesFor(argNames.size(), false)));
+        org.objectweb.asm.MethodHandle generic = new org.objectweb.asm.MethodHandle(MH_INVOKEVIRTUAL,  className, encode(abstractionName), sig(SephObject.class, argumentClassesFor(-1, false)));
 
-        ma.load(argNames.size());
-        ma.loadLocalInt(1);
-        ma.ifNotEqual(genericArity);
-
-        ma.getStatic(className, "ACTIVATION_SPECIFIC", MethodHandle.class);
         ma.loadThis();
-        ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-        ma.jump(ret);
-
-        ma.label(genericArity);
-        ma.load(-1);
-        ma.loadLocalInt(1);
-        ma.ifNotEqual(wrongArity);
-
-        ma.getStatic(className, "ACTIVATION_GENERIC", MethodHandle.class);
-        ma.loadThis();
-        ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-        ma.jump(ret);
-
-        ma.label(wrongArity);
-        ma.load(argNames.size());
         ma.loadLocalInt(1);
         ma.loadLocalInt(2);
-        ma.staticCall(ActivationHelpers.class, "wrongArity", MethodHandle.class, int.class, int.class, boolean.class);
-
-        ma.label(ret);
+        ma.dynamicCall("seph:activationFor:" + encode(abstractionName) + ":" + argNames.size() + ":false", sig(MethodHandle.class, Object.class, int.class, boolean.class), BOOTSTRAP_METHOD, specific, generic);
         ma.retValue();
         ma.end();
     }

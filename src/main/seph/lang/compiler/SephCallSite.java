@@ -26,24 +26,50 @@ import static java.lang.invoke.MethodHandles.identity;
 import static java.lang.invoke.MethodHandles.guardWithTest;
 import static java.lang.invoke.MethodHandles.filterReturnValue;
 import static seph.lang.compiler.CompilationHelpers.*;
+import static seph.lang.ActivationHelpers.*;
 import static seph.lang.Types.*;
 
 public class SephCallSite extends MutableCallSite {
     public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Object... arguments) {
-        assert arguments.length % 2 == 0;
         if(name.intern() == "seph:pumpTailCall") {
             return new ConstantCallSite(PUMP_MH.bindTo(SThread.TAIL_MARKER));
             // return genMH(SThread.TAIL_MARKER);
+        } else if(name.startsWith("seph:activationFor:")) {
+            return new ConstantCallSite(createActivationForMH(name, (MethodHandle)arguments[0], (MethodHandle)arguments[1]));
         } else {
             return new SephCallSite(lookup, name, type, arguments);
         }
     }
 
+    private static MethodHandle createActivationForMH(String name, MethodHandle specific, MethodHandle generic) {
+        String[] pieces = name.split(":");
+        String realName = decode(pieces[2]);
+        int arity = Integer.valueOf(pieces[3]);
+        boolean keywords = Boolean.valueOf(pieces[4]);
 
+        MethodHandle testSpecificArity = dropArguments(dropArguments(insertArguments(INT_EQ, 0, arity), 0, Object.class), 2, boolean.class);
+        MethodHandle testGenericArity  = dropArguments(dropArguments(insertArguments(INT_EQ, 0, -1), 0, Object.class), 2, boolean.class);
+        MethodHandle testKeywords      = dropArguments(identity(boolean.class), 0, Object.class, int.class);
+        MethodHandle thenSpecific      = dropArguments(BIND_TO.bindTo(specific), 1, int.class, boolean.class);
+        MethodHandle thenGeneric       = dropArguments(BIND_TO.bindTo(generic), 1, int.class, boolean.class);
 
+        MethodHandle arityProblem      = dropArguments(dropArguments(insertArguments(insertArguments(ARITY_ERROR, 0, arity), 1, realName), 0, Object.class), 2, boolean.class);
 
-
-
+        MethodHandle guardedOnArity    = guardWithTest(testSpecificArity,
+                                                       thenSpecific,
+                                                       guardWithTest(testGenericArity,
+                                                                     thenGeneric,
+                                                                     arityProblem));
+        if(keywords) {
+            return guardWithTest(testKeywords,
+                                 guardedOnArity,
+                                 arityProblem);
+        } else {
+            return guardWithTest(testKeywords,
+                                 arityProblem,
+                                 guardedOnArity);
+        }
+    }
 
     public static SephObject pump(SephObject marker, SephObject receiver, SThread thread) throws Throwable {
         SephObject result = receiver;
@@ -391,8 +417,13 @@ public class SephCallSite extends MutableCallSite {
         return first == second;
     }
 
+    public static boolean int_eq(int first, int second) {
+        return first == second;
+    }
+
     private final static MethodHandle EQ = findStatic(SephCallSite.class, "eq", MethodType.methodType(boolean.class, Object.class, SephObject.class));
     private final static MethodHandle REF_EQ = findStatic(SephCallSite.class, "ref_eq", MethodType.methodType(boolean.class, SephObject.class, SephObject.class));
+    private final static MethodHandle INT_EQ = findStatic(SephCallSite.class, "int_eq", MethodType.methodType(boolean.class, int.class, int.class));
 
     public static MethodHandle findStatic(Class target, String name, MethodType type) {
         try {

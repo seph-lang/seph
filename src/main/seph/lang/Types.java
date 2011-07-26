@@ -61,4 +61,6 @@ public final class Types {
     public final static MethodHandle SCOPE_N_GETTER = findArrayGetter(SephObject[].class);
 
     public final static MethodHandle PARENT_SCOPE_GETTER = findField(LexicalScope.class, "parent", LexicalScope.class);
+
+    public final static MethodHandle BIND_TO             = findVirtual(MethodHandle.class, "bindTo", methodType(MethodHandle.class, Object.class));
 }// Types

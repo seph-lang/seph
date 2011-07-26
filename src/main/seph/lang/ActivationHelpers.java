@@ -21,12 +21,12 @@ public final class ActivationHelpers {
         throw new RuntimeException(" *** couldn't activate: " + self);
     }
 
-    public static SephObject arityErrorMH(int expected, int got, String name) {
+    public static MethodHandle arityErrorMH(int expected, int got, String name) {
         throw new RuntimeException(name + " - expected " + expected + " arguments, got " + got + " arguments");
     }
 
     public final static MethodHandle NO_ACTIVATE_FOR    = findStatic(ActivationHelpers.class, "noActivateForMH", methodType(SephObject.class, SephObject.class));
-    public final static MethodHandle ARITY_ERROR        = findStatic(ActivationHelpers.class, "arityErrorMH", methodType(SephObject.class, int.class, int.class, String.class));
+    public final static MethodHandle ARITY_ERROR        = findStatic(ActivationHelpers.class, "arityErrorMH", methodType(MethodHandle.class, int.class, int.class, String.class));
 
     public final static Class[] ARGUMENT_CLASSES_N_K = new Class[]{SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class, String[].class, MethodHandle[].class};
     public final static Class[] ARGUMENT_CLASSES_0_K = new Class[]{SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class};
