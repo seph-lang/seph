@@ -96,6 +96,9 @@ public class SephCallSite extends MutableCallSite {
     private final static MethodHandle PUMP_MH = findStatic(SephCallSite.class, "pump", methodType(SephObject.class, SephObject.class, SephObject.class, SThread.class));
 
     private final boolean intrinsic;
+    private final boolean lexical;
+    private final Integer lexicalDepth;
+    private final Integer lexicalIndex;
     private final String messageKind;
     private final String messageName;
     private final MethodHandle slowPath;
@@ -105,17 +108,20 @@ public class SephCallSite extends MutableCallSite {
         super(type);
 
         Object[] pieces = kindNameIntrinsic(name.split(":"));
-        this.messageKind = (String)pieces[0];
-        this.messageName = (String)pieces[1];
-        this.intrinsic   = (Boolean)pieces[2];
-        this.slowPath    = computeSlowPath();
-        this.argumentMHs = argumentMHs;
-
+        this.messageKind  = (String)pieces[0];
+        this.messageName  = (String)pieces[1];
+        this.intrinsic    = (Boolean)pieces[2];
+        this.lexical      = (Boolean)pieces[3];
+        this.lexicalDepth = (Integer)pieces[4];
+        this.lexicalIndex = (Integer)pieces[5];
+        this.slowPath     = computeSlowPath();
+        this.argumentMHs  = argumentMHs;
+        
+        setNeutral();
         if(intrinsic) {
-            setNeutral();
             setTarget(computeIntrinsicPath());
-        } else {
-            setNeutral();
+        } else if(lexical) {
+            setTarget(computeLexicalPath());
         }
     }
     
@@ -139,10 +145,72 @@ public class SephCallSite extends MutableCallSite {
             MethodHandle initialSetup = dropArguments(insertArguments(INITIAL_SETUP_INTRINSIC_NIL_MH, 0, this, intrinsicMH, fallback), 2, argParts);
             return initialSetup;
         } else {
-            return null;
+            throw new RuntimeException("Unknown intrinsic compiled: " + messageName);
         }
     }
 
+    private MethodHandle computeLexicalPath() {
+        MethodHandle current = identity(LexicalScope.class);;
+
+        int currentDepth = lexicalDepth;
+        while(currentDepth-- > 0) {
+            current = filterArguments(current, 0, PARENT_SCOPE_GETTER);
+        }
+        
+        MethodHandle valueMH = null;
+        switch(lexicalIndex) {
+        case 0:
+            valueMH = filterArguments(SCOPE_0_GETTER, 0, current);
+            break;
+        case 1:
+            valueMH = filterArguments(SCOPE_1_GETTER, 0, current);
+            break;
+        case 2:
+            valueMH = filterArguments(SCOPE_2_GETTER, 0, current);
+            break;
+        case 3:
+            valueMH = filterArguments(SCOPE_3_GETTER, 0, current);
+            break;
+        case 4:
+            valueMH = filterArguments(SCOPE_4_GETTER, 0, current);
+            break;
+        case 5:
+            valueMH = filterArguments(SCOPE_5_GETTER, 0, current);
+            break;
+        default:
+            valueMH = filterArguments(insertArguments(SCOPE_N_GETTER, 1, lexicalIndex-6), 0, filterArguments(SCOPE_VALUES_GETTER, 0, current));
+            break;
+        }
+
+        MethodHandle all = null;
+        if(messageKind == "message") {
+            all = computeRegularMessage();
+        } else if(messageKind == "tailMessage") {
+            all = computeTailMessage();
+        }
+        return foldArguments(all,
+                             dropArguments(dropArguments(valueMH, 0, SephObject.class, SThread.class), 3, type().dropParameterTypes(0, 3).parameterArray()));
+    }
+
+    private MethodHandle computeRegularMessage() {
+        MethodHandle _test = dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
+                
+        MethodHandle invoker = MethodHandles.exactInvoker(type());
+        MethodHandle _then = filterArguments(invoker, 0, insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords()));
+        MethodHandle _else = dropArguments(identity(SephObject.class), 1, type().parameterArray());
+        return guardWithTest(_test, _then, _else);
+    }
+
+    private MethodHandle computeTailMessage() {
+        MethodHandle _test = dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
+        MethodHandle _insertArguments = insertArguments(findStatic(MethodHandles.class, "insertArguments", methodType(MethodHandle.class, MethodHandle.class, int.class, Object[].class)), 1, 0).asCollector(Object[].class, type().parameterCount()).asType(type().insertParameterTypes(0, MethodHandle.class).changeReturnType(MethodHandle.class));
+        MethodHandle _activationFor = insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords());
+        MethodHandle _filtered = filterArguments( _insertArguments, 0 ,_activationFor);
+        MethodHandle _then = foldArguments(dropArguments(dropArguments(SET_TAIL_MH, 1, SephObject.class, SephObject.class), 4, type().dropParameterTypes(0, 2).parameterArray()), 
+                                               _filtered);
+        MethodHandle _else = dropArguments(identity(SephObject.class), 1, type().parameterArray());
+        return guardWithTest(_test, _then, _else);
+    }
 
     private int arity = -2;
     private boolean keywords = false;;
@@ -184,8 +252,12 @@ public class SephCallSite extends MutableCallSite {
     private static Object[] kindNameIntrinsic(Object[] nc) {
         String kind = ((String)nc[1]).intern();
         String name = decode((String)nc[2]).intern();
-        boolean intrinsic = nc.length == 4;
-        return new Object[] { kind, name, intrinsic };
+        boolean intrinsic = nc.length == 4 && "intrinsic".equals(nc[3]);
+        boolean lexical   = nc.length == 6 && "lexical".equals(nc[3]);
+        Integer lexicalDepth = lexical ? Integer.valueOf((String)nc[4]) : null;
+        Integer lexicalIndex = lexical ? Integer.valueOf((String)nc[5]) : null;
+        
+        return new Object[] { kind, name, intrinsic, lexical, lexicalDepth, lexicalIndex };
     }
 
     public static SephObject setTail(MethodHandle h, SThread thread) {
@@ -205,45 +277,18 @@ public class SephCallSite extends MutableCallSite {
     public final static MethodHandle CHECK_FOR_NULL_MH = findStatic(SephCallSite.class, "checkForNull", methodType(void.class, String.class, SephObject.class, SephObject.class));
 
     MethodHandle computeSlowPath() {
-            if(messageKind == "message") {
-                MethodHandle _test = dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
-                
-                MethodHandle invoker = MethodHandles.exactInvoker(type());
-                MethodHandle _then = filterArguments(invoker, 0, insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords()));
-                MethodHandle _else = dropArguments(identity(SephObject.class), 1, type().parameterArray());
-                MethodHandle all = guardWithTest(_test, _then, _else);
+        MethodHandle all = null;
+        if(messageKind == "message") {
+            all = computeRegularMessage();
+        } else if(messageKind == "tailMessage") {
+            all = computeTailMessage();
+        }
+        MethodHandle _nullCheck = dropArguments(insertArguments(CHECK_FOR_NULL_MH, 0, messageName), 
+                                                2, 
+                                                type().dropParameterTypes(0, 1).parameterArray());
 
-                MethodHandle _nullCheck = dropArguments(insertArguments(CHECK_FOR_NULL_MH, 0, messageName), 
-                                                        2, 
-                                                        type().dropParameterTypes(0, 1).parameterArray());
-                MethodHandle complete = foldArguments(
-                                                      foldArguments(all, _nullCheck),
-                                                      dropArguments(insertArguments(findVirtual(SephObject.class, "get", methodType(SephObject.class, String.class)), 1, messageName), 1, type().dropParameterTypes(0, 1).parameterArray()));
-
-                return complete;
-            } else if(messageKind == "tailMessage") {
-                MethodHandle _test = dropArguments(findVirtual(SephObject.class, "isActivatable", methodType(boolean.class)), 1, type().parameterArray());
-                MethodHandle _insertArguments = insertArguments(findStatic(MethodHandles.class, "insertArguments", methodType(MethodHandle.class, MethodHandle.class, int.class, Object[].class)), 1, 0).asCollector(Object[].class, type().parameterCount()).asType(type().insertParameterTypes(0, MethodHandle.class).changeReturnType(MethodHandle.class));
-                MethodHandle _activationFor = insertArguments(findVirtual(SephObject.class, "activationFor", methodType(MethodHandle.class, int.class, boolean.class)), 1, arity(), keywords());
-                MethodHandle _filtered = filterArguments( _insertArguments, 0 ,_activationFor);
-                MethodHandle _then = foldArguments(dropArguments(dropArguments(SET_TAIL_MH, 1, SephObject.class, SephObject.class), 4, type().dropParameterTypes(0, 2).parameterArray()), 
-                                                   _filtered);
-                MethodHandle _else = dropArguments(identity(SephObject.class), 1, type().parameterArray());
-                MethodHandle all = guardWithTest(_test, _then, _else);
-
-                MethodHandle _nullCheck = dropArguments(
-                                                        insertArguments(CHECK_FOR_NULL_MH, 0, messageName), 
-                                                        2, 
-                                                        type().dropParameterTypes(0, 1).parameterArray());
-
-                MethodHandle complete = foldArguments(
-                                                      foldArguments(all, _nullCheck), 
-                                                      dropArguments(insertArguments(findVirtual(SephObject.class, "get", methodType(SephObject.class, String.class)), 1, messageName), 1, type().dropParameterTypes(0, 1).parameterArray()));
-
-                return complete;
-            } else {
-                return null;
-            }
+        return foldArguments(foldArguments(all, _nullCheck),
+                             dropArguments(insertArguments(findVirtual(SephObject.class, "get", methodType(SephObject.class, String.class)), 1, messageName), 1, type().dropParameterTypes(0, 1).parameterArray()));
     }
 
     public void setNeutral() {
