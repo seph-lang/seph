@@ -20,6 +20,10 @@ public abstract class LexicalScope {
         public String[] names;
         public SephObject[] values;
 
+        public final SephObject getValueMany(int index) {
+            return values[index];
+        }
+
         Many(LexicalScope parent, Runtime runtime, String[] names) {
             super(parent, runtime, names[0], names[1], names[2], names[3], names[4], names[5]);
             String[] newNames = new String[names.length-6];
@@ -124,6 +128,10 @@ public abstract class LexicalScope {
                 return parent.get(depth - 1, index);
             }
         }
+
+        public final SephObject getValueOne() {
+            return value0;
+        }
     }
 
     public static class Two extends One {
@@ -166,6 +174,10 @@ public abstract class LexicalScope {
             } else {
                 return parent.get(depth - 1, index);
             }
+        }
+
+        public final SephObject getValueTwo() {
+            return value1;
         }
     }
 
@@ -213,6 +225,10 @@ public abstract class LexicalScope {
             } else {
                 return parent.get(depth - 1, index);
             }
+        }
+
+        public final SephObject getValueThree() {
+            return value2;
         }
     }
 
@@ -265,6 +281,10 @@ public abstract class LexicalScope {
             } else {
                 return parent.get(depth - 1, index);
             }
+        }
+
+        public final SephObject getValueFour() {
+            return value3;
         }
     }
 
@@ -320,6 +340,10 @@ public abstract class LexicalScope {
             } else {
                 return parent.get(depth - 1, index);
             }
+        }
+
+        public final SephObject getValueFive() {
+            return value4;
         }
     }
 
@@ -381,11 +405,19 @@ public abstract class LexicalScope {
                 return parent.get(depth - 1, index);
             }
         }
+
+        public final SephObject getValueSix() {
+            return value5;
+        }
     }
 
     public final LexicalScope parent;
     public final Runtime runtime;
     public volatile int version = 0;
+
+    public final LexicalScope getParent() {
+        return parent;
+    }
 
     private LexicalScope(LexicalScope parent, Runtime runtime) {
         this.parent = parent;

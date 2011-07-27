@@ -49,6 +49,7 @@ public final class Types {
     public final static MethodHandle INITIAL_SETUP_INTRINSIC_NIL_MH   = findStatic(SephCallSite.class, "initialSetup_intrinsic_nil", INITIAL_SETUP_TYPE);
 
     public final static MethodType   SCOPE_GETTER_TYPE = methodType(SephObject.class, LexicalScope.class);
+    public final static MethodType   SCOPE_GETTER_M_TYPE = methodType(SephObject.class, LexicalScope.class);
     public final static MethodType   SCOPE_ARRAY_GETTER_TYPE = methodType(SephObject[].class, LexicalScope.class);
 
     public final static MethodHandle SCOPE_0_GETTER = findField(LexicalScope.One.class, "value0", SephObject.class).asType(SCOPE_GETTER_TYPE);
@@ -60,7 +61,16 @@ public final class Types {
     public final static MethodHandle SCOPE_VALUES_GETTER = findField(LexicalScope.Many.class, "values", SephObject[].class).asType(SCOPE_ARRAY_GETTER_TYPE);
     public final static MethodHandle SCOPE_N_GETTER = findArrayGetter(SephObject[].class);
 
+    public final static MethodHandle SCOPE_0_GETTER_M = findVirtual(LexicalScope.One.class, "getValueOne", methodType(SephObject.class)).asType(SCOPE_GETTER_M_TYPE);
+    public final static MethodHandle SCOPE_1_GETTER_M = findVirtual(LexicalScope.Two.class, "getValueTwo", methodType(SephObject.class)).asType(SCOPE_GETTER_M_TYPE);
+    public final static MethodHandle SCOPE_2_GETTER_M = findVirtual(LexicalScope.Three.class, "getValueThree", methodType(SephObject.class)).asType(SCOPE_GETTER_M_TYPE);
+    public final static MethodHandle SCOPE_3_GETTER_M = findVirtual(LexicalScope.Four.class, "getValueFour", methodType(SephObject.class)).asType(SCOPE_GETTER_M_TYPE);
+    public final static MethodHandle SCOPE_4_GETTER_M = findVirtual(LexicalScope.Five.class, "getValueFive", methodType(SephObject.class)).asType(SCOPE_GETTER_M_TYPE);
+    public final static MethodHandle SCOPE_5_GETTER_M = findVirtual(LexicalScope.Six.class, "getValueSix", methodType(SephObject.class)).asType(SCOPE_GETTER_M_TYPE);
+    public final static MethodHandle SCOPE_N_GETTER_M = findVirtual(LexicalScope.Many.class, "getValueMany", methodType(SephObject.class, int.class)).asType(methodType(SephObject.class, LexicalScope.class, int.class));
+
     public final static MethodHandle PARENT_SCOPE_GETTER = findField(LexicalScope.class, "parent", LexicalScope.class);
+    public final static MethodHandle PARENT_SCOPE_METHOD = findVirtual(LexicalScope.class, "getParent", methodType(LexicalScope.class));
 
     public final static MethodHandle BIND_TO             = findVirtual(MethodHandle.class, "bindTo", methodType(MethodHandle.class, Object.class));
 }// Types

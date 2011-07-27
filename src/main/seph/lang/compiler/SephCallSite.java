@@ -154,31 +154,31 @@ public class SephCallSite extends MutableCallSite {
 
         int currentDepth = lexicalDepth;
         while(currentDepth-- > 0) {
-            current = filterArguments(current, 0, PARENT_SCOPE_GETTER);
+            current = filterArguments(current, 0, PARENT_SCOPE_METHOD);
         }
         
         MethodHandle valueMH = null;
         switch(lexicalIndex) {
         case 0:
-            valueMH = filterArguments(SCOPE_0_GETTER, 0, current);
+            valueMH = filterArguments(SCOPE_0_GETTER_M, 0, current);
             break;
         case 1:
-            valueMH = filterArguments(SCOPE_1_GETTER, 0, current);
+            valueMH = filterArguments(SCOPE_1_GETTER_M, 0, current);
             break;
         case 2:
-            valueMH = filterArguments(SCOPE_2_GETTER, 0, current);
+            valueMH = filterArguments(SCOPE_2_GETTER_M, 0, current);
             break;
         case 3:
-            valueMH = filterArguments(SCOPE_3_GETTER, 0, current);
+            valueMH = filterArguments(SCOPE_3_GETTER_M, 0, current);
             break;
         case 4:
-            valueMH = filterArguments(SCOPE_4_GETTER, 0, current);
+            valueMH = filterArguments(SCOPE_4_GETTER_M, 0, current);
             break;
         case 5:
-            valueMH = filterArguments(SCOPE_5_GETTER, 0, current);
+            valueMH = filterArguments(SCOPE_5_GETTER_M, 0, current);
             break;
         default:
-            valueMH = filterArguments(insertArguments(SCOPE_N_GETTER, 1, lexicalIndex-6), 0, filterArguments(SCOPE_VALUES_GETTER, 0, current));
+            valueMH = filterArguments(insertArguments(SCOPE_N_GETTER_M, 0, lexicalIndex-6), 0, current);
             break;
         }
 
