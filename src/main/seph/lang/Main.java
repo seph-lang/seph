@@ -16,6 +16,8 @@ public class Main {
         "Usage: seph [switches] -- [programfile] [arguments]\n" +
         " -h, --help      help, this message\n" +
         " --notco         turn off tail call optimization\n" +
+        " --nolexmh       turn off lexical lookup with method handles\n" +
+        " --nolexinvokemh turn off lexical invoke with method handles\n" +
         " --copyright     print the copyright\n" +
         " --version       print current version\n";
 
@@ -24,6 +26,8 @@ public class Main {
         boolean done = false;
         boolean printedSomething = false;
         boolean tco = true;
+        boolean lexmh = true;
+        boolean lexinvokemh = true;
 
 
         for(;!done && start<args.length;start++) {
@@ -46,6 +50,10 @@ public class Main {
                         printedSomething = true;
                     } else if(arg.equals("--notco")) {
                         tco = false;
+                    } else if(arg.equals("--nolexmh")) {
+                        lexmh = false;
+                    } else if(arg.equals("--nolexinvokemh")) {
+                        lexinvokemh = false;
                     } else {
                         System.err.println("Couldn't understand option: " + arg);
                         return;
@@ -70,6 +78,18 @@ public class Main {
                 config = config.withTailCallOptimization();
             } else {
                 config = config.withoutTailCallOptimization();
+            }
+
+            if(lexmh) {
+                config = config.withLexicalMethodHandleLookup();
+            } else {
+                config = config.withoutLexicalMethodHandleLookup();
+            }
+
+            if(lexinvokemh) {
+                config = config.withLexicalMethodHandleInvoke();
+            } else {
+                config = config.withoutLexicalMethodHandleInvoke();
             }
 
             Runtime r = new Runtime(config);
