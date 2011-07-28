@@ -713,6 +713,47 @@ public class AbstractionCompiler {
         ma.label(endIf);
     }
 
+
+    private void loadFromDepth(int depth, int index, MethodAdapter ma) {
+        int currentDepth = depth;
+        while(currentDepth-- > 0) {
+            ma.getField(LexicalScope.class, "parent", LexicalScope.class);
+        }
+     
+        switch(index) {
+        case 0:
+            ma.cast(LexicalScope.One.class);
+            ma.getField(LexicalScope.One.class, "value0", SephObject.class);
+            break;
+        case 1:
+            ma.cast(LexicalScope.Two.class);
+            ma.getField(LexicalScope.Two.class, "value1", SephObject.class);
+            break;
+        case 2:
+            ma.cast(LexicalScope.Three.class);
+            ma.getField(LexicalScope.Three.class, "value2", SephObject.class);
+            break;
+        case 3:
+            ma.cast(LexicalScope.Four.class);
+            ma.getField(LexicalScope.Four.class, "value3", SephObject.class);
+            break;
+        case 4:
+            ma.cast(LexicalScope.Five.class);
+            ma.getField(LexicalScope.Five.class, "value4", SephObject.class);
+            break;
+        case 5:
+            ma.cast(LexicalScope.Six.class);
+            ma.getField(LexicalScope.Six.class, "value5", SephObject.class);
+            break;
+        default:
+            ma.cast(LexicalScope.Many.class);
+            ma.getField(LexicalScope.Many.class, "values", SephObject[].class);
+            ma.load(index-6);
+            ma.loadArray();
+            break;
+        }
+    }
+
     private void compileRegularMessageSend(MethodAdapter ma, Message current, boolean activateWith, int plusArity, boolean first, Message last, Arity arity, String name) {
         ScopeEntry se = null;
         Label noActivate = null;
@@ -725,11 +766,14 @@ public class AbstractionCompiler {
             } else {
                 ma.loadLocal(METHOD_SCOPE_ARG);
             }
-            // [recv, recv, scope]
-            ma.dynamicCall("seph:lookup:" + encode(name) + ":lexical:" + se.depth + ":" + se.index, sig(SephObject.class, LexicalScope.class), BOOTSTRAP_METHOD);
-            // [recv, value]
+            
+            if(runtime.configuration().doLexicalMethodHandleLookup()) {
+                ma.dynamicCall("seph:lookup:" + encode(name) + ":lexical:" + se.depth + ":" + se.index, sig(SephObject.class, LexicalScope.class), BOOTSTRAP_METHOD);
+            } else {
+                loadFromDepth(se.depth, se.index, ma);
+            }
+
             ma.swap();
-            // [value, recv]
         }        
 
         ma.loadLocal(THREAD);
