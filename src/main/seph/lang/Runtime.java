@@ -66,37 +66,6 @@ public class Runtime {
                 return Something.instance.get(cellName);
             }
         };
-    
-    public static void empty() {}
-    public static void invalidate(SwitchPoint sp) {
-        SwitchPoint.invalidateAll(new SwitchPoint[] {sp});
-    }
-
-    public final static MethodHandle INVALIDATE_MH = SephCallSite.findStatic(seph.lang.Runtime.class, "invalidate", MethodType.methodType(void.class, SwitchPoint.class));
-    public final static MethodHandle EMPTY_MH      = SephCallSite.findStatic(seph.lang.Runtime.class, "empty", MethodType.methodType(void.class));
-
-    public final SwitchPoint INTRINSIC_TRUE_SP = new SwitchPoint();
-    public final SwitchPoint INTRINSIC_FALSE_SP = new SwitchPoint();
-    public final SwitchPoint INTRINSIC_NIL_SP = new SwitchPoint();
-
-    public final MethodHandle INVALIDATE_TRUE  = INTRINSIC_TRUE_SP.guardWithTest(INVALIDATE_MH.bindTo(INTRINSIC_TRUE_SP), EMPTY_MH);
-    public final MethodHandle INVALIDATE_FALSE = INTRINSIC_FALSE_SP.guardWithTest(INVALIDATE_MH.bindTo(INTRINSIC_FALSE_SP), EMPTY_MH);
-    public final MethodHandle INVALIDATE_NIL = INTRINSIC_NIL_SP.guardWithTest(INVALIDATE_MH.bindTo(INTRINSIC_NIL_SP), EMPTY_MH);
-
-    public void checkIntrinsicAssignment(String name) {
-        name = name.intern();
-        try {
-            if(name == "true") {
-                INVALIDATE_TRUE.invokeExact();
-            } else if(name == "false") {
-                INVALIDATE_FALSE.invokeExact();
-            } else if(name == "nil") {
-                INVALIDATE_NIL.invokeExact();
-            }
-        } catch(Throwable e) {
-            e.printStackTrace();
-        }
-    }
 
     public Text newText(String stringBeforeEscapeMangling) {
         return new Text(new StringUtils().replaceEscapes(stringBeforeEscapeMangling));

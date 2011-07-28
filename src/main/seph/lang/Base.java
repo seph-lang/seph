@@ -48,10 +48,6 @@ public class Base implements SephObject {
         if(keywordNames.length == 0) {
             return receiver;
         } else {
-            for(String s : keywordNames) {
-                thread.runtime.checkIntrinsicAssignment(s);
-            }
-
             IPersistentMap args = PersistentArrayMap.EMPTY;
             try {
                 for(int i = 0; i < keywordNames.length; i++) {

@@ -688,10 +688,6 @@ public class AbstractionCompiler {
 
         if(first && (se = scope.find(name)) != null) {
             possibleAdditional = ":lexical:" + se.depth + ":" + se.index;
-        } else if(name == "true" ||
-                  name == "false" ||
-                  name == "nil") {
-            possibleAdditional = ":intrinsic";
         }
 
         boolean fullPumping = false;

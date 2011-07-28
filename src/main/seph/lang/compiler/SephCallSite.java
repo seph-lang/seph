@@ -95,7 +95,6 @@ public class SephCallSite extends MutableCallSite {
 
     private final static MethodHandle PUMP_MH = findStatic(SephCallSite.class, "pump", methodType(SephObject.class, SephObject.class, SephObject.class, SThread.class));
 
-    private final boolean intrinsic;
     private final boolean lexical;
     private final Integer lexicalDepth;
     private final Integer lexicalIndex;
@@ -107,48 +106,21 @@ public class SephCallSite extends MutableCallSite {
     private SephCallSite(MethodHandles.Lookup lookup, String name, MethodType type, Object[] argumentMHs) {
         super(type);
 
-        Object[] pieces = kindNameIntrinsic(name.split(":"));
+        Object[] pieces = kindNameAndExtraInfo(name.split(":"));
         this.messageKind  = (String)pieces[0];
         this.messageName  = (String)pieces[1];
-        this.intrinsic    = (Boolean)pieces[2];
-        this.lexical      = (Boolean)pieces[3];
-        this.lexicalDepth = (Integer)pieces[4];
-        this.lexicalIndex = (Integer)pieces[5];
+        this.lexical      = (Boolean)pieces[2];
+        this.lexicalDepth = (Integer)pieces[3];
+        this.lexicalIndex = (Integer)pieces[4];
         this.slowPath     = computeSlowPath();
         this.argumentMHs  = argumentMHs;
         
         setNeutral();
-        if(intrinsic) {
-            setTarget(computeIntrinsicPath());
-        } else if(lexical) {
+        if(lexical) {
             setTarget(computeLexicalPath());
         }
     }
     
-    private final static MethodHandle INTRINSIC_TRUE_MH =  constant(SephObject.class, seph.lang.Runtime.TRUE);
-    private final static MethodHandle INTRINSIC_FALSE_MH = constant(SephObject.class, seph.lang.Runtime.FALSE);
-    private final static MethodHandle INTRINSIC_NIL_MH =   constant(SephObject.class, seph.lang.Runtime.NIL);
-
-    private MethodHandle computeIntrinsicPath() {
-        Class<?>[] argParts = type().dropParameterTypes(0, 3).parameterArray();
-        MethodHandle fallback = getTarget();
-        if(messageName == "true") {
-            MethodHandle intrinsicMH =  dropArguments(INTRINSIC_TRUE_MH, 0, type().parameterArray());
-            MethodHandle initialSetup = dropArguments(insertArguments(INITIAL_SETUP_INTRINSIC_TRUE_MH, 0, this, intrinsicMH, fallback), 2, argParts);
-            return initialSetup;
-        } else if(messageName == "false") {
-            MethodHandle intrinsicMH =  dropArguments(INTRINSIC_FALSE_MH, 0, type().parameterArray());
-            MethodHandle initialSetup = dropArguments(insertArguments(INITIAL_SETUP_INTRINSIC_FALSE_MH, 0, this, intrinsicMH, fallback), 2, argParts);
-            return initialSetup;
-        } else if(messageName == "nil") {
-            MethodHandle intrinsicMH =  dropArguments(INTRINSIC_NIL_MH, 0, type().parameterArray());
-            MethodHandle initialSetup = dropArguments(insertArguments(INITIAL_SETUP_INTRINSIC_NIL_MH, 0, this, intrinsicMH, fallback), 2, argParts);
-            return initialSetup;
-        } else {
-            throw new RuntimeException("Unknown intrinsic compiled: " + messageName);
-        }
-    }
-
     private MethodHandle computeLexicalPath() {
         MethodHandle current = identity(LexicalScope.class);
 
@@ -249,15 +221,14 @@ public class SephCallSite extends MutableCallSite {
         return keywords;
     }
 
-    private static Object[] kindNameIntrinsic(Object[] nc) {
+    private static Object[] kindNameAndExtraInfo(Object[] nc) {
         String kind = ((String)nc[1]).intern();
         String name = decode((String)nc[2]).intern();
-        boolean intrinsic = nc.length == 4 && "intrinsic".equals(nc[3]);
         boolean lexical   = nc.length == 6 && "lexical".equals(nc[3]);
         Integer lexicalDepth = lexical ? Integer.valueOf((String)nc[4]) : null;
         Integer lexicalIndex = lexical ? Integer.valueOf((String)nc[5]) : null;
         
-        return new Object[] { kind, name, intrinsic, lexical, lexicalDepth, lexicalIndex };
+        return new Object[] { kind, name, lexical, lexicalDepth, lexicalIndex };
     }
 
     public static SephObject setTail(MethodHandle h, SThread thread) {
@@ -433,25 +404,6 @@ public class SephCallSite extends MutableCallSite {
         MethodHandle profiler = (forMissPath ? MH_profileReceiverForMiss : MH_profileReceiver);
         profiler = insertArguments(profiler, 0, this);
         return profiler;
-    }
-
-
-    public static SephObject initialSetup_intrinsic_true(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
-        MethodHandle guarded = thread.runtime.INTRINSIC_TRUE_SP.guardWithTest(fast, slow);
-        site.setTarget(guarded);
-        return (SephObject)guarded.invokeExact(receiver, thread, scope);
-    }
-
-    public static SephObject initialSetup_intrinsic_false(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
-        MethodHandle guarded = thread.runtime.INTRINSIC_FALSE_SP.guardWithTest(fast, slow);
-        site.setTarget(guarded);
-        return (SephObject)guarded.invokeExact(receiver, thread, scope);
-    }
-
-    public static SephObject initialSetup_intrinsic_nil(SephCallSite site, MethodHandle fast, MethodHandle slow, SephObject receiver, SThread thread, LexicalScope scope) throws Throwable {
-        MethodHandle guarded = thread.runtime.INTRINSIC_NIL_SP.guardWithTest(fast, slow);
-        site.setTarget(guarded);
-        return (SephObject)guarded.invokeExact(receiver, thread, scope);
     }
 
     public static boolean eq(Object first, SephObject receiver) {
