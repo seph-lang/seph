@@ -83,7 +83,7 @@ public class SephCallSite extends MutableCallSite {
     public static CallSite genMH(SephObject marker) {
         MutableCallSite mcs = new MutableCallSite(methodType(SephObject.class, SephObject.class, SThread.class));
         MethodHandle _test = dropArguments(REF_EQ.bindTo(marker), 1, SThread.class);
-        MethodHandle combiner = filterReturnValue(dropArguments(findField(SThread.class, "tail", MethodHandle.class), 0, SephObject.class), exactInvoker(methodType(SephObject.class)));
+        MethodHandle combiner = filterReturnValue(dropArguments(THREAD_TAIL_GETTER, 0, SephObject.class), exactInvoker(methodType(SephObject.class)));
         MethodHandle _then = foldArguments(dropArguments(mcs.dynamicInvoker(), 1, SephObject.class), combiner);
         MethodHandle _else = dropArguments(identity(SephObject.class), 1, SThread.class);
         MethodHandle pumper = guardWithTest(_test,
@@ -150,7 +150,7 @@ public class SephCallSite extends MutableCallSite {
     }
 
     private MethodHandle computeLexicalPath() {
-        MethodHandle current = identity(LexicalScope.class);;
+        MethodHandle current = identity(LexicalScope.class);
 
         int currentDepth = lexicalDepth;
         while(currentDepth-- > 0) {
@@ -482,14 +482,6 @@ public class SephCallSite extends MutableCallSite {
         try {
             return MethodHandles.lookup().findVirtual(target, name, type);
         } catch(NoSuchMethodException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static MethodHandle findField(Class target, String name, Class type) {
-        try {
-            return MethodHandles.lookup().findGetter(target, name, type);
-        } catch(NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }

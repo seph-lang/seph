@@ -24,6 +24,10 @@ public class SThread {
 
     public MethodHandle tail;
 
+    public MethodHandle getTail() {
+        return tail;
+    }
+
     public SThread(Runtime runtime) {
         this.runtime = runtime;
     }
