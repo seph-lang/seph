@@ -621,8 +621,51 @@ public class AbstractionCompiler {
         }
     }
 
+    private Class[] argumentArrayFor2(Arity arity) {
+        if(arity.keyword > 0) {
+            switch(arity.positional) {
+            case 0:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, String[].class, MethodHandle[].class};
+            case 1:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, String[].class, MethodHandle[].class};
+            case 2:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
+            case 3:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
+            case 4:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
+            case 5:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, String[].class, MethodHandle[].class};
+            default:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class, String[].class, MethodHandle[].class};
+            }
+        } else {
+            switch(arity.positional) {
+            case 0:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class};
+            case 1:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class};
+            case 2:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class};
+            case 3:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class};
+            case 4:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class};
+            case 5:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class, MethodHandle.class};
+            default:
+                return new Class[]{SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class};
+            }
+        }
+    }
+
+
     private String sigFor(Arity arity) {
         return sig(SephObject.class, argumentArrayFor(arity));
+    }
+
+    private String sigFor2(Arity arity) {
+        return sig(SephObject.class, argumentArrayFor2(arity));
     }
 
     private void compileIfStatement(MethodAdapter ma, Message current, boolean activateWith, int plusArity, boolean first, Message last, Arity arity) {
@@ -676,6 +719,19 @@ public class AbstractionCompiler {
         String messageType = "message";
         String possibleAdditional = "";
 
+        if(first && (se = scope.find(name)) != null) {
+            if(activateWith) {
+                ma.loadLocal(METHOD_SCOPE + plusArity);
+            } else {
+                ma.loadLocal(METHOD_SCOPE_ARG);
+            }
+            // [recv, recv, scope]
+            ma.dynamicCall("seph:lookup:" + encode(name) + ":lexical:" + se.depth + ":" + se.index, sig(SephObject.class, LexicalScope.class), BOOTSTRAP_METHOD);
+            // [recv, value]
+            ma.swap();
+            // [value, recv]
+        }        
+
         ma.loadLocal(THREAD);
 
         if(activateWith) {
@@ -686,30 +742,54 @@ public class AbstractionCompiler {
             
         org.objectweb.asm.MethodHandle[] argMHrefs = compileArguments(ma, current.arguments(), activateWith, plusArity, last);
 
-        if(first && (se = scope.find(name)) != null) {
-            possibleAdditional = ":lexical:" + se.depth + ":" + se.index;
-        }
+        if(first && se != null) {
+            // [recv, value, thread, scope, arg0, arg1]
+            
+            boolean fullPumping = false;
 
-        boolean fullPumping = false;
+            messageType = "invoke";
+            if(runtime.configuration().doTailCallOptimization() && current == last) {
+                messageType = "tailInvoke";
+                fullPumping = true;
+            }
 
-        if(runtime.configuration().doTailCallOptimization() && current == last) {
-            messageType = "tailMessage";
-            fullPumping = true;
-        }
-
-        ma.dynamicCall("seph:" + messageType + ":" + encode(name) + possibleAdditional, sigFor(arity), BOOTSTRAP_METHOD, argMHrefs);
-        if(runtime.configuration().doTailCallOptimization()) {
-            if(fullPumping) {
-                if(!activateWith) {
-                    Label noPump = new Label();
-                    ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
-                    ma.zero();
-                    ma.ifEqual(noPump);
+            ma.dynamicCall("seph:" + messageType + ":" + encode(name), sigFor2(arity), BOOTSTRAP_METHOD, argMHrefs);
+            if(runtime.configuration().doTailCallOptimization()) {
+                if(fullPumping) {
+                    if(!activateWith) {
+                        Label noPump = new Label();
+                        ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
+                        ma.zero();
+                        ma.ifEqual(noPump);
+                        pumpTailCall(ma);
+                        ma.label(noPump);
+                    }
+                } else {
                     pumpTailCall(ma);
-                    ma.label(noPump);
                 }
-            } else {
-                pumpTailCall(ma);
+            }
+        } else {
+            boolean fullPumping = false;
+
+            if(runtime.configuration().doTailCallOptimization() && current == last) {
+                messageType = "tailMessage";
+                fullPumping = true;
+            }
+
+            ma.dynamicCall("seph:" + messageType + ":" + encode(name) + possibleAdditional, sigFor(arity), BOOTSTRAP_METHOD, argMHrefs);
+            if(runtime.configuration().doTailCallOptimization()) {
+                if(fullPumping) {
+                    if(!activateWith) {
+                        Label noPump = new Label();
+                        ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
+                        ma.zero();
+                        ma.ifEqual(noPump);
+                        pumpTailCall(ma);
+                        ma.label(noPump);
+                    }
+                } else {
+                    pumpTailCall(ma);
+                }
             }
         }
     }
