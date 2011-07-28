@@ -15,9 +15,12 @@ public class Main {
     private final static String HELP =
         "Usage: seph [switches] -- [programfile] [arguments]\n" +
         " -h, --help      help, this message\n" +
-        " --notco         turn off tail call optimization\n" +
-        " --nolexmh       turn off lexical lookup with method handles\n" +
-        " --nolexinvokemh turn off lexical invoke with method handles\n" +
+        " --tco           force tail call optimization to be on  [default: " + (SephConfig.DEFAULT_TAIL_CALL_OPTIMIZATION ? "on" : "off") + "]\n" +
+        " --notco         force tail call optimization to be off [default: " + (SephConfig.DEFAULT_TAIL_CALL_OPTIMIZATION ? "on" : "off") + "]\n" +
+        " --lexmh         force lexical lookup with method handles to be on  [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_LOOKUP ? "on" : "off") + "]\n" +
+        " --nolexmh       force lexical lookup with method handles to be off [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_LOOKUP ? "on" : "off") + "]\n" +
+        " --lexinvokemh   force lexical invoke with method handles to be on  [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_INVOKE ? "on" : "off") + "]\n" +
+        " --nolexinvokemh force lexical invoke with method handles to be off [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_INVOKE ? "on" : "off") + "]\n" +
         " --copyright     print the copyright\n" +
         " --version       print current version\n";
 
@@ -25,9 +28,9 @@ public class Main {
         int start = 0;
         boolean done = false;
         boolean printedSomething = false;
-        boolean tco = true;
-        boolean lexmh = true;
-        boolean lexinvokemh = true;
+        boolean tco = SephConfig.DEFAULT_TAIL_CALL_OPTIMIZATION;
+        boolean lexmh = SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_LOOKUP;
+        boolean lexinvokemh = SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_INVOKE;
 
 
         for(;!done && start<args.length;start++) {
@@ -48,10 +51,16 @@ public class Main {
                     } else if(arg.equals("--copyright")) {
                         System.err.print(COPYRIGHT);
                         printedSomething = true;
+                    } else if(arg.equals("--tco")) {
+                        tco = true;
                     } else if(arg.equals("--notco")) {
                         tco = false;
+                    } else if(arg.equals("--lexmh")) {
+                        lexmh = true;
                     } else if(arg.equals("--nolexmh")) {
                         lexmh = false;
+                    } else if(arg.equals("--lexinvokemh")) {
+                        lexinvokemh = true;
                     } else if(arg.equals("--nolexinvokemh")) {
                         lexinvokemh = false;
                     } else {
@@ -73,25 +82,7 @@ public class Main {
                 file = file.substring(0, file.length()-1);
             }
 
-            SephConfig config = new SephConfig();
-            if(tco) {
-                config = config.withTailCallOptimization();
-            } else {
-                config = config.withoutTailCallOptimization();
-            }
-
-            if(lexmh) {
-                config = config.withLexicalMethodHandleLookup();
-            } else {
-                config = config.withoutLexicalMethodHandleLookup();
-            }
-
-            if(lexinvokemh) {
-                config = config.withLexicalMethodHandleInvoke();
-            } else {
-                config = config.withoutLexicalMethodHandleInvoke();
-            }
-
+            SephConfig config = new SephConfig(tco, lexmh, lexinvokemh);
             Runtime r = new Runtime(config);
             r.evaluateFile(file);
         }

@@ -11,8 +11,15 @@ public class SephConfig {
     private final boolean lexmh;
     private final boolean lexinvokemh;
 
+    public final static boolean DEFAULT_TAIL_CALL_OPTIMIZATION = true;
+    public final static boolean DEFAULT_LEXICAL_METHOD_HANDLE_LOOKUP = true;
+    public final static boolean DEFAULT_LEXICAL_METHOD_HANDLE_INVOKE = true;
+
+
     public SephConfig() {
-        this(true, true, true);
+        this(DEFAULT_TAIL_CALL_OPTIMIZATION, 
+             DEFAULT_LEXICAL_METHOD_HANDLE_LOOKUP, 
+             DEFAULT_LEXICAL_METHOD_HANDLE_INVOKE);
     }
 
     public SephConfig(boolean tco, boolean lexmh, boolean lexinvokemh) {

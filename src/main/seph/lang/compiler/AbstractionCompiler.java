@@ -773,6 +773,23 @@ public class AbstractionCompiler {
                 loadFromDepth(se.depth, se.index, ma);
             }
 
+            if(!runtime.configuration().doLexicalMethodHandleInvoke()) {
+                noActivate = new Label();
+                ma.dup();
+                ma.interfaceCall(SephObject.class, "isActivatable", boolean.class);
+                ma.zero();
+                ma.ifEqual(noActivate);
+     
+                ma.load(arity.positional);
+                ma.load(arity.keyword == 0 ? 0 : 1);
+                ma.interfaceCall(SephObject.class, "activationFor", MethodHandle.class, int.class, boolean.class);
+            
+                if(runtime.configuration().doTailCallOptimization() && current == last) {
+                    ma.swap();
+                    ma.load(0);
+                }
+            }
+
             ma.swap();
         }        
 
@@ -788,18 +805,50 @@ public class AbstractionCompiler {
 
         if(first && se != null) {
             // [recv, value, thread, scope, arg0, arg1]
-            
-            boolean fullPumping = false;
 
-            messageType = "invoke";
-            if(runtime.configuration().doTailCallOptimization() && current == last) {
-                messageType = "tailInvoke";
-                fullPumping = true;
-            }
+            if(runtime.configuration().doLexicalMethodHandleInvoke()) {
+                boolean fullPumping = false;
 
-            ma.dynamicCall("seph:" + messageType + ":" + encode(name), sigFor2(arity), BOOTSTRAP_METHOD, argMHrefs);
-            if(runtime.configuration().doTailCallOptimization()) {
-                if(fullPumping) {
+                messageType = "invoke";
+                if(runtime.configuration().doTailCallOptimization() && current == last) {
+                    messageType = "tailInvoke";
+                    fullPumping = true;
+                }
+
+                ma.dynamicCall("seph:" + messageType + ":" + encode(name), sigFor2(arity), BOOTSTRAP_METHOD, argMHrefs);
+                if(runtime.configuration().doTailCallOptimization()) {
+                    if(fullPumping) {
+                        if(!activateWith) {
+                            Label noPump = new Label();
+                            ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
+                            ma.zero();
+                            ma.ifEqual(noPump);
+                            pumpTailCall(ma);
+                            ma.label(noPump);
+                        }
+                    } else {
+                        pumpTailCall(ma);
+                    }
+                }
+            } else {
+                if(runtime.configuration().doTailCallOptimization() && current == last) {
+                    Label activate = new Label();
+                    int len = argumentArrayFor(arity).length;
+                    ma.load(len);
+                    ma.newArray(Object.class);
+                    for(int i = len - 1; i >= 0; i--) {
+                        ma.dup_x1();
+                        ma.swap();
+                        ma.load(i);
+                        ma.swap();
+                        ma.storeArray();
+                    }
+                    ma.staticCall(MethodHandles.class, "insertArguments", MethodHandle.class, MethodHandle.class, int.class, Object[].class);
+                    ma.loadLocal(THREAD);
+                    ma.swap();
+                    ma.putField(SThread.class, "tail", MethodHandle.class);
+                    ma.getStatic(SThread.class, "TAIL_MARKER", SephObject.class);
+
                     if(!activateWith) {
                         Label noPump = new Label();
                         ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
@@ -808,8 +857,25 @@ public class AbstractionCompiler {
                         pumpTailCall(ma);
                         ma.label(noPump);
                     }
+
+                    ma.jump(activate);
+                    ma.label(noActivate);
+
+                    ma.swap();
+                    ma.pop();
+
+                    ma.label(activate);
                 } else {
+                    Label activate = new Label();
+                    ma.virtualCall(MethodHandle.class, "invokeExact", sigFor(arity));
+
                     pumpTailCall(ma);
+                    ma.jump(activate);
+                    ma.label(noActivate);
+
+                    ma.swap();
+                    ma.pop();
+                    ma.label(activate);
                 }
             }
         } else {
