@@ -163,7 +163,7 @@ public class SephCallSite extends MutableCallSite {
             valueMH = filterArguments(SCOPE_5_GETTER_M, 0, current);
             break;
         default:
-            valueMH = filterArguments(insertArguments(SCOPE_N_GETTER_M, 0, lexicalIndex-6), 0, current);
+            valueMH = filterArguments(insertArguments(SCOPE_N_GETTER_M, 1, lexicalIndex-6), 0, current);
             break;
         }
 
@@ -216,7 +216,7 @@ public class SephCallSite extends MutableCallSite {
             valueMH = filterArguments(SCOPE_5_GETTER_M, 0, current);
             break;
         default:
-            valueMH = filterArguments(insertArguments(SCOPE_N_GETTER_M, 0, lexicalIndex-6), 0, current);
+            valueMH = filterArguments(insertArguments(SCOPE_N_GETTER_M, 1, lexicalIndex-6), 0, current);
             break;
         }
 

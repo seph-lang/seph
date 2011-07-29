@@ -297,5 +297,20 @@ public class BasicSanityTest {
                                                                   "f = #(if(nil, 42, 55))\n" +
                                                                   "f\n"), is(equalTo(IntNum.valueOf("55"))));
     }
+
+    @Test
+    public void lookuping_up_things_in_larger_flat_scope() throws Exception, ControlFlow {
+        new seph.lang.Runtime().evaluateString(
+"foo2 = nil\n" + 
+"foo3 = nil\n" + 
+"foo4 = nil\n" + 
+"foo5 = nil\n" + 
+"foo6 = nil\n" + 
+"foo7 = nil\n" + 
+"foo8 = nil\n" + 
+"foo7\n" + 
+"foo8\n"
+);
+    }
 }// RuntimeTest
 
