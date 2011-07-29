@@ -24,8 +24,8 @@ public abstract class LexicalScope {
             return values[index];
         }
 
-        Many(LexicalScope parent, Runtime runtime, String[] names) {
-            super(parent, runtime, names[0], names[1], names[2], names[3], names[4], names[5]);
+        Many(LexicalScope parent, SephObject ground, Runtime runtime, String[] names) {
+            super(parent, ground, runtime, names[0], names[1], names[2], names[3], names[4], names[5]);
             String[] newNames = new String[names.length-6];
             System.arraycopy(names, 5, newNames, 0, newNames.length);
             this.names = newNames;
@@ -81,8 +81,8 @@ public abstract class LexicalScope {
     }
 
     public static class Empty extends LexicalScope {
-        Empty(LexicalScope parent, Runtime runtime) {
-            super(parent, runtime);
+        Empty(LexicalScope parent, SephObject ground, Runtime runtime) {
+            super(parent, ground, runtime);
         }
 
         @Override
@@ -102,8 +102,8 @@ public abstract class LexicalScope {
         public String name0;
         public SephObject value0;
 
-        One(LexicalScope parent, Runtime runtime, String name0) {
-            super(parent, runtime);
+        One(LexicalScope parent, SephObject ground, Runtime runtime, String name0) {
+            super(parent, ground, runtime);
             this.name0 = name0;
             this.value0 = null;
         }
@@ -138,8 +138,8 @@ public abstract class LexicalScope {
         public String name1;
         public SephObject value1;
 
-        Two(LexicalScope parent, Runtime runtime, String name0, String name1) {
-            super(parent, runtime, name0);
+        Two(LexicalScope parent, SephObject ground, Runtime runtime, String name0, String name1) {
+            super(parent, ground, runtime, name0);
             this.name1 = name1;
             this.value1 = null;
         }
@@ -185,8 +185,8 @@ public abstract class LexicalScope {
         public String name2;
         public SephObject value2;
 
-        Three(LexicalScope parent, Runtime runtime, String name0, String name1, String name2) {
-            super(parent, runtime, name0, name1);
+        Three(LexicalScope parent, SephObject ground, Runtime runtime, String name0, String name1, String name2) {
+            super(parent, ground, runtime, name0, name1);
             this.name2 = name2;
             this.value2 = null;
         }
@@ -237,8 +237,8 @@ public abstract class LexicalScope {
         public String name3;
         public SephObject value3;
 
-        Four(LexicalScope parent, Runtime runtime, String name0, String name1, String name2, String name3) {
-            super(parent, runtime, name0, name1, name2);
+        Four(LexicalScope parent, SephObject ground, Runtime runtime, String name0, String name1, String name2, String name3) {
+            super(parent, ground, runtime, name0, name1, name2);
             this.name3 = name3;
             this.value3 = null;
         }
@@ -292,8 +292,8 @@ public abstract class LexicalScope {
         public String name4;
         public SephObject value4;
 
-        Five(LexicalScope parent, Runtime runtime, String name0, String name1, String name2, String name3, String name4) {
-            super(parent, runtime, name0, name1, name2, name3);
+        Five(LexicalScope parent, SephObject ground, Runtime runtime, String name0, String name1, String name2, String name3, String name4) {
+            super(parent, ground, runtime, name0, name1, name2, name3);
             this.name4 = name4;
             this.value4 = null;
         }
@@ -352,8 +352,8 @@ public abstract class LexicalScope {
         public String name5;
         public SephObject value5;
 
-        Six(LexicalScope parent, Runtime runtime, String name0, String name1, String name2, String name3, String name4, String name5) {
-            super(parent, runtime, name0, name1, name2, name3, name4);
+        Six(LexicalScope parent, SephObject ground, Runtime runtime, String name0, String name1, String name2, String name3, String name4, String name5) {
+            super(parent, ground, runtime, name0, name1, name2, name3, name4);
             this.name5 = name5;
             this.value5 = null;
         }
@@ -413,41 +413,44 @@ public abstract class LexicalScope {
 
     public final LexicalScope parent;
     public final Runtime runtime;
-    public volatile int version = 0;
+    public int version = 0;
+    public final SephObject ground;
 
     public final LexicalScope getParent() {
         return parent;
     }
 
-    private LexicalScope(LexicalScope parent, Runtime runtime) {
-        this.parent = parent;
+    private LexicalScope(LexicalScope parent, SephObject ground, Runtime runtime) {
         assert runtime != null;
+
+        this.parent = parent;
         this.runtime = runtime;
+        this.ground = ground;
     }
 
-    public static LexicalScope create(LexicalScope parent, Runtime runtime, String[] names) {
+    public static LexicalScope create(LexicalScope parent, SephObject ground, Runtime runtime, String[] names) {
         switch(names.length) {
         case 0:
-            return new Empty(parent, runtime);
+            return new Empty(parent, ground, runtime);
         case 1:
-            return new One(parent, runtime, names[0]);
+            return new One(parent, ground, runtime, names[0]);
         case 2:
-            return new Two(parent, runtime, names[0], names[1]);
+            return new Two(parent, ground, runtime, names[0], names[1]);
         case 3:
-            return new Three(parent, runtime, names[0], names[1], names[2]);
+            return new Three(parent, ground, runtime, names[0], names[1], names[2]);
         case 4:
-            return new Four(parent, runtime, names[0], names[1], names[2], names[3]);
+            return new Four(parent, ground, runtime, names[0], names[1], names[2], names[3]);
         case 5:
-            return new Five(parent, runtime, names[0], names[1], names[2], names[3], names[4]);
+            return new Five(parent, ground, runtime, names[0], names[1], names[2], names[3], names[4]);
         case 6:
-            return new Six(parent, runtime, names[0], names[1], names[2], names[3], names[4], names[5]);
+            return new Six(parent, ground, runtime, names[0], names[1], names[2], names[3], names[4], names[5]);
         default:
-            return new Many(parent, runtime, names);
+            return new Many(parent, ground, runtime, names);
         }
     }
 
-    public LexicalScope newScopeWith(String[] names) {
-        return create(this, runtime, names);
+    public LexicalScope newScopeWith(String[] names, SephObject newGround) {
+        return create(this, newGround, runtime, names);
     }
 
     public abstract SephObject get(int depth, int index);

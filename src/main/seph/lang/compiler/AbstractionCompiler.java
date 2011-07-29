@@ -321,10 +321,15 @@ public class AbstractionCompiler {
         ma.getStatic(className, le.name, SephObject.class);
     }
 
-    private void compileTerminator(MethodAdapter ma, Message current) {
+    private void compileTerminator(MethodAdapter ma, Message current, boolean isActivateWith) {
         if(current.next() != null && !(current.next() instanceof Terminator)) {
             ma.pop();
-            ma.loadLocal(RECEIVER);
+            if(isActivateWith) {
+                ma.loadLocal(RECEIVER);
+            } else {
+                ma.loadLocal(METHOD_SCOPE_ARG);
+                ma.getField(LexicalScope.class, "ground", SephObject.class);
+            }
         }
     }
 
@@ -410,7 +415,8 @@ public class AbstractionCompiler {
 
         Message current = argumentToCompile;
 
-        ma.loadLocal(RECEIVER);
+        ma.loadLocal(METHOD_SCOPE_ARG);
+        ma.getField(LexicalScope.class, "ground", SephObject.class);
 
         boolean first = true;
 
@@ -420,7 +426,7 @@ public class AbstractionCompiler {
                 compileLiteral(ma, current);
                 first = false;
             } else if(current instanceof Terminator) {
-                compileTerminator(ma, current);
+                compileTerminator(ma, current, false);
                 first = true;
             } else if(current instanceof Abstraction) {
                 ma.pop();
@@ -510,7 +516,12 @@ public class AbstractionCompiler {
                     ma.loadLocal(METHOD_SCOPE_ARG);
                 }
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-                ma.loadLocal(RECEIVER);
+                if(activateWith) {
+                    ma.loadLocal(RECEIVER);
+                } else {
+                    ma.loadLocal(METHOD_SCOPE_ARG);
+                    ma.getField(LexicalScope.class, "ground", SephObject.class);
+                }
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
 
                 ma.storeArray();
@@ -527,7 +538,12 @@ public class AbstractionCompiler {
                 }
 
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-                ma.loadLocal(RECEIVER);
+                if(activateWith) {
+                    ma.loadLocal(RECEIVER);
+                } else {
+                    ma.loadLocal(METHOD_SCOPE_ARG);
+                    ma.getField(LexicalScope.class, "ground", SephObject.class);
+                }
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
             }
         }
@@ -558,7 +574,12 @@ public class AbstractionCompiler {
                 }
 
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-                ma.loadLocal(RECEIVER);
+                if(activateWith) {
+                    ma.loadLocal(RECEIVER);
+                } else {
+                    ma.loadLocal(METHOD_SCOPE_ARG);
+                    ma.getField(LexicalScope.class, "ground", SephObject.class);
+                }
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
                 ma.storeArray();
             }
@@ -689,7 +710,12 @@ public class AbstractionCompiler {
         ma.ifEqual(elseBranch);
 
         if(_then != null) {
-            ma.loadLocal(RECEIVER);
+            if(activateWith) {
+                ma.loadLocal(RECEIVER);
+            } else {
+                ma.loadLocal(METHOD_SCOPE_ARG);
+                ma.getField(LexicalScope.class, "ground", SephObject.class);
+            }
             Message newLast = current == last ? findLast(_then) : SENTINEL;
             compileCode(ma, plusArity, _then, newLast, activateWith);
             if(current != last) {
@@ -701,7 +727,12 @@ public class AbstractionCompiler {
         ma.jump(endIf);
         ma.label(elseBranch);
         if(_else != null) {
-            ma.loadLocal(RECEIVER);
+            if(activateWith) {
+                ma.loadLocal(RECEIVER);
+            } else {
+                ma.loadLocal(METHOD_SCOPE_ARG);
+                ma.getField(LexicalScope.class, "ground", SephObject.class);
+            }
             Message newLast = current == last ? findLast(_else) : SENTINEL;
             compileCode(ma, plusArity, _else, newLast, activateWith);
             if(current != last) {
@@ -937,7 +968,7 @@ public class AbstractionCompiler {
                 compileLiteral(ma, current);
                 first = false;
             } else if(current instanceof Terminator) {
-                compileTerminator(ma, current);
+                compileTerminator(ma, current, isActivateWith);
                 first = true;
             } else if(current instanceof Abstraction) {
                 ma.pop();
@@ -985,7 +1016,8 @@ public class AbstractionCompiler {
             ma.load(s);
             ma.storeArray();
         }
-        ma.virtualCall(LexicalScope.class, "newScopeWith", LexicalScope.class, String[].class);
+        ma.loadLocal(RECEIVER);
+        ma.virtualCall(LexicalScope.class, "newScopeWith", LexicalScope.class, String[].class, SephObject.class);
         ma.storeLocal(METHOD_SCOPE - 1 + arity);
 
         for(int i = 0; i < arity; i++) {
@@ -1022,7 +1054,8 @@ public class AbstractionCompiler {
             ma.load(s);
             ma.storeArray();
         }
-        ma.virtualCall(LexicalScope.class, "newScopeWith", LexicalScope.class, String[].class);
+        ma.loadLocal(RECEIVER);
+        ma.virtualCall(LexicalScope.class, "newScopeWith", LexicalScope.class, String[].class, SephObject.class);
         ma.loadLocal(METHOD_SCOPE);
 
         ma.loadLocal(ARGUMENTS);

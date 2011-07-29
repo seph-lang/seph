@@ -101,7 +101,8 @@ public class SephCallSite extends MutableCallSite {
     private final String messageKind;
     private final String messageName;
     private final MethodHandle slowPath;
-    private final Object[] argumentMHs;
+    private final MethodHandle[] argumentMHs;
+    private final MethodHandle[] argumentASTMHs;
 
     private SephCallSite(MethodHandles.Lookup lookup, String name, MethodType type, Object[] argumentMHs) {
         super(type);
@@ -113,8 +114,15 @@ public class SephCallSite extends MutableCallSite {
         this.lexicalDepth = (Integer)pieces[3];
         this.lexicalIndex = (Integer)pieces[4];
 
+        int argumentLength = argumentMHs.length/2;
+        this.argumentMHs  = new MethodHandle[argumentLength];
+        this.argumentASTMHs  = new MethodHandle[argumentLength];
+        for(int i = 0; i<argumentLength; i++) {
+            this.argumentMHs[i]    = (MethodHandle)argumentMHs[i * 2];
+            this.argumentASTMHs[i] = (MethodHandle)argumentMHs[i * 2 + 1];
+        }
+
         this.slowPath     = computeSlowPath();
-        this.argumentMHs  = argumentMHs;
 
         if(lexical && "lookup".equals(messageKind)) {
             setTarget(computeLexicalLookupPath());

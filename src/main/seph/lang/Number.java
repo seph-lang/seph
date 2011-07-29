@@ -18,6 +18,7 @@ public class Number {
 
     @SephMethod(name="-")
     public final static SephObject minus(SephObject receiver, SephObject subtrahend) {
+               // new Exception().printStackTrace();
         return ((Numeric)receiver).sub(subtrahend);
     }
 

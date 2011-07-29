@@ -46,7 +46,7 @@ public class AbstractionCompilerTest {
     public void ensure_generated_argument_method_can_return_the_argument_code_unevaluated() throws Exception, ControlFlow {
         Message code = parse("foobar(x y z, bar foo 42)");
         seph.lang.Runtime r = new seph.lang.Runtime();
-        SephObject so = AbstractionCompiler.compile(r, code, new ArrayList<String>(), LexicalScope.create(null, r, new String[0]), new StaticScope(null), new AbstractionCompiler.SemiStaticScope(new ArrayList<String>(), null), "test");
+        SephObject so = AbstractionCompiler.compile(r, code, new ArrayList<String>(), LexicalScope.create(null, null, r, new String[0]), new StaticScope(null), new AbstractionCompiler.SemiStaticScope(new ArrayList<String>(), null), "test");
         Method m = so.getClass().getMethod("argument_0_0", LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class);
         Message result = (Message)m.invoke(null, null, null, null, null, false, false);
         
