@@ -47,8 +47,8 @@ public class AbstractionCompilerTest {
         Message code = parse("foobar(x y z, bar foo 42)");
         seph.lang.Runtime r = new seph.lang.Runtime();
         SephObject so = AbstractionCompiler.compile(r, code, new ArrayList<String>(), LexicalScope.create(null, null, r, new String[0]), new StaticScope(null), new AbstractionCompiler.SemiStaticScope(new ArrayList<String>(), null), "test");
-        Method m = so.getClass().getMethod("argument_0_0", LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class);
-        Message result = (Message)m.invoke(null, null, null, null, null, false, false);
+        Method m = so.getClass().getMethod("argument_0_0", LexicalScope.class, SThread.class, LexicalScope.class, boolean.class, boolean.class);
+        Message result = (Message)m.invoke(null, null, null, null, false, false);
         
         assertEquals("x", result.name());
         assertEquals(PersistentList.EMPTY, result.arguments());
@@ -58,8 +58,8 @@ public class AbstractionCompilerTest {
         assertEquals(PersistentList.EMPTY, result.next().next().arguments());
         assertNull(result.next().next().next());
 
-        m = so.getClass().getMethod("argument_0_1", LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class);
-        result = (Message)m.invoke(null, null, null, null, null, false, false);
+        m = so.getClass().getMethod("argument_0_1", LexicalScope.class, SThread.class, LexicalScope.class, boolean.class, boolean.class);
+        result = (Message)m.invoke(null, null, null, null, false, false);
 
         assertEquals("bar", result.name());
         assertEquals(PersistentList.EMPTY, result.arguments());

@@ -175,7 +175,7 @@ public class AbstractionCompiler {
         }
     }
 
-    private final static MethodType ARGUMENT_METHOD_TYPE = MethodType.methodType(SephObject.class, LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class);
+    private final static MethodType ARGUMENT_METHOD_TYPE = MethodType.methodType(SephObject.class, LexicalScope.class, SThread.class, LexicalScope.class, boolean.class, boolean.class);
     private void setStaticValues() {
         try {
             Field f = abstractionClass.getDeclaredField("fullMsg");
@@ -387,7 +387,7 @@ public class AbstractionCompiler {
         final String handleName = "handle_arg_" + currentMessageIndex + "_" + argIndex;
         final String methodName = "argument_" + currentMessageIndex + "_" + argIndex;
         ArgumentEntry ae = new ArgumentEntry(codeName, handleName, methodName, argument, keyword);
-        mhsAndAsts.add(new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC,  className, methodName, sig(SephObject.class, LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class)));
+        mhsAndAsts.add(new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC,  className, methodName, sig(SephObject.class, LexicalScope.class, SThread.class, LexicalScope.class, boolean.class, boolean.class)));
         mhsAndAsts.add(new org.objectweb.asm.MethodHandle(MH_GETSTATIC,     className, codeName, c(SephObject.class)));
 
         arguments.add(ae);
@@ -396,7 +396,7 @@ public class AbstractionCompiler {
         cw.visitField(ACC_PRIVATE + ACC_STATIC, codeName,   c(SephObject.class), null, null);
         cw.visitField(ACC_PRIVATE + ACC_STATIC, handleName, c(MethodHandle.class), null, null);
 
-        MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC + ACC_STATIC, methodName, sig(SephObject.class, LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class), null, null));
+        MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC + ACC_STATIC, methodName, sig(SephObject.class, LexicalScope.class, SThread.class, LexicalScope.class, boolean.class, boolean.class), null, null));
         
         int[] layout = VARIABLE_LAYOUT_ARGUMENT_METHOD;
 
@@ -512,8 +512,6 @@ public class AbstractionCompiler {
                 ma.getStatic(className, ae.handleName, MethodHandle.class);
                 ma.loadLocal(layout[METHOD_SCOPE_IDX]);
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-                ma.loadLocal(layout[RECEIVER_IDX]);
-                ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
 
                 ma.storeArray();
             }
@@ -524,8 +522,6 @@ public class AbstractionCompiler {
 
                 ma.loadLocal(layout[METHOD_SCOPE_IDX]);
 
-                ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-                ma.loadLocal(layout[RECEIVER_IDX]);
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
             }
         }
@@ -551,8 +547,6 @@ public class AbstractionCompiler {
 
                 ma.loadLocal(layout[METHOD_SCOPE_IDX]);
 
-                ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-                ma.loadLocal(layout[RECEIVER_IDX]);
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
                 ma.storeArray();
             }
@@ -582,11 +576,11 @@ public class AbstractionCompiler {
 
         VARIABLE_LAYOUT_ARGUMENT_METHOD[ARGUMENTS_IDX]             = -1;  // argument evaluation doesn't have any arguments
         VARIABLE_LAYOUT_ARGUMENT_METHOD[METHOD_SCOPE_IDX]          = 0;
-        VARIABLE_LAYOUT_ARGUMENT_METHOD[THREAD_IDX]                = 2;
-        VARIABLE_LAYOUT_ARGUMENT_METHOD[SCOPE_IDX]                 = 3;
-        VARIABLE_LAYOUT_ARGUMENT_METHOD[SHOULD_EVALUATE_IDX]       = 4;
-        VARIABLE_LAYOUT_ARGUMENT_METHOD[SHOULD_EVALUATE_FULLY_IDX] = 5;
-        VARIABLE_LAYOUT_ARGUMENT_METHOD[RECEIVER_IDX]              = 6;
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[THREAD_IDX]                = 1;
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[SCOPE_IDX]                 = 2;
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[SHOULD_EVALUATE_IDX]       = 3;
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[SHOULD_EVALUATE_FULLY_IDX] = 4;
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[RECEIVER_IDX]              = 5;
     }
 
 
