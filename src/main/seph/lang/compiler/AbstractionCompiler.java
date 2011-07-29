@@ -321,15 +321,10 @@ public class AbstractionCompiler {
         ma.getStatic(className, le.name, SephObject.class);
     }
 
-    private void compileTerminator(MethodAdapter ma, Message current, boolean isActivateWith) {
+    private void compileTerminator(MethodAdapter ma, Message current, int[] layout) {
         if(current.next() != null && !(current.next() instanceof Terminator)) {
             ma.pop();
-            if(isActivateWith) {
-                ma.loadLocal(RECEIVER);
-            } else {
-                ma.loadLocal(METHOD_SCOPE_ARG);
-                ma.getField(LexicalScope.class, "ground", SephObject.class);
-            }
+            ma.loadLocal(layout[RECEIVER_IDX]);
         }
     }
 
@@ -337,7 +332,7 @@ public class AbstractionCompiler {
 
     private String currentAssignment = null;
     
-    private void compileAssignment(MethodAdapter ma, Assignment current, int plusArity, int scopeIndex, boolean activateWith) {
+    private void compileAssignment(MethodAdapter ma, Assignment current, int[] layout) {
         Message left = (Message)current.arguments().seq().first();
         Message right = (Message)current.arguments().seq().next().first();
         String name = left.name();
@@ -349,9 +344,9 @@ public class AbstractionCompiler {
         //        printThisClass = true;
         switch(current.getAssignment()) {
         case EQ:
-            compileCode(ma, plusArity, right, SENTINEL, activateWith);   // [val]
+            compileCode(ma, right, SENTINEL, layout);   // [val]
             ma.dup(); // [val, val]
-            ma.loadLocal(scopeIndex);  // [val, val, scope]
+            ma.loadLocal(layout[METHOD_SCOPE_IDX]);  // [val, val, scope]
             ma.swap(); // [val, scope, val]
             ma.load(se.depth); // [val, scope, val, depth]
             ma.swap(); // [val, scope, depth, val]
@@ -360,10 +355,10 @@ public class AbstractionCompiler {
             ma.virtualCall(LexicalScope.class, "assign", void.class, int.class, int.class, SephObject.class);
             break;
         case PLUS_EQ:
-            compileCode(ma, plusArity, left, SENTINEL, activateWith);
-            compileCode(ma, plusArity, NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position(), null), SENTINEL, activateWith);
+            compileCode(ma, left, SENTINEL, layout);
+            compileCode(ma, NamedMessage.create("+", new PersistentList(right), null, left.filename(), left.line(), left.position(), null), SENTINEL, layout);
             ma.dup();
-            ma.loadLocal(scopeIndex);
+            ma.loadLocal(layout[METHOD_SCOPE_IDX]);
             ma.swap();
             ma.load(se.depth); // [val, scope, val, depth]
             ma.swap(); // [val, scope, depth, val]
@@ -397,12 +392,15 @@ public class AbstractionCompiler {
 
         arguments.add(ae);
         currentArguments.add(ae);
-        
+
         cw.visitField(ACC_PRIVATE + ACC_STATIC, codeName,   c(SephObject.class), null, null);
         cw.visitField(ACC_PRIVATE + ACC_STATIC, handleName, c(MethodHandle.class), null, null);
 
         MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC + ACC_STATIC, methodName, sig(SephObject.class, LexicalScope.class, SephObject.class, SThread.class, LexicalScope.class, boolean.class, boolean.class), null, null));
-        ma.loadLocalInt(SHOULD_EVALUATE);
+        
+        int[] layout = VARIABLE_LAYOUT_ARGUMENT_METHOD;
+
+        ma.loadLocalInt(layout[SHOULD_EVALUATE_IDX]);
         ma.zero();
 
         Label els = new Label();
@@ -415,8 +413,10 @@ public class AbstractionCompiler {
 
         Message current = argumentToCompile;
 
-        ma.loadLocal(METHOD_SCOPE_ARG);
+        ma.loadLocal(layout[METHOD_SCOPE_IDX]);
         ma.getField(LexicalScope.class, "ground", SephObject.class);
+        ma.dup();
+        ma.storeLocal(layout[RECEIVER_IDX]);
 
         boolean first = true;
 
@@ -426,7 +426,7 @@ public class AbstractionCompiler {
                 compileLiteral(ma, current);
                 first = false;
             } else if(current instanceof Terminator) {
-                compileTerminator(ma, current, false);
+                compileTerminator(ma, current, layout);
                 first = true;
             } else if(current instanceof Abstraction) {
                 ma.pop();
@@ -441,10 +441,10 @@ public class AbstractionCompiler {
                 ma.init(newName, Void.TYPE, LexicalScope.class);
                 first = false;
             } else if(current instanceof Assignment) {
-                compileAssignment(ma, (Assignment)current, -1, 0, false);
+                compileAssignment(ma, (Assignment)current, layout);
                 first = false;
             } else {
-                compileMessageSend(ma, current, false, -1, first, last);
+                compileMessageSend(ma, current, layout, first, last);
                 first = false;
             }
             current = current.next();
@@ -475,7 +475,7 @@ public class AbstractionCompiler {
         return new Arity(arity - keywordArgs, keywordArgs);
     }
 
-    private org.objectweb.asm.MethodHandle[] compileArguments(MethodAdapter ma, IPersistentList arguments, boolean activateWith, int plusArity, Message last) {
+    private org.objectweb.asm.MethodHandle[] compileArguments(MethodAdapter ma, IPersistentList arguments, int[] layout, Message last) {
         int num = 0;
         final int currentMessageIndex = messageIndex++;
 
@@ -510,18 +510,9 @@ public class AbstractionCompiler {
                 ma.load(i++);
                 
                 ma.getStatic(className, ae.handleName, MethodHandle.class);
-                if(activateWith) {
-                    ma.loadLocal(METHOD_SCOPE + plusArity); 
-                } else {
-                    ma.loadLocal(METHOD_SCOPE_ARG);
-                }
+                ma.loadLocal(layout[METHOD_SCOPE_IDX]);
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-                if(activateWith) {
-                    ma.loadLocal(RECEIVER);
-                } else {
-                    ma.loadLocal(METHOD_SCOPE_ARG);
-                    ma.getField(LexicalScope.class, "ground", SephObject.class);
-                }
+                ma.loadLocal(layout[RECEIVER_IDX]);
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
 
                 ma.storeArray();
@@ -531,19 +522,10 @@ public class AbstractionCompiler {
                 // printThisClass = true;
                 ma.getStatic(className, ae.handleName, MethodHandle.class);
 
-                if(activateWith) {
-                    ma.loadLocal(METHOD_SCOPE + plusArity); 
-                } else {
-                    ma.loadLocal(METHOD_SCOPE_ARG);
-                }
+                ma.loadLocal(layout[METHOD_SCOPE_IDX]);
 
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-                if(activateWith) {
-                    ma.loadLocal(RECEIVER);
-                } else {
-                    ma.loadLocal(METHOD_SCOPE_ARG);
-                    ma.getField(LexicalScope.class, "ground", SephObject.class);
-                }
+                ma.loadLocal(layout[RECEIVER_IDX]);
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
             }
         }
@@ -567,19 +549,10 @@ public class AbstractionCompiler {
                 ma.load(i++);
                 ma.getStatic(className, ae.handleName, MethodHandle.class);
 
-                if(activateWith) {
-                    ma.loadLocal(METHOD_SCOPE + plusArity); 
-                } else {
-                    ma.loadLocal(METHOD_SCOPE_ARG);
-                }
+                ma.loadLocal(layout[METHOD_SCOPE_IDX]);
 
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
-                if(activateWith) {
-                    ma.loadLocal(RECEIVER);
-                } else {
-                    ma.loadLocal(METHOD_SCOPE_ARG);
-                    ma.getField(LexicalScope.class, "ground", SephObject.class);
-                }
+                ma.loadLocal(layout[RECEIVER_IDX]);
                 ma.virtualCall(MethodHandle.class, "bindTo", MethodHandle.class, Object.class);
                 ma.storeArray();
             }
@@ -588,18 +561,38 @@ public class AbstractionCompiler {
         return mhsAndAsts.toArray(new org.objectweb.asm.MethodHandle[0]);
     }
 
-    private final static int METHOD_SCOPE_ARG       = 0;
-    private final static int RECEIVER               = 1;
-    private final static int THREAD                 = 2;
-    private final static int SCOPE                  = 3;
-    private final static int ARGUMENTS              = 4;
-    private final static int SHOULD_EVALUATE        = 4;
-    private final static int METHOD_SCOPE           = 5;
-    private final static int SHOULD_EVALUATE_FULLY  = 5;
 
-    private void pumpTailCall(MethodAdapter ma) {
+    private final static int[] VARIABLE_LAYOUT_ACTIVATE_WITH   = new int[7];
+    private final static int[] VARIABLE_LAYOUT_ARGUMENT_METHOD = new int[7];
+
+    private final static int RECEIVER_IDX               = 0;
+    private final static int THREAD_IDX                 = 1;
+    private final static int SCOPE_IDX                  = 2;
+    private final static int ARGUMENTS_IDX              = 3;
+    private final static int METHOD_SCOPE_IDX           = 4;
+    private final static int SHOULD_EVALUATE_IDX        = 5;
+    private final static int SHOULD_EVALUATE_FULLY_IDX  = 6;
+
+    static {
+        VARIABLE_LAYOUT_ACTIVATE_WITH[RECEIVER_IDX]     = 1;
+        VARIABLE_LAYOUT_ACTIVATE_WITH[THREAD_IDX]       = 2;
+        VARIABLE_LAYOUT_ACTIVATE_WITH[SCOPE_IDX]        = 3;
+        VARIABLE_LAYOUT_ACTIVATE_WITH[ARGUMENTS_IDX]    = 4;
+        VARIABLE_LAYOUT_ACTIVATE_WITH[METHOD_SCOPE_IDX] = 5;
+
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[ARGUMENTS_IDX]             = -1;  // argument evaluation doesn't have any arguments
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[METHOD_SCOPE_IDX]          = 0;
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[THREAD_IDX]                = 2;
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[SCOPE_IDX]                 = 3;
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[SHOULD_EVALUATE_IDX]       = 4;
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[SHOULD_EVALUATE_FULLY_IDX] = 5;
+        VARIABLE_LAYOUT_ARGUMENT_METHOD[RECEIVER_IDX]              = 6;
+    }
+
+
+    private void pumpTailCall(MethodAdapter ma, int[] layout) {
         if(runtime.configuration().doTailCallOptimization()) {
-            ma.loadLocal(THREAD);
+            ma.loadLocal(layout[THREAD_IDX]);
             ma.dynamicCall("seph:pumpTailCall", sig(SephObject.class, SephObject.class, SThread.class), BOOTSTRAP_METHOD);
         }
     }
@@ -689,7 +682,7 @@ public class AbstractionCompiler {
         return sig(SephObject.class, argumentArrayFor2(arity));
     }
 
-    private void compileIfStatement(MethodAdapter ma, Message current, boolean activateWith, int plusArity, boolean first, Message last, Arity arity) {
+    private void compileIfStatement(MethodAdapter ma, Message current, int[] layout, boolean first, Message last, Arity arity) {
         ISeq seq = current.arguments().seq();
         Message conditional = (Message)seq.first();
         Message _then = null;
@@ -701,7 +694,7 @@ public class AbstractionCompiler {
             }
         }
 
-        compileCode(ma, plusArity, conditional, SENTINEL, activateWith);
+        compileCode(ma, conditional, SENTINEL, layout);
         ma.interfaceCall(SephObject.class, "isTrue", boolean.class);
         Label elseBranch = new Label();
         Label endIf = new Label();
@@ -710,16 +703,11 @@ public class AbstractionCompiler {
         ma.ifEqual(elseBranch);
 
         if(_then != null) {
-            if(activateWith) {
-                ma.loadLocal(RECEIVER);
-            } else {
-                ma.loadLocal(METHOD_SCOPE_ARG);
-                ma.getField(LexicalScope.class, "ground", SephObject.class);
-            }
+            ma.loadLocal(layout[RECEIVER_IDX]);
             Message newLast = current == last ? findLast(_then) : SENTINEL;
-            compileCode(ma, plusArity, _then, newLast, activateWith);
+            compileCode(ma, _then, newLast, layout);
             if(current != last) {
-                pumpTailCall(ma);
+                pumpTailCall(ma, layout);
             }
         } else {
             ma.getStatic(seph.lang.Runtime.class, "NIL", SephObject.class);
@@ -727,16 +715,11 @@ public class AbstractionCompiler {
         ma.jump(endIf);
         ma.label(elseBranch);
         if(_else != null) {
-            if(activateWith) {
-                ma.loadLocal(RECEIVER);
-            } else {
-                ma.loadLocal(METHOD_SCOPE_ARG);
-                ma.getField(LexicalScope.class, "ground", SephObject.class);
-            }
+            ma.loadLocal(layout[RECEIVER_IDX]);
             Message newLast = current == last ? findLast(_else) : SENTINEL;
-            compileCode(ma, plusArity, _else, newLast, activateWith);
+            compileCode(ma, _else, newLast, layout);
             if(current != last) {
-                pumpTailCall(ma);
+                pumpTailCall(ma, layout);
             }
         } else {
             ma.getStatic(seph.lang.Runtime.class, "NIL", SephObject.class);
@@ -785,18 +768,14 @@ public class AbstractionCompiler {
         }
     }
 
-    private void compileRegularMessageSend(MethodAdapter ma, Message current, boolean activateWith, int plusArity, boolean first, Message last, Arity arity, String name) {
+    private void compileRegularMessageSend(MethodAdapter ma, Message current, int[] layout, boolean first, Message last, Arity arity, String name) {
         ScopeEntry se = null;
         Label noActivate = null;
         String messageType = "message";
         String possibleAdditional = "";
 
         if(first && (se = scope.find(name)) != null) {
-            if(activateWith) {
-                ma.loadLocal(METHOD_SCOPE + plusArity);
-            } else {
-                ma.loadLocal(METHOD_SCOPE_ARG);
-            }
+            ma.loadLocal(layout[METHOD_SCOPE_IDX]);
             
             if(runtime.configuration().doLexicalMethodHandleLookup()) {
                 ma.dynamicCall("seph:lookup:" + encode(name) + ":lexical:" + se.depth + ":" + se.index, sig(SephObject.class, LexicalScope.class), BOOTSTRAP_METHOD);
@@ -824,15 +803,10 @@ public class AbstractionCompiler {
             ma.swap();
         }        
 
-        ma.loadLocal(THREAD);
-
-        if(activateWith) {
-            ma.loadLocal(METHOD_SCOPE + plusArity);
-        } else {
-            ma.loadLocal(METHOD_SCOPE_ARG);
-        }
+        ma.loadLocal(layout[THREAD_IDX]);
+        ma.loadLocal(layout[METHOD_SCOPE_IDX]);
             
-        org.objectweb.asm.MethodHandle[] argMHrefs = compileArguments(ma, current.arguments(), activateWith, plusArity, last);
+        org.objectweb.asm.MethodHandle[] argMHrefs = compileArguments(ma, current.arguments(), layout, last);
 
         if(first && se != null) {
             // [recv, value, thread, scope, arg0, arg1]
@@ -849,16 +823,16 @@ public class AbstractionCompiler {
                 ma.dynamicCall("seph:" + messageType + ":" + encode(name), sigFor2(arity), BOOTSTRAP_METHOD, argMHrefs);
                 if(runtime.configuration().doTailCallOptimization()) {
                     if(fullPumping) {
-                        if(!activateWith) {
+                        if(layout[SHOULD_EVALUATE_FULLY_IDX] != 0) {
                             Label noPump = new Label();
-                            ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
+                            ma.loadLocalInt(layout[SHOULD_EVALUATE_FULLY_IDX]);
                             ma.zero();
                             ma.ifEqual(noPump);
-                            pumpTailCall(ma);
+                            pumpTailCall(ma, layout);
                             ma.label(noPump);
                         }
                     } else {
-                        pumpTailCall(ma);
+                        pumpTailCall(ma, layout);
                     }
                 }
             } else {
@@ -875,17 +849,17 @@ public class AbstractionCompiler {
                         ma.storeArray();
                     }
                     ma.staticCall(MethodHandles.class, "insertArguments", MethodHandle.class, MethodHandle.class, int.class, Object[].class);
-                    ma.loadLocal(THREAD);
+                    ma.loadLocal(layout[THREAD_IDX]);
                     ma.swap();
                     ma.putField(SThread.class, "tail", MethodHandle.class);
                     ma.getStatic(SThread.class, "TAIL_MARKER", SephObject.class);
 
-                    if(!activateWith) {
+                    if(layout[SHOULD_EVALUATE_FULLY_IDX] != 0) {
                         Label noPump = new Label();
-                        ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
+                        ma.loadLocalInt(layout[SHOULD_EVALUATE_FULLY_IDX]);
                         ma.zero();
                         ma.ifEqual(noPump);
-                        pumpTailCall(ma);
+                        pumpTailCall(ma, layout);
                         ma.label(noPump);
                     }
 
@@ -900,7 +874,7 @@ public class AbstractionCompiler {
                     Label activate = new Label();
                     ma.virtualCall(MethodHandle.class, "invokeExact", sigFor(arity));
 
-                    pumpTailCall(ma);
+                    pumpTailCall(ma, layout);
                     ma.jump(activate);
                     ma.label(noActivate);
 
@@ -920,28 +894,28 @@ public class AbstractionCompiler {
             ma.dynamicCall("seph:" + messageType + ":" + encode(name) + possibleAdditional, sigFor(arity), BOOTSTRAP_METHOD, argMHrefs);
             if(runtime.configuration().doTailCallOptimization()) {
                 if(fullPumping) {
-                    if(!activateWith) {
+                    if(layout[SHOULD_EVALUATE_FULLY_IDX] != 0) {
                         Label noPump = new Label();
-                        ma.loadLocalInt(SHOULD_EVALUATE_FULLY);
+                        ma.loadLocalInt(layout[SHOULD_EVALUATE_FULLY_IDX]);
                         ma.zero();
                         ma.ifEqual(noPump);
-                        pumpTailCall(ma);
+                        pumpTailCall(ma, layout);
                         ma.label(noPump);
                     }
                 } else {
-                    pumpTailCall(ma);
+                    pumpTailCall(ma, layout);
                 }
             }
         }
     }
 
-    private void compileMessageSend(MethodAdapter ma, Message current, boolean activateWith, int plusArity, boolean first, Message last) {
+    private void compileMessageSend(MethodAdapter ma, Message current, int[] layout, boolean first, Message last) {
         final Arity arity = countArguments(current.arguments());
         final String name = current.name().intern();
         if(name == "if" && arity.positional > 0 && arity.positional < 4) {
-            compileIfStatement(ma, current, activateWith, plusArity, first, last, arity);
+            compileIfStatement(ma, current, layout, first, last, arity);
         } else {
-            compileRegularMessageSend(ma, current, activateWith, plusArity, first, last, arity, name);
+            compileRegularMessageSend(ma, current, layout, first, last, arity, name);
         }
     }
 
@@ -957,7 +931,7 @@ public class AbstractionCompiler {
         return lastReal;
     }
 
-    private void compileCode(MethodAdapter ma, int plusArity, Message _code, Message last, boolean isActivateWith) {
+    private void compileCode(MethodAdapter ma, Message _code, Message last, int[] layout) {
         boolean first = true;
 
         Message current = _code;
@@ -968,7 +942,7 @@ public class AbstractionCompiler {
                 compileLiteral(ma, current);
                 first = false;
             } else if(current instanceof Terminator) {
-                compileTerminator(ma, current, isActivateWith);
+                compileTerminator(ma, current, layout);
                 first = true;
             } else if(current instanceof Abstraction) {
                 ma.pop();
@@ -979,29 +953,31 @@ public class AbstractionCompiler {
                 String newName = AbstractionCompiler.compile(this.runtime, RT.seq(current.arguments()), ((Abstraction)current).scope, scope, aname);
                 ma.create(newName);
                 ma.dup();
-                ma.loadLocal(METHOD_SCOPE + plusArity);
+                ma.loadLocal(layout[METHOD_SCOPE_IDX]);
                 ma.init(newName, Void.TYPE, LexicalScope.class);
                 first = false;
             } else if(current instanceof Assignment) {
-                compileAssignment(ma, (Assignment)current, plusArity, METHOD_SCOPE + plusArity, isActivateWith);
+                compileAssignment(ma, (Assignment)current, layout);
                 first = false;
             } else {
-                compileMessageSend(ma, current, isActivateWith, isActivateWith ? plusArity : -1, first, last);
+                compileMessageSend(ma, current, layout, first, last);
                 first = false;
             }
             current = current.next();
         }
     }
 
-    private void activateWithBody(MethodAdapter ma, int plusArity) {
-        ma.loadLocal(RECEIVER);
-        compileCode(ma, plusArity, code, findLast(code), true);
+    private void activateWithBody(MethodAdapter ma, int[] layout) {
+        ma.loadLocal(layout[RECEIVER_IDX]);
+        compileCode(ma, code, findLast(code), layout);
         ma.retValue();
         ma.end();
     }
 
     // Should only be called for up to five arguments
     private void activateWithMethodRealArity(final int arity) {
+        final int[] layout = (int[])VARIABLE_LAYOUT_ACTIVATE_WITH.clone();
+        layout[METHOD_SCOPE_IDX] += (arity-1);
         MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC, encode(abstractionName), sigFor(new Arity(arity, 0)), null, null));
         ma.loadThis();
         ma.getField(className, "capture", LexicalScope.class);
@@ -1016,26 +992,26 @@ public class AbstractionCompiler {
             ma.load(s);
             ma.storeArray();
         }
-        ma.loadLocal(RECEIVER);
+        ma.loadLocal(layout[RECEIVER_IDX]);
         ma.virtualCall(LexicalScope.class, "newScopeWith", LexicalScope.class, String[].class, SephObject.class);
-        ma.storeLocal(METHOD_SCOPE - 1 + arity);
+        ma.storeLocal(layout[METHOD_SCOPE_IDX]);
 
         for(int i = 0; i < arity; i++) {
             String name = argNames.get(i);
-            ma.loadLocal(METHOD_SCOPE - 1 + arity);
+            ma.loadLocal(layout[METHOD_SCOPE_IDX]);
             ScopeEntry se = scope.find(name);
             ma.load(se.depth);
             ma.load(se.index);
-            ma.loadLocal(ARGUMENTS + i);
-            ma.loadLocal(SCOPE);
-            ma.loadLocal(THREAD);
+            ma.loadLocal(layout[ARGUMENTS_IDX] + i);
+            ma.loadLocal(layout[SCOPE_IDX]);
+            ma.loadLocal(layout[THREAD_IDX]);
             ma.one();
             ma.staticCall(ControlDefaultBehavior.class, "evaluateArgument", SephObject.class, Object.class, LexicalScope.class, SThread.class, boolean.class);
             
             ma.virtualCall(LexicalScope.class, "assign", void.class, int.class, int.class, SephObject.class);
         }
 
-        activateWithBody(ma, arity - 1);
+        activateWithBody(ma, layout);
     }
 
 
@@ -1054,20 +1030,20 @@ public class AbstractionCompiler {
             ma.load(s);
             ma.storeArray();
         }
-        ma.loadLocal(RECEIVER);
+        ma.loadLocal(VARIABLE_LAYOUT_ACTIVATE_WITH[RECEIVER_IDX]);
         ma.virtualCall(LexicalScope.class, "newScopeWith", LexicalScope.class, String[].class, SephObject.class);
-        ma.loadLocal(METHOD_SCOPE);
+        ma.loadLocal(VARIABLE_LAYOUT_ACTIVATE_WITH[METHOD_SCOPE_IDX]);
 
-        ma.loadLocal(ARGUMENTS);
+        ma.loadLocal(VARIABLE_LAYOUT_ACTIVATE_WITH[ARGUMENTS_IDX]);
         ix = 0;
         for(String arg : argNames) {
             ma.dup();
-            ma.loadLocal(METHOD_SCOPE);
+            ma.loadLocal(VARIABLE_LAYOUT_ACTIVATE_WITH[METHOD_SCOPE_IDX]);
             ma.swap();
             ma.load(ix++);
             ma.loadArray();
-            ma.loadLocal(SCOPE);
-            ma.loadLocal(THREAD);
+            ma.loadLocal(VARIABLE_LAYOUT_ACTIVATE_WITH[SCOPE_IDX]);
+            ma.loadLocal(VARIABLE_LAYOUT_ACTIVATE_WITH[THREAD_IDX]);
             ma.one();
             ma.staticCall(ControlDefaultBehavior.class, "evaluateArgument", SephObject.class, Object.class, LexicalScope.class, SThread.class, boolean.class);
             ma.load(arg);
@@ -1077,19 +1053,19 @@ public class AbstractionCompiler {
 
         ma.pop();
 
-        activateWithBody(ma, 0);
+        activateWithBody(ma, VARIABLE_LAYOUT_ACTIVATE_WITH);
     }
 
     private void activateWithMethodPassArgs(final int arity) {
         MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC, encode(abstractionName), sig(SephObject.class, SephObject.class, SThread.class, LexicalScope.class, MethodHandle[].class), null, null));
 
         ma.loadThis();
-        ma.loadLocal(RECEIVER);
-        ma.loadLocal(THREAD);
-        ma.loadLocal(SCOPE);
+        ma.loadLocal(VARIABLE_LAYOUT_ACTIVATE_WITH[RECEIVER_IDX]);
+        ma.loadLocal(VARIABLE_LAYOUT_ACTIVATE_WITH[THREAD_IDX]);
+        ma.loadLocal(VARIABLE_LAYOUT_ACTIVATE_WITH[SCOPE_IDX]);
 
         if(arity > 0) {
-            ma.loadLocal(ARGUMENTS);
+            ma.loadLocal(VARIABLE_LAYOUT_ACTIVATE_WITH[ARGUMENTS_IDX]);
 
             for(int i = 0; i < arity; i++) {
                 ma.dup();
