@@ -146,7 +146,7 @@ public class AbstractionCompiler {
 
         final byte[] classBytes = cw.toByteArray();
 
-        if(printThisClass || PRINT_COMPILE) {
+        if(printThisClass || PRINT_COMPILE || runtime.configuration().doPrintBytecode()) {
             new ClassReader(classBytes).accept(new org.objectweb.asm.util.TraceClassVisitor(new java.io.PrintWriter(System.err)), 0);
             // try {
             //     java.io.FileOutputStream ff = new java.io.FileOutputStream(className + ".class");

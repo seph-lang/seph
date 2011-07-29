@@ -14,15 +14,17 @@ import java.util.Properties;
 public class Main {
     private final static String HELP =
         "Usage: seph [switches] -- [programfile] [arguments]\n" +
-        " -h, --help      help, this message\n" +
-        " --tco           force tail call optimization to be on  [default: " + (SephConfig.DEFAULT_TAIL_CALL_OPTIMIZATION ? "on" : "off") + "]\n" +
-        " --notco         force tail call optimization to be off [default: " + (SephConfig.DEFAULT_TAIL_CALL_OPTIMIZATION ? "on" : "off") + "]\n" +
-        " --lexmh         force lexical lookup with method handles to be on  [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_LOOKUP ? "on" : "off") + "]\n" +
-        " --nolexmh       force lexical lookup with method handles to be off [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_LOOKUP ? "on" : "off") + "]\n" +
-        " --lexinvokemh   force lexical invoke with method handles to be on  [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_INVOKE ? "on" : "off") + "]\n" +
-        " --nolexinvokemh force lexical invoke with method handles to be off [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_INVOKE ? "on" : "off") + "]\n" +
-        " --copyright     print the copyright\n" +
-        " --version       print current version\n";
+        " -h, --help        help, this message\n" +
+        " --tco             force tail call optimization to be on  [default: " + (SephConfig.DEFAULT_TAIL_CALL_OPTIMIZATION ? "on" : "off") + "]\n" +
+        " --notco           force tail call optimization to be off [default: " + (SephConfig.DEFAULT_TAIL_CALL_OPTIMIZATION ? "on" : "off") + "]\n" +
+        " --lexmh           force lexical lookup with method handles to be on  [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_LOOKUP ? "on" : "off") + "]\n" +
+        " --nolexmh         force lexical lookup with method handles to be off [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_LOOKUP ? "on" : "off") + "]\n" +
+        " --lexinvokemh     force lexical invoke with method handles to be on  [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_INVOKE ? "on" : "off") + "]\n" +
+        " --nolexinvokemh   force lexical invoke with method handles to be off [default: " + (SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_INVOKE ? "on" : "off") + "]\n" +
+        " --printbytecode   force printing of bytecode to be on  [default: " + (SephConfig.DEFAULT_PRINT_BYTECODE ? "on" : "off") + "]\n" +
+        " --noprintbytecode force printing of bytecode to be off [default: " + (SephConfig.DEFAULT_PRINT_BYTECODE ? "on" : "off") + "]\n" +
+        " --copyright       print the copyright\n" +
+        " --version         print current version\n";
 
     public static void main(String[] args) throws Throwable {
         int start = 0;
@@ -31,7 +33,7 @@ public class Main {
         boolean tco = SephConfig.DEFAULT_TAIL_CALL_OPTIMIZATION;
         boolean lexmh = SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_LOOKUP;
         boolean lexinvokemh = SephConfig.DEFAULT_LEXICAL_METHOD_HANDLE_INVOKE;
-
+        boolean printBytecode = SephConfig.DEFAULT_PRINT_BYTECODE;
 
         for(;!done && start<args.length;start++) {
             String arg = args[start];
@@ -63,6 +65,10 @@ public class Main {
                         lexinvokemh = true;
                     } else if(arg.equals("--nolexinvokemh")) {
                         lexinvokemh = false;
+                    } else if(arg.equals("--printbytecode")) {
+                        printBytecode = true;
+                    } else if(arg.equals("--noprintbytecode")) {
+                        printBytecode = false;
                     } else {
                         System.err.println("Couldn't understand option: " + arg);
                         return;
@@ -82,7 +88,7 @@ public class Main {
                 file = file.substring(0, file.length()-1);
             }
 
-            SephConfig config = new SephConfig(tco, lexmh, lexinvokemh);
+            SephConfig config = new SephConfig(tco, lexmh, lexinvokemh, printBytecode);
             Runtime r = new Runtime(config);
             r.evaluateFile(file);
         }
