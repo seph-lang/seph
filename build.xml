@@ -256,7 +256,7 @@
     <bench file="bench/bench_read_lexical.sp"/>
   </target>
 
-  <target name="ci-benchmark" depends="prepare" description="Runs all Seph benchmarks and outputs everything to a file in build">
+  <target name="ci-benchmark" depends="generate_version_data" description="Runs all Seph benchmarks and outputs everything to a file in build">
     <bench-ci file="bench/bench_fact.sp" append="false"/>
     <bench-ci file="bench/bench_fib.sp"/>
     <bench-ci file="bench/bench_arithmetic.sp"/>
@@ -272,6 +272,24 @@
     <copy file="${build.dir}/all_bench_results" tofile="/var/log/seph_benchmarks/all_bench_results-${seph.revision}" overwrite="true"/>
     
     <exec executable="ruby" input="massage_benchmark_info2.rb"/>
+  </target>
+
+  <target name="ci-benchmark-ibm" depends="generate_version_data" description="Runs all Seph benchmarks and outputs everything to a file in build">
+    <bench-ci file="bench/bench_fact.sp" append="false"/>
+    <bench-ci file="bench/bench_fib.sp"/>
+    <bench-ci file="bench/bench_arithmetic.sp"/>
+    <bench-ci file="bench/bench_intrinsic_true.sp"/>
+    <bench-ci file="bench/bench_intrinsic_false.sp"/>
+    <bench-ci file="bench/bench_intrinsic_nil.sp"/>
+    <bench-ci file="bench/bench_intrinsic_if.sp"/>
+    <bench-ci file="bench/bench_create_abstraction.sp"/>
+    <bench-ci file="bench/bench_object_creation.sp"/>
+    <bench-ci file="bench/bench_read_cell.sp"/>
+    <bench-ci file="bench/bench_read_lexical.sp"/>
+
+    <copy file="${build.dir}/all_bench_results" tofile="/var/log/seph_benchmarks/ibm_all_bench_results-${seph.revision}" overwrite="true"/>
+    
+    <exec executable="ruby" input="massage_benchmark_info_ibm.rb"/>
   </target>
 
   <target name="ci-massage-benchmarks" depends="prepare" description="Output information about benchmarks to a series of images">
@@ -331,6 +349,14 @@
 
   <target name="ci-push-performance-measurements" depends="prepare">
     <scp todir="seph-lang.org@seph-lang.org:/home/seph-lang.org/web/public/performance" keyfile="${user.home}/.ssh/id_rsa">
+      <fileset dir="${build.dir}/performance_report">
+        <include name="bench_*.xml"/>
+      </fileset>
+    </scp>    
+  </target>
+
+  <target name="ci-push-ibm-performance-measurements" depends="prepare">
+    <scp todir="seph-lang.org@seph-lang.org:/home/seph-lang.org/web/public/performance_ibm" keyfile="${user.home}/.ssh/id_rsa">
       <fileset dir="${build.dir}/performance_report">
         <include name="bench_*.xml"/>
       </fileset>
