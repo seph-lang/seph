@@ -269,11 +269,7 @@
     <bench-ci file="bench/bench_read_cell.sp"/>
     <bench-ci file="bench/bench_read_lexical.sp"/>
 
-    <tstamp>
-      <format property="current.timestamp" pattern="yyyy_MM_dd_hh_mm"/>
-    </tstamp>
-    
-    <copy file="${build.dir}/all_bench_results" tofile="/var/log/seph_benchmarks/all_bench_results-${current.timestamp}" overwrite="true"/>
+    <copy file="${build.dir}/all_bench_results" tofile="/var/log/seph_benchmarks/all_bench_results-${seph.revision}" overwrite="true"/>
     
     <exec executable="ruby" input="massage_benchmark_info.rb"/>
   </target>
@@ -331,6 +327,14 @@
     <sshexec host="seph-lang.org" username="seph-lang.org" keyfile="${user.home}/.ssh/id_rsa" command="(cd /home/seph-lang.org/web/public/dist; ln -s seph-${VERSION_NUMBER}${VERSION_ADDITION}.tar.gz seph-latest.tar.gz)"/>
     <sshexec host="seph-lang.org" username="seph-lang.org" keyfile="${user.home}/.ssh/id_rsa" command="(cd /home/seph-lang.org/web/public/dist; ln -s seph-${VERSION_NUMBER}${VERSION_ADDITION}.zip seph-latest.zip)"/>
     <sshexec host="seph-lang.org" username="seph-lang.org" keyfile="${user.home}/.ssh/id_rsa" command="(cd /home/seph-lang.org/web/public/dist; ln -s seph-${VERSION_NUMBER}${VERSION_ADDITION}.jar seph-latest.jar)"/>
+  </target>
+
+  <target name="ci-push-performance-measurements" depends="prepare">
+    <scp todir="seph-lang.org@seph-lang.org:/home/seph-lang.org/web/public/performance" keyfile="${user.home}/.ssh/id_rsa">
+      <fileset dir="${build.dir}/performance_report">
+        <include name="bench_*.xml"/>
+      </fileset>
+    </scp>    
   </target>
 
   <target name="ci-dist-bin" depends="prepare">
