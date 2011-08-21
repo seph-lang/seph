@@ -271,11 +271,11 @@
 
     <copy file="${build.dir}/all_bench_results" tofile="/var/log/seph_benchmarks/all_bench_results-${seph.revision}" overwrite="true"/>
     
-    <exec executable="ruby" input="massage_benchmark_info.rb"/>
+    <exec executable="ruby" input="massage_benchmark_info2.rb"/>
   </target>
 
   <target name="ci-massage-benchmarks" depends="prepare" description="Output information about benchmarks to a series of images">
-    <exec executable="ruby" input="massage_benchmark_info.rb"/>
+    <exec executable="ruby" input="massage_benchmark_info2.rb"/>
   </target>
 
   <target name="jar" depends="test" description="Create the seph.jar file">
