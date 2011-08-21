@@ -54,12 +54,12 @@
       <format property="build.time" pattern="yyyy-MM-dd hh:mm"/>
     </tstamp>
 
-    <exec executable="git" outputproperty="seph.revision" failonerror="false" failifexecutionfails="false">
+    <exec executable="git" outputproperty="seph_revision" failonerror="false" failifexecutionfails="false">
       <arg line="log -1 --format=format:%h"/>
     </exec>
 
     <filter token="DATE" value="${build.time}"/>
-    <filter token="COMMIT" value="${seph.revision}"/>
+    <filter token="COMMIT" value="${seph_revision}"/>
     <filter token="VERSION_NUMBER" value="${VERSION_NUMBER}"/>
     <filter token="VERSION_STRING" value="Seph ${VERSION_NUMBER}${VERSION_ADDITION}"/>
 
@@ -81,12 +81,12 @@
       <format property="build.time" pattern="yyyy-MM-dd hh:mm"/>
     </tstamp>
 
-    <exec executable="git" outputproperty="seph.revision" failonerror="false" failifexecutionfails="false">
+    <exec executable="git" outputproperty="seph_revision" failonerror="false" failifexecutionfails="false">
       <arg line="log -1 --format=format:%h"/>
     </exec>
 
     <filter token="DATE" value="${build.time}"/>
-    <filter token="COMMIT" value="${seph.revision}"/>
+    <filter token="COMMIT" value="${seph_revision}"/>
     <filter token="VERSION_NUMBER" value="${VERSION_NUMBER}"/>
     <filter token="VERSION_STRING" value="Seph ${VERSION_NUMBER}${VERSION_ADDITION}"/>
 
@@ -257,6 +257,8 @@
   </target>
 
   <target name="ci-benchmark" depends="generate_version_data" description="Runs all Seph benchmarks and outputs everything to a file in build">
+    <echo>/var/log/seph_benchmarks/all_bench_results-${seph_revision}</echo>
+
     <bench-ci file="bench/bench_fact.sp" append="false"/>
     <bench-ci file="bench/bench_fib.sp"/>
     <bench-ci file="bench/bench_arithmetic.sp"/>
@@ -269,7 +271,7 @@
     <bench-ci file="bench/bench_read_cell.sp"/>
     <bench-ci file="bench/bench_read_lexical.sp"/>
 
-    <copy file="${build.dir}/all_bench_results" tofile="/var/log/seph_benchmarks/all_bench_results-${seph.revision}" overwrite="true"/>
+    <copy file="${build.dir}/all_bench_results" tofile="/var/log/seph_benchmarks/all_bench_results-${seph_revision}" overwrite="true"/>
     
     <exec executable="ruby" input="massage_benchmark_info2.rb"/>
   </target>
@@ -287,7 +289,7 @@
     <bench-ci file="bench/bench_read_cell.sp"/>
     <bench-ci file="bench/bench_read_lexical.sp"/>
 
-    <copy file="${build.dir}/all_bench_results" tofile="/var/log/seph_benchmarks/ibm_all_bench_results-${seph.revision}" overwrite="true"/>
+    <copy file="${build.dir}/all_bench_results" tofile="/var/log/seph_benchmarks/ibm_all_bench_results-${seph_revision}" overwrite="true"/>
     
     <exec executable="ruby" input="massage_benchmark_info_ibm.rb"/>
   </target>
