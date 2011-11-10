@@ -8,6 +8,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.Handle;
 import static org.objectweb.asm.Opcodes.*;
 
 import static seph.lang.compiler.CompilationHelpers.*;
@@ -363,7 +364,7 @@ public class MethodAdapter {
     }
 
     public final static Object[] EMPTY = new Object[0];
-    public void dynamicCall(String name, String sig, org.objectweb.asm.MethodHandle bootstrap, org.objectweb.asm.MethodHandle... arguments) {
+    public void dynamicCall(String name, String sig, Handle bootstrap, Handle... arguments) {
         op();
         if(TRACE) System.err.println("INVOKEDYNAMIC " + name + " " + sig + " " + bootstrap);
         mv.visitInvokeDynamicInsn(name, sig, bootstrap, arguments);

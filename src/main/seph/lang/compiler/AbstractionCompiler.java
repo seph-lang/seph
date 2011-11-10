@@ -23,6 +23,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.Handle;
 import static org.objectweb.asm.Opcodes.*;
 import static seph.lang.compiler.CompilationHelpers.*;
 import static seph.lang.ActivationHelpers.*;
@@ -40,7 +41,7 @@ import java.lang.invoke.MethodType;
 public class AbstractionCompiler {
     public static boolean PRINT_COMPILE = false;
 
-    private final static org.objectweb.asm.MethodHandle BOOTSTRAP_METHOD = new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC, "seph/lang/compiler/SephCallSite", "bootstrap", BOOTSTRAP_SIGNATURE_DESC);
+    private final static Handle BOOTSTRAP_METHOD = new Handle(H_INVOKESTATIC, "seph/lang/compiler/SephCallSite", "bootstrap", BOOTSTRAP_SIGNATURE_DESC);
 
     private final static AtomicInteger compiledCount = new AtomicInteger(0);
 
@@ -373,7 +374,7 @@ public class AbstractionCompiler {
         currentAssignment = oldAssignment;
     }
 
-    private void compileArgument(Message argument, int currentMessageIndex, int argIndex, List<ArgumentEntry> currentArguments, Message last, List<org.objectweb.asm.MethodHandle> mhsAndAsts) {
+    private void compileArgument(Message argument, int currentMessageIndex, int argIndex, List<ArgumentEntry> currentArguments, Message last, List<Handle> mhsAndAsts) {
         //               printThisClass = true;
         String keyword = null;
         Message argumentToCompile = argument;
@@ -387,8 +388,8 @@ public class AbstractionCompiler {
         final String handleName = "handle_arg_" + currentMessageIndex + "_" + argIndex;
         final String methodName = "argument_" + currentMessageIndex + "_" + argIndex;
         ArgumentEntry ae = new ArgumentEntry(codeName, handleName, methodName, argument, keyword);
-        mhsAndAsts.add(new org.objectweb.asm.MethodHandle(MH_INVOKESTATIC,  className, methodName, sig(SephObject.class, LexicalScope.class, SThread.class, LexicalScope.class, boolean.class, boolean.class)));
-        mhsAndAsts.add(new org.objectweb.asm.MethodHandle(MH_GETSTATIC,     className, codeName, c(SephObject.class)));
+        mhsAndAsts.add(new Handle(H_INVOKESTATIC,  className, methodName, sig(SephObject.class, LexicalScope.class, SThread.class, LexicalScope.class, boolean.class, boolean.class)));
+        mhsAndAsts.add(new Handle(H_GETSTATIC,     className, codeName, c(SephObject.class)));
 
         arguments.add(ae);
         currentArguments.add(ae);
@@ -475,7 +476,7 @@ public class AbstractionCompiler {
         return new Arity(arity - keywordArgs, keywordArgs);
     }
 
-    private org.objectweb.asm.MethodHandle[] compileArguments(MethodAdapter ma, IPersistentList arguments, int[] layout, Message last) {
+    private Handle[] compileArguments(MethodAdapter ma, IPersistentList arguments, int[] layout, Message last) {
         int num = 0;
         final int currentMessageIndex = messageIndex++;
 
@@ -483,7 +484,7 @@ public class AbstractionCompiler {
         final List<ArgumentEntry> currentArguments = new ArrayList<>();
         final List<Message> keywordArguments = new LinkedList<>();
         final List<String> keywordArgumentNames = new LinkedList<>();
-        final List<org.objectweb.asm.MethodHandle> mhsAndAsts = new LinkedList<>();
+        final List<Handle> mhsAndAsts = new LinkedList<>();
 
 
         for(ISeq seq = arguments.seq(); seq != null; seq = seq.next()) {
@@ -552,7 +553,7 @@ public class AbstractionCompiler {
             }
         }
 
-        return mhsAndAsts.toArray(new org.objectweb.asm.MethodHandle[0]);
+        return mhsAndAsts.toArray(new Handle[0]);
     }
 
 
@@ -800,7 +801,7 @@ public class AbstractionCompiler {
         ma.loadLocal(layout[THREAD_IDX]);
         ma.loadLocal(layout[METHOD_SCOPE_IDX]);
             
-        org.objectweb.asm.MethodHandle[] argMHrefs = compileArguments(ma, current.arguments(), layout, last);
+        Handle[] argMHrefs = compileArguments(ma, current.arguments(), layout, last);
 
         if(first && se != null) {
             // [recv, value, thread, scope, arg0, arg1]
@@ -1091,8 +1092,8 @@ public class AbstractionCompiler {
     private void activationForMethod() {
         MethodAdapter ma = new MethodAdapter(cw.visitMethod(ACC_PUBLIC, "activationFor", sig(MethodHandle.class, int.class, boolean.class), null, null));
 
-        org.objectweb.asm.MethodHandle specific = new org.objectweb.asm.MethodHandle(MH_INVOKEVIRTUAL,  className, encode(abstractionName), sig(SephObject.class, argumentClassesFor(argNames.size(), false)));
-        org.objectweb.asm.MethodHandle generic = new org.objectweb.asm.MethodHandle(MH_INVOKEVIRTUAL,  className, encode(abstractionName), sig(SephObject.class, argumentClassesFor(-1, false)));
+        Handle specific = new Handle(H_INVOKEVIRTUAL,  className, encode(abstractionName), sig(SephObject.class, argumentClassesFor(argNames.size(), false)));
+        Handle generic = new Handle(H_INVOKEVIRTUAL,  className, encode(abstractionName), sig(SephObject.class, argumentClassesFor(-1, false)));
 
         ma.loadThis();
         ma.loadLocalInt(1);

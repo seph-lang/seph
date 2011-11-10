@@ -1,2 +1,31 @@
 
-- Generate structural types on the fly instead
+- Pass arguments to the bootstrap method instead of pushing on the stack all the time.
+- Make Seph not need SephObject interface anymore
+- See if it's possible to find a way to not do all that crap for lazy methods
+- see if it's possible to bind native calls directly in to their implementation. use folding or something like it to evaluate arguments where needed
+- Implement dynalink
+- Classy implementation
+  - Notes about impl of classy
+    - Compilation of names uses names or indexes:   get:index:32
+    - If slot can't be found for the current object, instead get the prototype from the layout and combine with getFromPrototype
+    - The actual ScriptableObject keeps the prototype information in the layout
+    - Had simple static getters and setters that cast to Struct4 or Struct8 etc
+- See if I can generate the structures on the fly
+  - See if it's possible to use Johns classy layout for it
+- Each object has an instance of a layout that describes the mapping from a name to a field on a structured implementation
+- Getting from a specific Object should return a MethodHandle that can get it from any object with that specific layout
+- Invocation with arguments HAVE to be invocable. We can make that into a separate operation probably.
+- Macros:
+  use same way of declaring things. Add a asMacro() to the interface
+  define:
+      if = #(cond, then, else, 
+               if(cond evaluateOn(surroundingContext), 
+                  then evaluateOn(surroundingContext), 
+                  else evaluateOn(surroundingContext))) asMacro
+  we will make surroundingContext available to all method invocations to make it easy.
+    or maybe not. Maybe asMacro can take information on where to put data in the argument list to make it easier:
+      if = #(cond, then, else, surroundingContext,
+               if(cond evaluateOn(surroundingContext), 
+                  then evaluateOn(surroundingContext), 
+                  else evaluateOn(surroundingContext))) asMacro(withSurroundingContext: 3)
+   this makes it possible for macros to get lots of useful things, without necessarily having to degrade performance as much
